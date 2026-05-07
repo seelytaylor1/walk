@@ -5,39 +5,40 @@
 
 ## Summary
 
-Deliver a v1 mobile experience implementing the core Wandering Ledger loop: reliable step tracking (accelerometer fallback), step-based travel between hand-crafted towns, a basic trading market (buy/sell), 3 towns and 2 companions, and a Ledger for rumor cards. Use NowInAndroid multi-module patterns (Compose, Room, DataStore). Prioritize offline-first architecture, deterministic tests, and performance budgets for step service and UI responsiveness.
+Deliver a v1 Android experience implementing the core Wandering Ledger loop: reliable step tracking with motion fallback, step-based travel between hand-crafted towns, a basic trading market, 3 towns, 2 companions, and a Ledger for rumor cards. Use NowInAndroid-style multi-module patterns with Compose, Room, and DataStore. Prioritize offline-first architecture, deterministic tests, and performance budgets for step service and UI responsiveness.
 
 ## Technical Context
 
-**Language/Version**: Kotlin (JDK 17), Android SDK 33+
-**Primary Dependencies**: AndroidX Compose, Room, DataStore, Kotlin Coroutines & Flow
-**Storage**: Room for game state; DataStore for preferences
-**Testing**: JUnit, AndroidX Test (instrumentation), Robolectric for JVM UI tests
-**Target Platform**: Android (API 26+ recommended, 33+ target). Mirror this SDK target in `spec.md` to avoid drift.
-**Project Type**: Mobile app (multi-module: app + feature modules)
-**Performance Goals**: UI 60fps target; step-service battery overhead minimal (foreground service CPU < 2% typical); step counting accuracy ≥95% in normal walking
-**Constraints**: Fully offline; no GPS/location permissions; accelerometer-only step detection fallback; limited device memory/support
+**Language/Version**: Kotlin (JDK 17), Android SDK 34 target
+**Primary Dependencies**: AndroidX Compose, Room, DataStore, Kotlin Coroutines and Flow
+**Storage**: Room for game state; DataStore for preferences and calibration
+**Testing**: JUnit, AndroidX Test instrumentation, Robolectric for JVM UI tests
+**Target Platform**: Android API 26+
+**Project Type**: Mobile app with app, core, and feature modules
+**Performance Goals**: UI 60fps target; foreground step-service CPU under 2% typical; step counting F1 >= 0.95 in normal walking
+**Constraints**: Fully offline; no accounts; no GPS or location permissions; motion fallback only when preferred step sensor is unavailable or anomalous
 **Scale/Scope**: v1 local single-player experience; 3 towns, 2 companions, core loop playable end-to-end
 
 ## Constitution Check
 
-- Gate: Code Quality — must include linters, formatters, and PR templates. (Plan: enable Kotlin linter, ktfmt/ktlint in CI)
-- Gate: Testing Standards — Unit & Integration tests required for step tracker, Room schema, and market logic. (Plan: include unit tests + one instrumentation test for step service)
-- Gate: UX Consistency — Use design system module `core/designsystem` for cards and shared components.
-- Gate: Performance Requirements — Benchmarks for step service and market simulation must be created in Phase 0 research.
+- Code Quality: Kotlin formatting/linting must run in CI before merge.
+- Testing Standards: steptracker, core/database, and market engine require unit tests and at least 80% module coverage once implemented.
+- Migration Safety: Room migrations require deterministic migration tests.
+- Performance Requirements: latency and step-fidelity benchmark harnesses are tracked by T038/T039 before claiming SC-001/SC-002.
+- UX Consistency: shared UI should use `core/designsystem` components and tokens.
+- Offline First: no cloud dependency is allowed in v1.
 
-- Detailed performance & test budget (from research):
-  - Step accuracy: F1 ≥ 0.95 measured on representative devices (0.8–1.6 m/s walking speeds).
-  - Latency (SC-001): median travel-action completion ≤ 3s; 95th percentile ≤ 10s on mid/high devices. Canonical latency benchmark harness and CI job: task T038.
-  - Battery/CPU: foreground step service additional CPU ≤ 2% and battery impact ≤ 1–2%/hour on mid-range devices.
+Detailed performance and test budget from research:
 
-All gates satisfied by design provided Phase 0 benchmarks meet the thresholds above; performance validation required before implementation proceeds.
+- Step accuracy: F1 >= 0.95 measured on representative devices at 0.8-1.6 m/s walking speeds.
+- Latency: median travel-action completion <= 3s and 95th percentile <= 10s on mid/high devices.
+- Battery/CPU: foreground step service additional CPU <= 2% and battery impact <= 1-2%/hour on a mid-range device.
 
 ## Project Structure
 
 Selected structure: NowInAndroid-style multi-module Android project.
 
-```
+```text
 app/
 feature/
   worldmap/
@@ -55,50 +56,29 @@ core/
   testing/
 ```
 
-**Structure Decision**: Use existing NowInAndroid modules (adapted) so feature modules map directly to UI flows. `core/steptracker` implements the step-service and sensor logic; `core/database` contains Room entities and DAOs.
+`core/steptracker` owns sensor and banked-step logic. `core/database` owns Room entities, DAOs, and migrations. Feature modules own UI and UI events. Contracts live under `specs/001-wandering-ledger/contracts/`.
 
-## Complexity Tracking
+## Design & Contracts
 
-No constitution violations requiring formal justification.
+- `data-model.md` defines persisted entities and relationship shape.
+- `contracts/repositories.md` defines repository boundaries for game state, market, step bank, companions, rumors, and encounters.
+- `contracts/daos.md` defines Room DAO expectations and transaction boundaries.
+- `contracts/ui-actions.md` defines UI event inputs and screen state outputs for travel, town market, ledger, companions, and calibration.
+- `quickstart.md` documents local setup, build commands, and validation flow.
 
-## Phase 0 — Research Tasks (Resolve NEEDS CLARIFICATION)
+## Implementation Slices
 
-1. Research accelerometer-based pedometer fallback: choose or implement an algorithm with reference implementation (Task: Research & choose pedometer lib/algorithm).
-2. Define step calibration UX and acceptable default step costs (Task: Playtest calibration parameters).
-3. Benchmark step service battery/CPU impact and produce performance budget (Task: Micro-benchmarks + instrumentation test harness).
-4. Define Room schema migration strategy for v1→v2 (Task: Document migration plan).
+1. Scaffold Android multi-module project and verify Gradle sync/build.
+2. Implement `core/model`, `core/database`, `core/steptracker`, and seed data.
+3. Implement User Story 1: simulated steps, banked-step spend, travel persistence, and town arrival.
+4. Implement User Story 2: market buy/sell, inventory, price display, and buy-travel-sell integration test.
+5. Implement User Story 3 and P2 systems: Ledger rumors, companion basics, deterministic encounters.
+6. Add benchmark harnesses, migration tests, coverage gates, release notes, and PR templates.
 
-Deliverable: `research.md` (resolve unknowns above)
-
-## Phase 1 — Design & Contracts
-
-1. Create `data-model.md`: domain entities (`Town`, `Good`, `PlayerState`, `Companion`, `RoadSegment`, `Rumor`) with fields and relationships.
-2. Define contracts: local repository interfaces, DAO contracts, and UI events for travel/buy/sell actions. Place under `specs/001-wandering-ledger/contracts/`.
-3. Quickstart: minimal developer quickstart with build/run instructions and test commands.
-4. Update agent context `.github/copilot-instructions.md` to point to this plan file (if applicable).
-
-Deliverables: `data-model.md`, `contracts/*`, `quickstart.md`
-
-## Phase 2 — Implementation Tasks (high-level)
-
-1. Implement `core:database` Room entities & DAOs (with migrations).
-2. Implement `core:steptracker` foreground service with sensors and repository exposing `Flow<Int>` of banked steps.
-3. Implement `feature:worldmap` travel UI and travel controller.
-4. Implement `feature:town` market UI and market engine (supply/demand + price history).
-5. Implement `feature:journal` Ledger UI and rumor persistence.
-6. Implement companion system basics and auto-resolve encounters.
-7. Add tests: unit tests for market engine, step tracker algorithm, and Room DAOs; instrumentation test for step service.
-8. Integrate CI: lint, format, unit tests, instrumentation smoke test on emulator.
-
-## Phase 3 — Release Criteria
+## Release Criteria
 
 - Core loop playable end-to-end with 3 towns and 2 companions.
-- Tests passing in CI; performance budgets met for step service and UI responsiveness.
-- PR contains migration notes and changelog.
-
-## Next Steps (immediate)
-
-1. Create `research.md` resolving pedometer algorithm and calibration (Phase 0).
-2. Create `data-model.md` skeleton (Phase 1).
-3. Add `tasks.md` by running `/speckit.tasks` or by generating initial tasks from this plan.
-
+- CI runs lint, formatting, unit tests, and smoke tests.
+- Critical modules meet coverage gates after implementation.
+- Performance budgets are measured before claiming SC-001 and SC-002.
+- PR includes migration notes and changelog entry when schema changes are introduced.

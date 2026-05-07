@@ -1,3 +1,20 @@
+# Project Constitution
+
+This constitution defines non-negotiable gates and quality requirements for features and PRs.
+
+## Principles
+
+- **Code Quality (MUST)**: All production Kotlin/Java code must pass linters and formatters configured in CI (ktlint/ktfmt or equivalent) before merge.
+- **Testing (MUST)**: Critical modules (steptracker, core/database, market engine) MUST include unit tests and maintain at least 80% coverage for the module; CI must fail on missing tests for these modules.
+- **Migration Safety (MUST)**: Room schema migrations MUST be deterministic and include automated migration tests; user-visible data loss is disallowed without explicit UX flow for export.
+- **Performance Gates (MUST)**: Performance budgets for step tracking and travel latency (as defined in the feature `spec.md`) are enforced; benchmark harnesses referenced in tasks T038/T039 MUST be present for validation.
+- **UX Consistency (SHOULD)**: Use `core/designsystem` components for shared UI elements and follow design tokens.
+- **Offline First (MUST)**: v1 features must work fully offline with no cloud dependencies.
+
+## Enforcement
+
+- CI must include checks for linters, unit tests, and benchmark harness smoke runs where applicable.
+- PRs that introduce schema migrations must include migration tests and documented migration plan.
 # Spec Constitution
 <!--
 Sync Impact Report
@@ -6,7 +23,7 @@ Sync Impact Report
 - Added sections: Additional Constraints, Development Workflow
 - Removed sections: placeholder tokens replaced
 - Templates requiring updates: .specify/templates/plan-template.md (⚠ pending), .specify/templates/spec-template.md (⚠ pending), .specify/templates/tasks-template.md (⚠ pending)
-- Follow-up TODOs: RATIFICATION_DATE left as TODO - project to supply ratification date
+- Follow-up TODOs: none
 -->
 
 ## Core Principles
@@ -34,4 +51,4 @@ Security, privacy, and licensing constraints that affect implementation MUST be 
 ## Governance
 The constitution defines mandatory engineering practices for the project. Amendments MUST be proposed as a PR against this file and include: rationale, migration plan, and test/automation changes. Non-urgent changes require a simple majority approval from core maintainers; breaking governance changes require a documented migration plan and explicit ratification.
 
-**Version**: 1.0.0 | **Ratified**: TODO(RATIFICATION_DATE): provide ratification date | **Last Amended**: 2026-05-06
+**Version**: 1.0.0 | **Ratified**: 2026-05-06 | **Last Amended**: 2026-05-06

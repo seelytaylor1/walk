@@ -87,6 +87,21 @@
 
 ---
 
+## Phase 0b: Test Harnesses & Research (Blocking per constitution)
+
+- [ ] T038 [P][BLOCKER] Implement latency benchmark harness for SC-001 (instrumentation + benchmark tests) and add CI job to run it.
+- [ ] T039 [P][BLOCKER] Implement fidelity test harness for SC-002 (define dataset, devices, metrics such as precision/recall/F1) and add reproducible test cases.
+- [ ] T040 [P][BLOCKER] Create dataset and device target list for fidelity testing (document devices, walking speeds, and acceptance thresholds) and store under `specs/001-wandering-ledger/research/`.
+- [ ] T041 [P] Expand `T029` into deterministic auto-resolve tests: T041a define deterministic seeds and scenarios; T041b implement unit/integration tests to validate outcomes and edge cases.
+
+---
+
+## Updates & Blocking Notes
+
+- `T002`, `T036`, and `T037` are elevated to pre-merge blockers to satisfy the constitution's testing and CI requirements. Ensure PRs cannot merge on `001-wandering-ledger` until these tasks are satisfied.
+
+---
+
 ## Dependencies & Execution Order
 
 - Complete Phase 1 → Phase 2 (Foundation) must finish before user stories begin

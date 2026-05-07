@@ -70,11 +70,15 @@ Player receives rumor cards that hint at market shifts; rumors appear in Ledger 
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
-- SC-001: Player can complete a travel-action end-to-end (steps → travel → arrival) in under 10 seconds in normal device conditions.
-- SC-002: Step tracking must record daily steps across 24 hours with ≥95% fidelity in normal walking conditions (measured via test harness).
+ SC-001: Player can complete a travel-action end-to-end (steps → travel → arrival). See implementation plan for benchmark quantiles (median ≤ 3s; 95th percentile ≤ 10s). The definitive SLA and test harness live in `specs/001-wandering-ledger/research/latency-harness.md` (task T038).
+ SC-002: Step tracking must record daily steps across 24 hours with ≥95% fidelity in normal walking conditions. Fidelity metric, dataset, devices, and pass/fail criteria are defined in the fidelity test harness (task T039/T040). The harness will specify metric (recommended: F1 score on step event detection), device targets, and reproducible test vectors.
 - SC-003: Trading loop functional: players can perform buy→travel→sell with inventory changes and gold delta verified in tests.
-- SC-004: At least 3 towns and 2 companions implemented with working story beats for Act 1–2.
+ What if step sensor unavailable? App must fall back to accelerometer algorithm and surface calibration UI. Acceptance criteria: accelerometer fallback must achieve minimum fidelity threshold defined in SC-002 on representative test vectors; calibration UI must allow user-driven adjustment and persist calibration values.
+ What if Room DB migration fails? Provide safe migration or clear user-facing error with option to export data. Migrations must include deterministic migration tests in CI.
 
+### Notes on Auto-Resolve Encounters (FR-006)
+- Determinism: auto-resolve outcomes must be deterministic given a recorded seed and initial state. Tests must be able to replay encounters by seeding RNG.
+- Acceptance: define a set of canonical encounter scenarios with expected outcomes; implement unit/integration tests to validate replay (see tasks T041a/T041b).
 ## Assumptions
 - All play is offline; no cloud sync required for v1.
 - Sensor access: devices expose either `TYPE_STEP_COUNTER` or allow accelerometer-based fallback.

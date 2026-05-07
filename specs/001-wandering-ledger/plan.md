@@ -13,7 +13,7 @@ Deliver a v1 mobile experience implementing the core Wandering Ledger loop: reli
 **Primary Dependencies**: AndroidX Compose, Room, DataStore, Kotlin Coroutines & Flow
 **Storage**: Room for game state; DataStore for preferences
 **Testing**: JUnit, AndroidX Test (instrumentation), Robolectric for JVM UI tests
-**Target Platform**: Android (API 26+ recommended, 33+ target)
+**Target Platform**: Android (API 26+ recommended, 33+ target). Mirror this SDK target in `spec.md` to avoid drift.
 **Project Type**: Mobile app (multi-module: app + feature modules)
 **Performance Goals**: UI 60fps target; step-service battery overhead minimal (foreground service CPU < 2% typical); step counting accuracy ≥95% in normal walking
 **Constraints**: Fully offline; no GPS/location permissions; accelerometer-only step detection fallback; limited device memory/support
@@ -28,7 +28,7 @@ Deliver a v1 mobile experience implementing the core Wandering Ledger loop: reli
 
 - Detailed performance & test budget (from research):
   - Step accuracy: F1 ≥ 0.95 measured on representative devices (0.8–1.6 m/s walking speeds).
-  - Latency (SC-001): median travel-action completion ≤ 3s; 95th percentile ≤ 10s on mid/high devices.
+  - Latency (SC-001): median travel-action completion ≤ 3s; 95th percentile ≤ 10s on mid/high devices. Canonical latency benchmark harness and CI job: task T038.
   - Battery/CPU: foreground step service additional CPU ≤ 2% and battery impact ≤ 1–2%/hour on mid-range devices.
 
 All gates satisfied by design provided Phase 0 benchmarks meet the thresholds above; performance validation required before implementation proceeds.
@@ -43,7 +43,7 @@ feature/
   worldmap/
   town/
   companions/
-  journal/
+  ledger/
   character/
 core/
   model/
@@ -55,7 +55,7 @@ core/
   testing/
 ```
 
-**Structure Decision**: Use existing NowInAndroid modules (adapted) so feature modules map directly to UI flows. `core/steptracker` implements the foreground service and sensor logic; `core/database` contains Room entities and DAOs.
+**Structure Decision**: Use existing NowInAndroid modules (adapted) so feature modules map directly to UI flows. `core/steptracker` implements the step-service and sensor logic; `core/database` contains Room entities and DAOs.
 
 ## Complexity Tracking
 

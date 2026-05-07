@@ -96,6 +96,14 @@
 
 ---
 
+## Playtest & Calibration Tasks (from research.md)
+
+- [ ] T042 [P] Implement calibration UI prototype and quick onboarding flow; persist calibration profile in DataStore.
+- [ ] T043 [P] Create playtest plan and collect representative walking vectors (walking speeds 0.8–1.6 m/s) for fidelity dataset.
+- [ ] T044 [P] Add simulation tests for `TYPE_STEP_COUNTER` absence and verify accelerometer fallback meets minimum fidelity.
+
+---
+
 ## Updates & Blocking Notes
 
 - `T002`, `T036`, and `T037` are elevated to pre-merge blockers to satisfy the constitution's testing and CI requirements. Ensure PRs cannot merge on `001-wandering-ledger` until these tasks are satisfied.

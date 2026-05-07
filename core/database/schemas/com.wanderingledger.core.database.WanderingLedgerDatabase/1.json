@@ -1,0 +1,929 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "753f61e64eda11590d3db085f5ae6415",
+    "entities": [
+      {
+        "tableName": "towns",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`townId` INTEGER NOT NULL, `name` TEXT NOT NULL, `region` TEXT NOT NULL, `reputation` INTEGER NOT NULL, `storyState` TEXT NOT NULL, `lastVisitedAt` INTEGER NOT NULL, PRIMARY KEY(`townId`))",
+        "fields": [
+          {
+            "fieldPath": "townId",
+            "columnName": "townId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "region",
+            "columnName": "region",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reputation",
+            "columnName": "reputation",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "storyState",
+            "columnName": "storyState",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastVisitedAt",
+            "columnName": "lastVisitedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "townId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_towns_name",
+            "unique": false,
+            "columnNames": [
+              "name"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_towns_name` ON `${TABLE_NAME}` (`name`)"
+          },
+          {
+            "name": "index_towns_region",
+            "unique": false,
+            "columnNames": [
+              "region"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_towns_region` ON `${TABLE_NAME}` (`region`)"
+          },
+          {
+            "name": "index_towns_lastVisitedAt",
+            "unique": false,
+            "columnNames": [
+              "lastVisitedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_towns_lastVisitedAt` ON `${TABLE_NAME}` (`lastVisitedAt`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "goods",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`goodId` INTEGER NOT NULL, `name` TEXT NOT NULL, `baseValue` INTEGER NOT NULL, `isContraband` INTEGER NOT NULL, PRIMARY KEY(`goodId`))",
+        "fields": [
+          {
+            "fieldPath": "goodId",
+            "columnName": "goodId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "baseValue",
+            "columnName": "baseValue",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isContraband",
+            "columnName": "isContraband",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "goodId"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "town_produces",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`townId` INTEGER NOT NULL, `goodId` INTEGER NOT NULL, PRIMARY KEY(`townId`, `goodId`), FOREIGN KEY(`townId`) REFERENCES `towns`(`townId`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`goodId`) REFERENCES `goods`(`goodId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "townId",
+            "columnName": "townId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "goodId",
+            "columnName": "goodId",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "townId",
+            "goodId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_town_produces_goodId",
+            "unique": false,
+            "columnNames": [
+              "goodId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_town_produces_goodId` ON `${TABLE_NAME}` (`goodId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "towns",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "townId"
+            ],
+            "referencedColumns": [
+              "townId"
+            ]
+          },
+          {
+            "table": "goods",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "goodId"
+            ],
+            "referencedColumns": [
+              "goodId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "town_demands",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`townId` INTEGER NOT NULL, `goodId` INTEGER NOT NULL, PRIMARY KEY(`townId`, `goodId`), FOREIGN KEY(`townId`) REFERENCES `towns`(`townId`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`goodId`) REFERENCES `goods`(`goodId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "townId",
+            "columnName": "townId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "goodId",
+            "columnName": "goodId",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "townId",
+            "goodId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_town_demands_goodId",
+            "unique": false,
+            "columnNames": [
+              "goodId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_town_demands_goodId` ON `${TABLE_NAME}` (`goodId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "towns",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "townId"
+            ],
+            "referencedColumns": [
+              "townId"
+            ]
+          },
+          {
+            "table": "goods",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "goodId"
+            ],
+            "referencedColumns": [
+              "goodId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "town_prices",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `townId` INTEGER NOT NULL, `goodId` INTEGER NOT NULL, `buyPrice` INTEGER NOT NULL, `sellPrice` INTEGER NOT NULL, `supplyLevel` TEXT NOT NULL, `lastUpdatedAt` INTEGER NOT NULL, FOREIGN KEY(`townId`) REFERENCES `towns`(`townId`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`goodId`) REFERENCES `goods`(`goodId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "townId",
+            "columnName": "townId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "goodId",
+            "columnName": "goodId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "buyPrice",
+            "columnName": "buyPrice",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sellPrice",
+            "columnName": "sellPrice",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "supplyLevel",
+            "columnName": "supplyLevel",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastUpdatedAt",
+            "columnName": "lastUpdatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_town_prices_townId",
+            "unique": false,
+            "columnNames": [
+              "townId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_town_prices_townId` ON `${TABLE_NAME}` (`townId`)"
+          },
+          {
+            "name": "index_town_prices_goodId",
+            "unique": false,
+            "columnNames": [
+              "goodId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_town_prices_goodId` ON `${TABLE_NAME}` (`goodId`)"
+          },
+          {
+            "name": "index_town_prices_townId_goodId",
+            "unique": true,
+            "columnNames": [
+              "townId",
+              "goodId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_town_prices_townId_goodId` ON `${TABLE_NAME}` (`townId`, `goodId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "towns",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "townId"
+            ],
+            "referencedColumns": [
+              "townId"
+            ]
+          },
+          {
+            "table": "goods",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "goodId"
+            ],
+            "referencedColumns": [
+              "goodId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "player_states",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`playerId` INTEGER NOT NULL, `name` TEXT NOT NULL, `playerClass` TEXT NOT NULL, `gold` INTEGER NOT NULL, `currentTownId` INTEGER NOT NULL, `inventorySlots` INTEGER NOT NULL, `bankedSteps` INTEGER NOT NULL, `lifetimeSteps` INTEGER NOT NULL, `lastSyncAt` INTEGER NOT NULL, PRIMARY KEY(`playerId`), FOREIGN KEY(`currentTownId`) REFERENCES `towns`(`townId`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "fields": [
+          {
+            "fieldPath": "playerId",
+            "columnName": "playerId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "playerClass",
+            "columnName": "playerClass",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gold",
+            "columnName": "gold",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "currentTownId",
+            "columnName": "currentTownId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "inventorySlots",
+            "columnName": "inventorySlots",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bankedSteps",
+            "columnName": "bankedSteps",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lifetimeSteps",
+            "columnName": "lifetimeSteps",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastSyncAt",
+            "columnName": "lastSyncAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "playerId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_player_states_currentTownId",
+            "unique": false,
+            "columnNames": [
+              "currentTownId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_player_states_currentTownId` ON `${TABLE_NAME}` (`currentTownId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "towns",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "currentTownId"
+            ],
+            "referencedColumns": [
+              "townId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "inventory_items",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `playerId` INTEGER NOT NULL, `goodId` INTEGER NOT NULL, `quantity` INTEGER NOT NULL, `isSealed` INTEGER NOT NULL, FOREIGN KEY(`playerId`) REFERENCES `player_states`(`playerId`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`goodId`) REFERENCES `goods`(`goodId`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "playerId",
+            "columnName": "playerId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "goodId",
+            "columnName": "goodId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "quantity",
+            "columnName": "quantity",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isSealed",
+            "columnName": "isSealed",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_inventory_items_playerId",
+            "unique": false,
+            "columnNames": [
+              "playerId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_inventory_items_playerId` ON `${TABLE_NAME}` (`playerId`)"
+          },
+          {
+            "name": "index_inventory_items_goodId",
+            "unique": false,
+            "columnNames": [
+              "goodId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_inventory_items_goodId` ON `${TABLE_NAME}` (`goodId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "player_states",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "playerId"
+            ],
+            "referencedColumns": [
+              "playerId"
+            ]
+          },
+          {
+            "table": "goods",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "goodId"
+            ],
+            "referencedColumns": [
+              "goodId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "companions",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`companionId` INTEGER NOT NULL, `name` TEXT NOT NULL, `role` TEXT NOT NULL, `combatPower` INTEGER NOT NULL, `bondLevel` INTEGER NOT NULL, `questState` TEXT NOT NULL, `locationTownId` INTEGER NOT NULL, `isActive` INTEGER NOT NULL, PRIMARY KEY(`companionId`), FOREIGN KEY(`locationTownId`) REFERENCES `towns`(`townId`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "fields": [
+          {
+            "fieldPath": "companionId",
+            "columnName": "companionId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "role",
+            "columnName": "role",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "combatPower",
+            "columnName": "combatPower",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bondLevel",
+            "columnName": "bondLevel",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "questState",
+            "columnName": "questState",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "locationTownId",
+            "columnName": "locationTownId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isActive",
+            "columnName": "isActive",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "companionId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_companions_locationTownId",
+            "unique": false,
+            "columnNames": [
+              "locationTownId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_companions_locationTownId` ON `${TABLE_NAME}` (`locationTownId`)"
+          },
+          {
+            "name": "index_companions_isActive",
+            "unique": false,
+            "columnNames": [
+              "isActive"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_companions_isActive` ON `${TABLE_NAME}` (`isActive`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "towns",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "locationTownId"
+            ],
+            "referencedColumns": [
+              "townId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "road_segments",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`segmentId` INTEGER NOT NULL, `fromTownId` INTEGER NOT NULL, `toTownId` INTEGER NOT NULL, `stepCost` INTEGER NOT NULL, `narrativeDistance` TEXT NOT NULL, `eventPool` TEXT NOT NULL, PRIMARY KEY(`segmentId`), FOREIGN KEY(`fromTownId`) REFERENCES `towns`(`townId`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`toTownId`) REFERENCES `towns`(`townId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "segmentId",
+            "columnName": "segmentId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fromTownId",
+            "columnName": "fromTownId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "toTownId",
+            "columnName": "toTownId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "stepCost",
+            "columnName": "stepCost",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "narrativeDistance",
+            "columnName": "narrativeDistance",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "eventPool",
+            "columnName": "eventPool",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "segmentId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_road_segments_fromTownId",
+            "unique": false,
+            "columnNames": [
+              "fromTownId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_road_segments_fromTownId` ON `${TABLE_NAME}` (`fromTownId`)"
+          },
+          {
+            "name": "index_road_segments_toTownId",
+            "unique": false,
+            "columnNames": [
+              "toTownId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_road_segments_toTownId` ON `${TABLE_NAME}` (`toTownId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "towns",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "fromTownId"
+            ],
+            "referencedColumns": [
+              "townId"
+            ]
+          },
+          {
+            "table": "towns",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "toTownId"
+            ],
+            "referencedColumns": [
+              "townId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "rumors",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`rumorId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `text` TEXT NOT NULL, `targetGoodId` INTEGER, `sourceTownId` INTEGER, `createdAt` INTEGER NOT NULL, `expiryVisitsLeft` INTEGER NOT NULL, `isFalse` INTEGER NOT NULL, FOREIGN KEY(`targetGoodId`) REFERENCES `goods`(`goodId`) ON UPDATE NO ACTION ON DELETE SET NULL , FOREIGN KEY(`sourceTownId`) REFERENCES `towns`(`townId`) ON UPDATE NO ACTION ON DELETE SET NULL )",
+        "fields": [
+          {
+            "fieldPath": "rumorId",
+            "columnName": "rumorId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "text",
+            "columnName": "text",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "targetGoodId",
+            "columnName": "targetGoodId",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "sourceTownId",
+            "columnName": "sourceTownId",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "expiryVisitsLeft",
+            "columnName": "expiryVisitsLeft",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isFalse",
+            "columnName": "isFalse",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "rumorId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_rumors_targetGoodId",
+            "unique": false,
+            "columnNames": [
+              "targetGoodId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_rumors_targetGoodId` ON `${TABLE_NAME}` (`targetGoodId`)"
+          },
+          {
+            "name": "index_rumors_sourceTownId",
+            "unique": false,
+            "columnNames": [
+              "sourceTownId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_rumors_sourceTownId` ON `${TABLE_NAME}` (`sourceTownId`)"
+          },
+          {
+            "name": "index_rumors_createdAt",
+            "unique": false,
+            "columnNames": [
+              "createdAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_rumors_createdAt` ON `${TABLE_NAME}` (`createdAt`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "goods",
+            "onDelete": "SET NULL",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "targetGoodId"
+            ],
+            "referencedColumns": [
+              "goodId"
+            ]
+          },
+          {
+            "table": "towns",
+            "onDelete": "SET NULL",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "sourceTownId"
+            ],
+            "referencedColumns": [
+              "townId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "step_records",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`recordId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `dateEpoch` INTEGER NOT NULL, `steps` INTEGER NOT NULL, `source` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "recordId",
+            "columnName": "recordId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dateEpoch",
+            "columnName": "dateEpoch",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "steps",
+            "columnName": "steps",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "source",
+            "columnName": "source",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "recordId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_step_records_dateEpoch_source",
+            "unique": false,
+            "columnNames": [
+              "dateEpoch",
+              "source"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_step_records_dateEpoch_source` ON `${TABLE_NAME}` (`dateEpoch`, `source`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "event_logs",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`eventId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `type` TEXT NOT NULL, `meta` TEXT NOT NULL, `result` TEXT NOT NULL, `createdAt` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "eventId",
+            "columnName": "eventId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "meta",
+            "columnName": "meta",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "result",
+            "columnName": "result",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "eventId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_event_logs_createdAt",
+            "unique": false,
+            "columnNames": [
+              "createdAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_event_logs_createdAt` ON `${TABLE_NAME}` (`createdAt`)"
+          }
+        ],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '753f61e64eda11590d3db085f5ae6415')"
+    ]
+  }
+}

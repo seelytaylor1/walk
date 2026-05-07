@@ -17,8 +17,8 @@ Notes:
 - `townId: Long` (PK)
 - `name: String`
 - `region: String`
-- `producedGoods: List<Long>` (goods ids) — consider join table `town_produces`
-- `demandedGoods: List<Long>` (goods ids) — consider join table `town_demands`
+- `producedGoods: List<Long>` (goods ids) - consider join table `town_produces`
+- `demandedGoods: List<Long>` (goods ids) - consider join table `town_demands`
 - `reputation: Int` (0..100)
 - `storyState: String` (enum or small serialized state)
 - `lastVisitedAt: Long` (epoch ms)

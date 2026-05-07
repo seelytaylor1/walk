@@ -1,0 +1,34 @@
+plugins {
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.android)
+}
+
+android {
+    namespace = "com.wanderingledger.core.designsystem"
+    compileSdk = libs.versions.compileSdk.get().toInt()
+
+    defaultConfig {
+        minSdk = libs.versions.minSdk.get().toInt()
+    }
+
+    buildFeatures {
+        compose = true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = libs.versions.composeCompiler.get()
+    }
+}
+
+dependencies {
+    api(platform(libs.compose.bom))
+    api(libs.compose.ui)
+    api(libs.compose.ui.graphics)
+    api(libs.compose.ui.tooling.preview)
+    api(libs.compose.material3)
+    api(libs.compose.foundation)
+    api(libs.compose.runtime)
+    api(libs.androidx.core.ktx)
+
+    debugApi(libs.compose.ui.tooling)
+}

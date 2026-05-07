@@ -33,7 +33,7 @@ Resolve technical unknowns for Phase 0:
 ## 2. Calibration & UX
 
 ### Calibration Goals
-- Allow user to validate step detection with a short walk test (30s–60s).
+- Allow user to validate step detection with a short walk test (30s-60s).
 - Offer two calibration modes:
   1. Automatic: app measures while user walks and suggests sensitivity.
   2. Manual: user adjusts sensitivity slider while observing detected steps in real time.
@@ -60,19 +60,19 @@ Resolve technical unknowns for Phase 0:
 - Micro-benchmarks on actual devices (low-end, mid-tier, high-end) to measure battery and CPU impact
 
 ### Acceptance Targets
-- Accuracy: ≥95% step detection fidelity for typical walking speeds (0.8–1.6 m/s) on tested devices (SC-002)
-- Battery: additional battery overhead ≤2% CPU typical; target background energy impact <1–2%/hour in foreground service mode (measure empirically)
+- Accuracy: >=95% step detection fidelity for typical walking speeds (0.8-1.6 m/s) on tested devices (SC-002)
+- Battery: additional battery overhead <=2% CPU typical; target background energy impact <1-2%/hour in foreground service mode (measure empirically)
 - Travel UX: end-to-end travel action UI + persistence completes within 10s on target devices (SC-001)
 
 ### Test Procedures & Device Classes
 - Device classes for verification:
-  - Low-end: API 26 device, ≤2GB RAM
+  - Low-end: API 26 device, <=2GB RAM
   - Mid-range: API 29 device, typical consumer phone
   - High-end: API 33+ device
 - Test types and acceptance thresholds:
-  - Accuracy test: run recorded/tracked walk traces per device class; compute precision/recall; require F1 ≥ 0.95 across typical walking speeds (0.8–1.6 m/s).
-  - Latency test (SC-001): measure time from user pressing "Travel" to arrival state persisted and UI updated; median ≤ 3s, 95th percentile ≤ 10s on mid/high devices; allow longer on low-end but document.
-  - Battery/CPU: run foreground service for 1 hour with accelerometer fallback enabled; CPU average ≤ 2% and incremental battery drain ≤ 1–2%/hour on mid-range device.
+  - Accuracy test: run recorded/tracked walk traces per device class; compute precision/recall; require F1 >= 0.95 across typical walking speeds (0.8-1.6 m/s).
+  - Latency test (SC-001): measure time from user pressing "Travel" to arrival state persisted and UI updated; median <= 3s, 95th percentile <= 10s on mid/high devices; allow longer on low-end but document.
+  - Battery/CPU: run foreground service for 1 hour with accelerometer fallback enabled; CPU average <= 2% and incremental battery drain <= 1-2%/hour on mid-range device.
   - Robustness: test sensor loss/fallback behavior by simulating `TYPE_STEP_COUNTER` absent and verifying accelerometer fallback and calibration UX.
 
 ### Test Harness Details
@@ -117,7 +117,7 @@ Resolve technical unknowns for Phase 0:
 - Unit test dataset: `specs/001-wandering-ledger/testdata/accelerometer-traces/`
 
 ## 9. Next Steps
-- Implement `core/steptracker` interface and two detectors (hardware + accel) — add task T007/T012 to track.
+- Implement `core/steptracker` interface and two detectors (hardware + accel) - add task T007/T012 to track.
 - Add calibration UI task (add to UI tasks list).
 - Create benchmark dataset and add unit tests to validate accuracy targets.
 

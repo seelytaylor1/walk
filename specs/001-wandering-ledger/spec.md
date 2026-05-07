@@ -52,11 +52,18 @@ Player receives rumor cards that hint at market shifts; rumors appear in Ledger 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
-- FR-001: System MUST count and persist steps locally using a foreground service.
+- FR-001: System MUST count and persist steps locally using a step-service (foreground or equivalent long-running sensor service).
 - FR-002: System MUST allow players to spend banked steps to traverse a road segment between towns.
 - FR-003: System MUST present a town market UI to buy/sell goods and update player gold/inventory.
 - FR-004: System MUST show rumor cards and persist them in a Ledger view with expiry metadata.
 - FR-005: System MUST support companion recruitment and maintain up to 3 active companions.
+  
+	Acceptance criteria (companions):
+	- Recruitment: Players can recruit a companion via a defined trigger; recruitment persists in PlayerState and is restored on app restart.
+	- Capacity: The system must enforce a hard maximum of 3 active companions; attempts to recruit beyond this limit must present a clear UX flow (replace/switch/decline) and not silently drop data.
+	- Lifecycle: Companion removal, replacement, and temporary deactivation flows must be defined and persist correctly across Room migrations and app restarts.
+	- Bond/progression: Bond level changes and companion-specific state must be persisted and covered by unit tests verifying expected state transitions.
+	- Determinism & Tests: Companion recruitment and persistence behaviors must have unit/integration tests that verify correct persistence, edge cases (duplicate recruits), and behavior across migrations.
 - FR-006: System MUST auto-resolve road encounters while the player is away and persist outcomes.
 - FR-007: System MUST store all game state in Room and preferences in DataStore.
 
@@ -70,8 +77,8 @@ Player receives rumor cards that hint at market shifts; rumors appear in Ledger 
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
- SC-001: Player can complete a travel-action end-to-end (steps → travel → arrival). See implementation plan for benchmark quantiles (median ≤ 3s; 95th percentile ≤ 10s). The definitive SLA and test harness live in `specs/001-wandering-ledger/research/latency-harness.md` (task T038).
- SC-002: Step tracking must record daily steps across 24 hours with ≥95% fidelity in normal walking conditions. Fidelity metric, dataset, devices, and pass/fail criteria are defined in the fidelity test harness (task T039/T040). The harness will specify metric (recommended: F1 score on step event detection), device targets, and reproducible test vectors.
+SC-001: Player can complete a travel-action end-to-end (steps → travel → arrival). Measured median travel-action completion ≤ 3s and 95th percentile ≤ 10s when measured using the canonical latency benchmark harness. The canonical harness is the latency benchmark referenced by task T038; tests MUST declare the device/emulator configuration and CI job used for measurement so results are reproducible.
+SC-002: Step tracking must record daily steps across 24 hours with ≥95% fidelity in normal walking conditions. Fidelity is measured as the F1 score on step event detection (true step events vs detected events) on the defined dataset and devices. The fidelity test harness (tasks T039/T040) MUST include: dataset(s) used, device list (or emulator config), and pass/fail thresholds (F1 ≥ 0.95).
 - SC-003: Trading loop functional: players can perform buy→travel→sell with inventory changes and gold delta verified in tests.
  What if step sensor unavailable? App must fall back to accelerometer algorithm and surface calibration UI. Acceptance criteria: accelerometer fallback must achieve minimum fidelity threshold defined in SC-002 on representative test vectors; calibration UI must allow user-driven adjustment and persist calibration values.
  What if Room DB migration fails? Provide safe migration or clear user-facing error with option to export data. Migrations must include deterministic migration tests in CI.

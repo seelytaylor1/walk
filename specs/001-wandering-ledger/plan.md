@@ -43,7 +43,7 @@ feature/
   worldmap/
   town/
   companions/
-  journal/
+  ledger/
   character/
 core/
   model/
@@ -55,7 +55,7 @@ core/
   testing/
 ```
 
-**Structure Decision**: Use existing NowInAndroid modules (adapted) so feature modules map directly to UI flows. `core/steptracker` implements the foreground service and sensor logic; `core/database` contains Room entities and DAOs.
+**Structure Decision**: Use existing NowInAndroid modules (adapted) so feature modules map directly to UI flows. `core/steptracker` implements the step-service and sensor logic; `core/database` contains Room entities and DAOs.
 
 ## Complexity Tracking
 

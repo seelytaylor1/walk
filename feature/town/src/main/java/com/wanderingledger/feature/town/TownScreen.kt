@@ -29,10 +29,20 @@ fun interface TownInventoryCallback {
     fun onOpenInventory()
 }
 
+fun interface TownLedgerCallback {
+    fun onOpenLedger()
+}
+
+fun interface TownCompanionsCallback {
+    fun onOpenCompanions()
+}
+
 data class TownActions(
     val onNavigateToWorldMap: TownNavigationCallback,
     val onOpenMarket: TownMarketCallback,
     val onOpenInventory: TownInventoryCallback,
+    val onOpenLedger: TownLedgerCallback,
+    val onOpenCompanions: TownCompanionsCallback,
 )
 
 fun buildTownScreenState(
@@ -72,6 +82,12 @@ class TownScreenView(context: Context) : LinearLayout(context) {
     }
     private val inventoryButton = Button(context).apply {
         text = "View Inventory"
+    }
+    private val ledgerButton = Button(context).apply {
+        text = "Open Ledger"
+    }
+    private val companionsButton = Button(context).apply {
+        text = "Companions"
     }
 
     init {
@@ -117,6 +133,24 @@ class TownScreenView(context: Context) : LinearLayout(context) {
                 topMargin = 16
             },
         )
+        addView(
+            ledgerButton,
+            LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            ).apply {
+                topMargin = 16
+            },
+        )
+        addView(
+            companionsButton,
+            LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            ).apply {
+                topMargin = 16
+            },
+        )
     }
 
     fun render(state: TownScreenState, actions: TownActions) {
@@ -127,6 +161,8 @@ class TownScreenView(context: Context) : LinearLayout(context) {
         worldMapButton.setOnClickListener { actions.onNavigateToWorldMap.onNavigateToWorldMap() }
         marketButton.setOnClickListener { actions.onOpenMarket.onOpenMarket() }
         inventoryButton.setOnClickListener { actions.onOpenInventory.onOpenInventory() }
+        ledgerButton.setOnClickListener { actions.onOpenLedger.onOpenLedger() }
+        companionsButton.setOnClickListener { actions.onOpenCompanions.onOpenCompanions() }
     }
 
     private fun TownScreenState.toHeaderText(): String =

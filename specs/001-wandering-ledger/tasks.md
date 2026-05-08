@@ -58,9 +58,9 @@
 - [x] T018 [US2] Implement market engine: price calculation, supply/demand updates, price history
 - [x] T019 [US2] Implement `feature/town` market UI with buy/sell actions and price display
 - [x] T020 [US2] Implement inventory system and UI
-- [ ] T021 [US2] Add unit tests for market engine scenarios
-- [~] T022 [US2] Hook buy/sell actions into Room persistence and update `PlayerState`
-- [~] T023 [US2] Add integration test simulating buy-travel-sell loop
+- [x] T021 [US2] Add unit tests for market engine scenarios
+- [x] T022 [US2] Hook buy/sell actions into Room persistence and update `PlayerState`
+- [x] T023 [US2] Add integration test simulating buy-travel-sell loop
 
 ---
 
@@ -68,10 +68,10 @@
 
 **Goal**: Rumor events surface and are saved to the Ledger UI with expiry metadata.
 
-- [~] T024 [US3] Implement `Rumor` entity and DAO, including expiry counter logic
-- [~] T025 [P] [US3] Implement rumor generation hooks for road events and town visits
-- [~] T026 [US3] Implement `feature/ledger` UI and rumor list view
-- [~] T027 [US3] Add unit tests for rumor expiry, false rumor tagging, and persistence
+- [x] T024 [US3] Implement `Rumor` entity and DAO, including expiry counter logic
+- [x] T025 [P] [US3] Implement rumor generation hooks for road events and town visits
+- [x] T026 [US3] Implement `feature/ledger` UI and rumor list view
+- [x] T027 [US3] Add unit tests for rumor expiry, false rumor tagging, and persistence
 
 ---
 

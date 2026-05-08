@@ -106,10 +106,10 @@ interface CompanionDao {
     @Query("SELECT * FROM companions WHERE isActive = 0 ORDER BY companionId")
     fun listRecruitableCompanions(): Flow<List<CompanionEntity>>
 
-    @Upsert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertCompanion(companion: CompanionEntity)
 
-    @Upsert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertCompanions(companions: List<CompanionEntity>)
 }
 

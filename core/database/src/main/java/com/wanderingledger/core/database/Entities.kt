@@ -1,5 +1,6 @@
 package com.wanderingledger.core.database
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -13,6 +14,8 @@ data class TownEntity(
     @PrimaryKey val townId: Long,
     val name: String,
     val region: String,
+    @ColumnInfo(defaultValue = "Forest")
+    val biome: String,
     val reputation: Int,
     val storyState: String,
     val lastVisitedAt: Long,

@@ -2,6 +2,13 @@ package com.wanderingledger.app
 
 import android.app.Activity
 import android.os.Bundle
+import android.widget.FrameLayout
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.foundation.layout.fillMaxSize
+import kotlinx.coroutines.flow.MutableStateFlow
 import com.wanderingledger.core.data.BuyResult
 import com.wanderingledger.core.data.GameRepository
 import com.wanderingledger.core.data.InventoryRepository
@@ -13,6 +20,7 @@ import com.wanderingledger.core.data.EncounterRepository
 import com.wanderingledger.core.data.SellResult
 import com.wanderingledger.core.data.TravelResult
 import com.wanderingledger.core.database.WanderingLedgerDatabase
+import com.wanderingledger.core.ui.NavigationShell
 import com.wanderingledger.core.steptracker.StepSource
 import com.wanderingledger.core.steptracker.StepTrackerService
 import com.wanderingledger.feature.town.BuyActionCallback
@@ -34,10 +42,9 @@ import com.wanderingledger.feature.town.TownCompanionsCallback
 import com.wanderingledger.feature.town.buildInventoryScreenState
 import com.wanderingledger.feature.town.buildMarketScreenState
 import com.wanderingledger.feature.town.buildTownScreenState
-import com.wanderingledger.feature.worldmap.TravelActionCallback
-import com.wanderingledger.feature.worldmap.WorldMapActions
-import com.wanderingledger.feature.worldmap.WorldMapScreenView
-import com.wanderingledger.feature.worldmap.buildWorldMapScreenState
+import com.wanderingledger.feature.journey.JourneyActions
+import com.wanderingledger.feature.journey.JourneyScreen
+import com.wanderingledger.feature.journey.buildJourneyScreenState
 import com.wanderingledger.feature.ledger.LedgerActions
 import com.wanderingledger.feature.ledger.LedgerNavigationCallback
 import com.wanderingledger.feature.ledger.LedgerScreenView
@@ -69,20 +76,31 @@ class MainActivity : Activity() {
     private lateinit var inventoryRepository: InventoryRepository
     private lateinit var stepTrackerService: StepTrackerService
 
-    private lateinit var worldMapView: WorldMapScreenView
+    private lateinit var journeyView: ComposeView
     private lateinit var townView: TownScreenView
     private lateinit var marketView: MarketScreenView
     private lateinit var inventoryView: InventoryScreenView
     private lateinit var ledgerView: LedgerScreenView
     private lateinit var companionsView: CompanionsScreenView
+    private lateinit var navigationShell: NavigationShell
 
-    /** Tracks the active market observation job so it can be cancelled on navigation away. */
+    private var currentTownId: Long = 1L
+
+    private val journeyScreenState = MutableStateFlow(
+        com.wanderingledger.feature.journey.JourneyScreenState(
+            currentTownName = "",
+            currentTownRegion = "",
+            currentBiome = com.wanderingledger.core.model.Biome.Forest,
+            bankedSteps = 0,
+            lifetimeSteps = 0,
+            routes = emptyList(),
+            message = null
+        )
+    )
+
     private var marketObserveJob: Job? = null
-    /** Tracks the active inventory observation job so it can be cancelled on navigation away. */
     private var inventoryObserveJob: Job? = null
-    /** Tracks the active ledger observation job so it can be cancelled on navigation away. */
     private var ledgerObserveJob: Job? = null
-    /** Tracks the active companions observation job so it can be cancelled on navigation away. */
     private var companionsObserveJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -96,19 +114,53 @@ class MainActivity : Activity() {
         inventoryRepository = InventoryRepository(database)
         stepTrackerService = StepTrackerService(RoomStepBankRepository(database))
 
-        worldMapView = WorldMapScreenView(this)
+        journeyView = ComposeView(this).apply {
+            setContent {
+                val state = journeyScreenState.collectAsState()
+                val actions = remember {
+                    com.wanderingledger.feature.journey.JourneyActions(
+                        onTravel = { segmentId ->
+                            scope.launch {
+                                val result = withContext(Dispatchers.IO) {
+                                    gameRepository.travel(segmentId)
+                                }
+                                when (result) {
+                                    is TravelResult.Arrived -> showTownView(result.townId, result.remainingSteps)
+                                    else -> refreshJourneyScreen(result.toMessage())
+                                }
+                            }
+                        },
+                        onSimulateSteps = {
+                            scope.launch {
+                                withContext(Dispatchers.IO) {
+                                    stepTrackerService.recordSensorDelta(75, StepSource.Simulation)
+                                }
+                                refreshJourneyScreen("Banked 75 simulated steps.")
+                            }
+                        }
+                    )
+                }
+                com.wanderingledger.feature.journey.JourneyScreen(
+                    state = state.value,
+                    actions = actions,
+                    modifier = androidx.compose.ui.Modifier.fillMaxSize()
+                )
+            }
+        }
         townView = TownScreenView(this)
         marketView = MarketScreenView(this)
         inventoryView = InventoryScreenView(this)
         ledgerView = LedgerScreenView(this)
         companionsView = CompanionsScreenView(this)
-        setContentView(worldMapView)
+
+        navigationShell = NavigationShell(this, journeyView)
+        setContentView(navigationShell)
 
         scope.launch {
             withContext(Dispatchers.IO) {
                 gameRepository.initializeNewGame()
             }
-            refreshWorldMap("Welcome to the road.")
+            refreshJourneyScreen("Welcome to the road.")
         }
     }
 
@@ -118,53 +170,37 @@ class MainActivity : Activity() {
         database.close()
     }
 
-    private suspend fun refreshWorldMap(message: String? = null) {
-        marketObserveJob?.cancel()
-        inventoryObserveJob?.cancel()
-        ledgerObserveJob?.cancel()
-        companionsObserveJob?.cancel()
+    private suspend fun refreshJourneyScreen(message: String? = null) {
+        cancelAllObservers()
         val screenState = withContext(Dispatchers.IO) {
             val player = gameRepository.observePlayerState().first()
-            buildWorldMapScreenState(
-                playerState = player,
-                currentTown = gameRepository.observeCurrentTown().first(),
-                routes = gameRepository.observeTravelRoutesFromCurrentTown().first(),
+            currentTownId = player.currentTownId
+            val town = gameRepository.observeCurrentTown().first()
+            buildJourneyScreenState(
+                currentTownName = town.name,
+                currentTownRegion = town.region,
+                currentBiome = town.biome,
+                bankedSteps = player.bankedSteps,
+                lifetimeSteps = player.lifetimeSteps,
+                routeDestinations = gameRepository.observeTravelRoutesFromCurrentTown().first().map { route ->
+                    Triple(
+                        route.segment.segmentId,
+                        route.destination.name,
+                        Pair(route.segment.stepCost, route.segment.narrativeDistance)
+                    )
+                },
                 message = message,
             )
         }
 
-        setContentView(worldMapView)
-        worldMapView.render(
-            screenState,
-            WorldMapActions(
-                onTravel = TravelActionCallback { segmentId ->
-                    scope.launch {
-                        val result = withContext(Dispatchers.IO) {
-                            gameRepository.travel(segmentId)
-                        }
-                        when (result) {
-                            is TravelResult.Arrived -> showTownView(result.townId, result.remainingSteps)
-                            else -> refreshWorldMap(result.toMessage())
-                        }
-                    }
-                },
-                onSimulateSteps = {
-                    scope.launch {
-                        withContext(Dispatchers.IO) {
-                            stepTrackerService.recordSensorDelta(75, StepSource.Simulation)
-                        }
-                        refreshWorldMap("Banked 75 simulated steps.")
-                    }
-                },
-            ),
-        )
+        journeyScreenState.value = screenState
+        navigationShell.replaceContent(journeyView)
+        navigationShell.navigateTo(NavigationShell.ScreenType.JOURNEY, "Journey", null)
     }
 
     private suspend fun showTownView(townId: Long, remainingSteps: Long? = null) {
-        marketObserveJob?.cancel()
-        inventoryObserveJob?.cancel()
-        ledgerObserveJob?.cancel()
-        companionsObserveJob?.cancel()
+        cancelAllObservers()
+        currentTownId = townId
         val screenState = withContext(Dispatchers.IO) {
             val player = gameRepository.observePlayerState().first()
             val town = gameRepository.observeTown(townId).first()
@@ -177,12 +213,14 @@ class MainActivity : Activity() {
             )
         }
 
-        setContentView(townView)
+        navigationShell.replaceContent(townView)
+        navigationShell.navigateTo(NavigationShell.ScreenType.TOWN, screenState.townName, screenState.townRegion)
+
         townView.render(
             screenState,
             TownActions(
                 onNavigateToWorldMap = TownNavigationCallback {
-                    scope.launch { refreshWorldMap() }
+                    scope.launch { refreshJourneyScreen() }
                 },
                 onOpenMarket = TownMarketCallback {
                     scope.launch { showMarketView(townId) }
@@ -201,10 +239,7 @@ class MainActivity : Activity() {
     }
 
     private suspend fun showCompanionsView(townId: Long, message: String? = null) {
-        marketObserveJob?.cancel()
-        inventoryObserveJob?.cancel()
-        ledgerObserveJob?.cancel()
-        companionsObserveJob?.cancel()
+        cancelAllObservers()
 
         val active = withContext(Dispatchers.IO) {
             companionRepository.observeActiveCompanions().first()
@@ -212,15 +247,16 @@ class MainActivity : Activity() {
         val recruitable = withContext(Dispatchers.IO) {
             companionRepository.observeRecruitableCompanionsAtTown(townId).first()
         }
-        
-        setContentView(companionsView)
+
+        navigationShell.replaceContent(companionsView)
+        navigationShell.navigateTo(NavigationShell.ScreenType.COMPANIONS, "Party", null)
+
         companionsView.render(
             buildCompanionsScreenState(active, recruitable, message),
             buildCompanionsActions(townId)
         )
 
         companionsObserveJob = scope.launch {
-            // Combine active and recruitable flows
             kotlinx.coroutines.flow.combine(
                 companionRepository.observeActiveCompanions(),
                 companionRepository.observeRecruitableCompanionsAtTown(townId)
@@ -253,14 +289,15 @@ class MainActivity : Activity() {
         )
 
     private suspend fun showLedgerView(townId: Long) {
-        marketObserveJob?.cancel()
-        inventoryObserveJob?.cancel()
-        ledgerObserveJob?.cancel()
+        cancelAllObservers()
 
         val initialRumors = withContext(Dispatchers.IO) {
             rumorRepository.observeActiveRumors().first()
         }
-        setContentView(ledgerView)
+
+        navigationShell.replaceContent(ledgerView)
+        navigationShell.navigateTo(NavigationShell.ScreenType.LEDGER, "Ledger", null)
+
         ledgerView.render(
             buildLedgerScreenState(initialRumors),
             LedgerActions(
@@ -285,21 +322,20 @@ class MainActivity : Activity() {
     }
 
     private suspend fun showMarketView(townId: Long, message: String? = null) {
-        marketObserveJob?.cancel()
-        inventoryObserveJob?.cancel()
-        ledgerObserveJob?.cancel()
+        cancelAllObservers()
 
-        // Render initial state
         val initialMarketState = withContext(Dispatchers.IO) {
             marketRepository.observeMarket(townId).first()
         }
-        setContentView(marketView)
+
+        navigationShell.replaceContent(marketView)
+        navigationShell.navigateTo(NavigationShell.ScreenType.MARKET, "Market", null)
+
         marketView.render(
             buildMarketScreenState(initialMarketState, message),
             buildMarketActions(townId),
         )
 
-        // Subscribe to reactive updates so prices/inventory changes re-render automatically
         marketObserveJob = scope.launch {
             marketRepository.observeMarket(townId).collect { marketState ->
                 marketView.render(
@@ -311,21 +347,20 @@ class MainActivity : Activity() {
     }
 
     private suspend fun showInventoryView(townId: Long) {
-        marketObserveJob?.cancel()
-        inventoryObserveJob?.cancel()
-        ledgerObserveJob?.cancel()
+        cancelAllObservers()
 
-        // Render initial state
         val initialSummary = withContext(Dispatchers.IO) {
             inventoryRepository.observeInventorySummary(playerId = 1L).first()
         }
-        setContentView(inventoryView)
+
+        navigationShell.replaceContent(inventoryView)
+        navigationShell.navigateTo(NavigationShell.ScreenType.INVENTORY, "Inventory", null)
+
         inventoryView.render(
             buildInventoryScreenState(initialSummary),
             buildInventoryActions(townId),
         )
 
-        // Subscribe to reactive updates so inventory changes re-render automatically
         inventoryObserveJob = scope.launch {
             inventoryRepository.observeInventorySummary(playerId = 1L).collect { summary ->
                 inventoryView.render(
@@ -357,8 +392,6 @@ class MainActivity : Activity() {
                         marketRepository.buyGood(townId, goodId, quantity = 1)
                     }
                     val msg = result.toBuyMessage()
-                    // Re-render with feedback message; the reactive flow will also fire
-                    // but we want the message to appear immediately.
                     if (msg != null) {
                         val marketState = withContext(Dispatchers.IO) {
                             marketRepository.observeMarket(townId).first()
@@ -394,6 +427,13 @@ class MainActivity : Activity() {
                 }
             },
         )
+
+    private fun cancelAllObservers() {
+        marketObserveJob?.cancel()
+        inventoryObserveJob?.cancel()
+        ledgerObserveJob?.cancel()
+        companionsObserveJob?.cancel()
+    }
 
     private fun TravelResult.toMessage(): String =
         when (this) {

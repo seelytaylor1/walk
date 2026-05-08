@@ -5,6 +5,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.graphics.Color
+import com.wanderingledger.core.model.Biome
 
 private val LightColorScheme = lightColorScheme(
     primary = PrimaryLight,
@@ -58,36 +62,101 @@ private val DarkColorScheme = darkColorScheme(
     outline = OutlineDark
 )
 
+data class WanderingLedgerTheme(
+    val biome: Biome,
+    val isDark: Boolean,
+) {
+    val biomeColors: BiomeColors = when (biome) {
+        Biome.Forest -> ForestColors
+        Biome.Mountain -> MountainColors
+        Biome.Swamp -> SwampColors
+        Biome.Coast -> CoastColors
+    }
+
+    val colors: ThemeColors
+        get() = if (isDark) DarkThemeColors else LightThemeColors
+}
+
+data class ThemeColors(
+    val primary: Color,
+    val onPrimary: Color,
+    val secondary: Color,
+    val onSecondary: Color,
+    val background: Color,
+    val onBackground: Color,
+    val surface: Color,
+    val onSurface: Color,
+)
+
+private val LightThemeColors = ThemeColors(
+    primary = PrimaryLight,
+    onPrimary = OnPrimaryLight,
+    secondary = SecondaryLight,
+    onSecondary = OnSecondaryLight,
+    background = BackgroundLight,
+    onBackground = OnBackgroundLight,
+    surface = SurfaceLight,
+    onSurface = OnSurfaceLight,
+)
+
+private val DarkThemeColors = ThemeColors(
+    primary = PrimaryDark,
+    onPrimary = OnPrimaryDark,
+    secondary = SecondaryDark,
+    onSecondary = OnSecondaryDark,
+    background = BackgroundDark,
+    onBackground = OnBackgroundDark,
+    surface = SurfaceDark,
+    onSurface = OnSurfaceDark,
+)
+
+val LocalWanderingLedgerTheme = staticCompositionLocalOf {
+    WanderingLedgerTheme(biome = Biome.Forest, isDark = false)
+}
+
+/**
+ * Access the current WanderingLedger theme.
+ */
+object WLTheme {
+    val current: WanderingLedgerTheme
+        @Composable
+        get() = LocalWanderingLedgerTheme.current
+}
+
 /**
  * Wandering Ledger theme.
- * 
+ *
  * Provides Material Design 3 theming with custom colors, typography, and shapes
  * tailored for a walking and trading game experience.
- * 
+ *
  * @param darkTheme Whether to use dark theme. Defaults to system setting.
+ * @param biome The biome for atmospheric theming. Defaults to Forest.
  * @param dynamicColor Whether to use dynamic color (Android 12+). Currently disabled.
  * @param content The composable content to theme.
  */
 @Composable
 fun WanderingLedgerTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = false, // Dynamic color disabled for v1 to maintain consistent branding
+    biome: Biome = Biome.Forest,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
-        // Dynamic color is disabled for v1 to ensure consistent game aesthetic
-        // dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-        //     val context = LocalContext.current
-        //     if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        // }
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = WanderingLedgerTypography,
-        shapes = WanderingLedgerShapes,
-        content = content
+    val wlTheme = WanderingLedgerTheme(
+        biome = biome,
+        isDark = darkTheme,
     )
+
+    CompositionLocalProvider(LocalWanderingLedgerTheme provides wlTheme) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = WanderingLedgerTypography,
+            shapes = WanderingLedgerShapes,
+            content = content
+        )
+    }
 }

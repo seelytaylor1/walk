@@ -4,6 +4,7 @@ data class Town(
     val townId: Long,
     val name: String,
     val region: String,
+    val biome: Biome,
     val producedGoodIds: List<Long> = emptyList(),
     val demandedGoodIds: List<Long> = emptyList(),
     val reputation: Int = 50,
@@ -112,11 +113,27 @@ enum class CompanionRole {
     Scout,
     Healer,
     Rogue,
-    Mage,
+    Mage;
+
+    val emoji: String
+        get() = when (this) {
+            Fighter -> "⚔️"
+            Scout -> "🔍"
+            Healer -> "💚"
+            Rogue -> "🗡️"
+            Mage -> "✨"
+        }
 }
 
 enum class StepSource {
     Hardware,
     MotionFallback,
     Simulation,
+}
+
+enum class Biome {
+    Forest,
+    Mountain,
+    Swamp,
+    Coast,
 }

@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.wanderingledger.core.designsystem.theme.ContrabandColor
 import com.wanderingledger.core.designsystem.theme.GoldColor
+import com.wanderingledger.core.designsystem.theme.GoldColorDark
 import com.wanderingledger.core.designsystem.theme.InfoLight
 import com.wanderingledger.core.designsystem.theme.StepBankColor
 import com.wanderingledger.core.designsystem.theme.SuccessLight
@@ -108,6 +109,6 @@ fun GoldBadge(
         text = "$gold gold",
         modifier = modifier,
         containerColor = GoldColor.copy(alpha = 0.2f),
-        contentColor = Color(0xFF8B6914) // Darker gold for text
+        contentColor = GoldColorDark
     )
 }

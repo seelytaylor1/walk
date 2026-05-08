@@ -1,12 +1,12 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 2,
-    "identityHash": "ee5c33c06a8461bbfec379804063dc36",
+    "version": 3,
+    "identityHash": "55ab80b631bdc1af712474f64523b411",
     "entities": [
       {
         "tableName": "towns",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`townId` INTEGER NOT NULL, `name` TEXT NOT NULL, `region` TEXT NOT NULL, `biome` TEXT NOT NULL DEFAULT 'Forest', `reputation` INTEGER NOT NULL, `storyState` TEXT NOT NULL, `lastVisitedAt` INTEGER NOT NULL, PRIMARY KEY(`townId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`townId` INTEGER NOT NULL, `name` TEXT NOT NULL, `region` TEXT NOT NULL, `biome` TEXT NOT NULL, `reputation` INTEGER NOT NULL, `storyState` TEXT NOT NULL, `lastVisitedAt` INTEGER NOT NULL, PRIMARY KEY(`townId`))",
         "fields": [
           {
             "fieldPath": "townId",
@@ -30,8 +30,7 @@
             "fieldPath": "biome",
             "columnName": "biome",
             "affinity": "TEXT",
-            "notNull": true,
-            "defaultValue": "'Forest'"
+            "notNull": true
           },
           {
             "fieldPath": "reputation",
@@ -1031,7 +1030,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ee5c33c06a8461bbfec379804063dc36')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '55ab80b631bdc1af712474f64523b411')"
     ]
   }
 }

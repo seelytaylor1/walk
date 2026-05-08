@@ -27,5 +27,7 @@ dependencies {
     api(libs.compose.runtime)
     api(libs.androidx.core.ktx)
 
+    api(project(":core:model"))
+
     debugApi(libs.compose.ui.tooling)
 }

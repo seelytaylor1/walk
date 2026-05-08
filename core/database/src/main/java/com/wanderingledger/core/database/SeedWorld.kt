@@ -11,9 +11,9 @@ object SeedWorld {
         database.withTransaction {
             database.townDao().insertTowns(
                 listOf(
-                    TownEntity(1, "Hearthwick", "Greenway", 50, "visited", now),
-                    TownEntity(2, "Stoneford", "Highpass", 50, "new", 0),
-                    TownEntity(3, "Mistfall", "Lowmarsh", 50, "new", 0),
+                    TownEntity(1, "Hearthwick", "Greenway", "Forest", 50, "visited", now),
+                    TownEntity(2, "Stoneford", "Highpass", "Mountain", 50, "new", 0),
+                    TownEntity(3, "Mistfall", "Lowmarsh", "Swamp", 50, "new", 0),
                 ),
             )
             database.goodDao().insertGoods(

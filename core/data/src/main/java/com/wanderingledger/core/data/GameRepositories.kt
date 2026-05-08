@@ -8,6 +8,7 @@ import com.wanderingledger.core.database.SeedWorld
 import com.wanderingledger.core.database.StepRecordEntity
 import com.wanderingledger.core.database.TownEntity
 import com.wanderingledger.core.database.WanderingLedgerDatabase
+import com.wanderingledger.core.model.Biome
 import com.wanderingledger.core.model.PlayerClass
 import com.wanderingledger.core.model.PlayerState
 import com.wanderingledger.core.model.RoadSegment
@@ -249,6 +250,7 @@ private fun TownEntity.toModel(): Town =
         townId = townId,
         name = name,
         region = region,
+        biome = Biome.valueOf(biome),
         reputation = reputation,
         storyState = storyState,
         lastVisitedAt = lastVisitedAt,

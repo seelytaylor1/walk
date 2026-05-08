@@ -83,5 +83,47 @@ val InfoDark = Color(0xFF64B5F6)
 // Game-specific colors
 val StepBankColor = Color(0xFF558B2F) // Green for steps
 val GoldColor = Color(0xFFFFD700) // Gold for currency
+val GoldColorDark = Color(0xFF8B6914) // Darker gold for text contrast
 val ContrabandColor = Color(0xFFD32F2F) // Red for contraband goods
 val ReputationColor = Color(0xFF1976D2) // Blue for reputation
+
+// Biome color palettes
+data class BiomeColors(
+    val primary: Color,
+    val secondary: Color,
+    val tertiary: Color,
+    val background: Color,
+    val surface: Color,
+)
+
+val ForestColors = BiomeColors(
+    primary = Color(0xFF2E7D32),     // Deep forest green
+    secondary = Color(0xFF795548),    // Earthy brown
+    tertiary = Color(0xFF8BC34A),    // Light green
+    background = Color(0xFFF1F8E9),  // Pale green tint
+    surface = Color(0xFFFFFFFF),
+)
+
+val MountainColors = BiomeColors(
+    primary = Color(0xFF455A64),    // Stone gray-blue
+    secondary = Color(0xFF795548),   // Earthy brown
+    tertiary = Color(0xFF90A4AE),    // Light stone
+    background = Color(0xFFECEFF1), // Pale gray tint
+    surface = Color(0xFFFFFFFF),
+)
+
+val SwampColors = BiomeColors(
+    primary = Color(0xFF00695C),     // Teal swamp green
+    secondary = Color(0xFF5D4037),   // Dark brown
+    tertiary = Color(0xFF4DB6AC),    // Light teal
+    background = Color(0xFFE0F2F1), // Pale teal tint
+    surface = Color(0xFFFFFFFF),
+)
+
+val CoastColors = BiomeColors(
+    primary = Color(0xFF0277BD),     // Ocean blue
+    secondary = Color(0xFFFFB74D),   // Sand/sunset
+    tertiary = Color(0xFF4FC3F7),    // Light blue
+    background = Color(0xFFE1F5FE), // Pale blue tint
+    surface = Color(0xFFFFFFFF),
+)

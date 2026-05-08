@@ -277,6 +277,9 @@ Walking no longer resembles fitness tracking.
 * affordability understandable at glance
 * meter animations feel organic
 
+## Status
+
+**COMPLETE** ✓
 ---
 
 # 7. Route Progress Slice
@@ -309,6 +312,10 @@ Travel progress visually maps to geography.
 
 * progress readable without bars
 * route identity feels handcrafted
+
+## Status
+
+**COMPLETE** ✓
 
 ---
 

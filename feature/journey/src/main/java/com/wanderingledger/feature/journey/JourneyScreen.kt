@@ -20,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -27,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import com.wanderingledger.core.designsystem.component.WLMessageOverlay
 import com.wanderingledger.core.model.Biome
 import com.wanderingledger.core.model.Companion
+import org.json.JSONArray
 
 data class JourneyScreenState(
     val currentTownName: String,
@@ -35,6 +37,8 @@ data class JourneyScreenState(
     val bankedSteps: Long,
     val lifetimeSteps: Long,
     val routes: List<JourneyRouteOption>,
+    val routePathData: List<RoutePathData> = emptyList(),
+    val activeTravelingRouteId: Long? = null,
     val activeCompanions: List<Companion> = emptyList(),
     val weather: WeatherCondition = WeatherCondition.Clear,
     val timeOfDay: TimeOfDay = TimeOfDay.Day,
@@ -71,15 +75,28 @@ fun JourneyScreen(
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            EnvironmentBackground(
-                biome = state.currentBiome,
-                activeCompanions = state.activeCompanions,
-                weather = state.weather,
-                timeOfDay = state.timeOfDay,
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(screenHeight * 0.35f)
-            )
+            ) {
+                EnvironmentBackground(
+                    biome = state.currentBiome,
+                    activeCompanions = state.activeCompanions,
+                    weather = state.weather,
+                    timeOfDay = state.timeOfDay,
+                    modifier = Modifier.fillMaxSize()
+                )
+
+                if (state.routePathData.isNotEmpty()) {
+                    RouteSplineOverlay(
+                        routes = state.routePathData,
+                        biome = state.currentBiome,
+                        currentTravelingRouteId = state.activeTravelingRouteId,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -163,6 +180,44 @@ fun buildJourneyScreenState(
     weather: WeatherCondition = WeatherCondition.Clear,
     timeOfDay: TimeOfDay = TimeOfDay.Day,
     message: String? = null,
+): JourneyScreenState = buildJourneyScreenState(
+    currentTownName = currentTownName,
+    currentTownRegion = currentTownRegion,
+    currentBiome = currentBiome,
+    bankedSteps = bankedSteps,
+    lifetimeSteps = lifetimeSteps,
+    routeDestinations = routeDestinations,
+    routePathData = routeDestinations.map { (segmentId, _, stepCostAndDistance) ->
+        RoutePathData(
+            segmentId = segmentId,
+            destinationName = "",
+            stepCost = stepCostAndDistance.first,
+            narrativeDistance = stepCostAndDistance.second,
+            eventPool = emptyList(),
+            isAffordable = bankedSteps >= stepCostAndDistance.first,
+            progress = 0f,
+        )
+    },
+    activeTravelingRouteId = null,
+    activeCompanions = activeCompanions,
+    weather = weather,
+    timeOfDay = timeOfDay,
+    message = message,
+)
+
+fun buildJourneyScreenState(
+    currentTownName: String,
+    currentTownRegion: String,
+    currentBiome: Biome,
+    bankedSteps: Long,
+    lifetimeSteps: Long,
+    routeDestinations: List<Triple<Long, String, Pair<Int, String>>>,
+    routePathData: List<RoutePathData>,
+    activeTravelingRouteId: Long? = null,
+    activeCompanions: List<Companion> = emptyList(),
+    weather: WeatherCondition = WeatherCondition.Clear,
+    timeOfDay: TimeOfDay = TimeOfDay.Day,
+    message: String? = null,
 ): JourneyScreenState = JourneyScreenState(
     currentTownName = currentTownName,
     currentTownRegion = currentTownRegion,
@@ -178,8 +233,19 @@ fun buildJourneyScreenState(
             bankedSteps = bankedSteps,
         )
     },
+    routePathData = routePathData,
+    activeTravelingRouteId = activeTravelingRouteId,
     activeCompanions = activeCompanions,
     weather = weather,
     timeOfDay = timeOfDay,
     message = message,
 )
+
+fun parseEventPool(eventPoolJson: String): List<String> {
+    return try {
+        val jsonArray = JSONArray(eventPoolJson)
+        (0 until jsonArray.length()).map { jsonArray.getString(it) }
+    } catch (e: Exception) {
+        emptyList()
+    }
+}

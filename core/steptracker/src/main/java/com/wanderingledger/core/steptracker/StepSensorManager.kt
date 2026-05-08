@@ -38,9 +38,6 @@ class FallbackStepSensorManager(
 ) : StepSensorManager {
     override var isHardwareStepCounterAvailable: Boolean = false
 
-    override val preferredSource: StepSource
-        get() = if (isHardwareStepCounterAvailable) StepSource.Hardware else StepSource.MotionFallback
-
     override fun preferredSource(): StepSource =
         if (isHardwareStepCounterAvailable) StepSource.Hardware else StepSource.MotionFallback
 
@@ -50,7 +47,7 @@ class FallbackStepSensorManager(
             TelemetryEvent.StepRecorded(
                 timestamp = now,
                 count = count,
-                source = preferredSource.name,
+                source = preferredSource().name,
                 bankedStepsAfter = 0,
             ),
         )

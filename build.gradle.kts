@@ -1,5 +1,8 @@
-import com.android.build.gradle.BaseExtension
+import com.android.build.api.dsl.ApplicationExtension
+import com.android.build.api.dsl.LibraryExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.gradle.api.tasks.compile.JavaCompile
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.application) apply false
@@ -9,6 +12,7 @@ plugins {
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.ktlint) apply false
     id("jacoco")
+    alias(libs.plugins.kotlin.compose) apply false
 }
 
 // Root-level ktlint check aggregates all subproject ktlintCheck tasks.
@@ -72,7 +76,7 @@ subprojects {
     }
 
     plugins.withId("com.android.application") {
-        extensions.configure<BaseExtension>("android") {
+        extensions.configure<ApplicationExtension>("android") {
             compileOptions {
                 sourceCompatibility = JavaVersion.VERSION_17
                 targetCompatibility = JavaVersion.VERSION_17
@@ -81,7 +85,7 @@ subprojects {
     }
 
     plugins.withId("com.android.library") {
-        extensions.configure<BaseExtension>("android") {
+        extensions.configure<LibraryExtension>("android") {
             compileOptions {
                 sourceCompatibility = JavaVersion.VERSION_17
                 targetCompatibility = JavaVersion.VERSION_17
@@ -89,8 +93,15 @@ subprojects {
         }
     }
 
+    tasks.withType<JavaCompile>().configureEach {
+        sourceCompatibility = JavaVersion.VERSION_17.toString()
+        targetCompatibility = JavaVersion.VERSION_17.toString()
+    }
+
     tasks.withType<KotlinCompile>().configureEach {
-        kotlinOptions.jvmTarget = JavaVersion.VERSION_17.toString()
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_17)
+        }
     }
 
     // Apply JaCoCo coverage to critical modules

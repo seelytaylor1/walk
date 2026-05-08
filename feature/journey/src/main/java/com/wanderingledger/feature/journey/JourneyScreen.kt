@@ -20,7 +20,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -43,11 +42,14 @@ data class JourneyScreenState(
     val weather: WeatherCondition = WeatherCondition.Clear,
     val timeOfDay: TimeOfDay = TimeOfDay.Day,
     val message: String? = null,
+    val campState: CampState? = null,
 )
 
 data class JourneyActions(
     val onTravel: (Long) -> Unit,
-    val onSimulateSteps: () -> Unit
+    val onSimulateSteps: () -> Unit,
+    val onMakeCamp: () -> Unit = {},
+    val onWakeFromCamp: () -> Unit = {},
 )
 
 @Composable
@@ -72,29 +74,36 @@ fun JourneyScreen(
             onDismiss = { currentMessage = null }
         )
 
-        Column(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(screenHeight * 0.35f)
-            ) {
-                EnvironmentBackground(
-                    biome = state.currentBiome,
-                    activeCompanions = state.activeCompanions,
-                    weather = state.weather,
-                    timeOfDay = state.timeOfDay,
-                    modifier = Modifier.fillMaxSize()
+        Column(modifier = Modifier.fillMaxSize()) {
+            if (state.campState != null && state.campState.isCamping) {
+                CampRenderer(
+                    campState = state.campState,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(screenHeight * 0.45f)
                 )
-
-                if (state.routePathData.isNotEmpty()) {
-                    RouteSplineOverlay(
-                        routes = state.routePathData,
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(screenHeight * 0.35f)
+                ) {
+                    EnvironmentBackground(
                         biome = state.currentBiome,
-                        currentTravelingRouteId = state.activeTravelingRouteId,
+                        activeCompanions = state.activeCompanions,
+                        weather = state.weather,
+                        timeOfDay = state.timeOfDay,
                         modifier = Modifier.fillMaxSize()
                     )
+
+                    if (state.routePathData.isNotEmpty()) {
+                        RouteSplineOverlay(
+                            routes = state.routePathData,
+                            biome = state.currentBiome,
+                            currentTravelingRouteId = state.activeTravelingRouteId,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
                 }
             }
 

@@ -1,0 +1,163 @@
+package com.wanderingledger.core.ui
+
+import android.content.Context
+import android.view.View
+import android.widget.LinearLayout
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+
+class NavigationShell(
+    context: Context,
+    private val initialContent: View,
+) : LinearLayout(context) {
+
+    enum class ScreenType {
+        JOURNEY,
+        TOWN,
+        MARKET,
+        INVENTORY,
+        LEDGER,
+        COMPANIONS,
+    }
+
+    private var currentScreen: ScreenType = ScreenType.JOURNEY
+    private var contentView: View = initialContent
+    private lateinit var topBar: TopBar
+    private lateinit var bottomNav: BottomNavBar
+
+    private var screenStack = mutableListOf<ScreenType>()
+
+    init {
+        orientation = VERTICAL
+        setupWindowInsets()
+        setupNavigation(initialContent)
+    }
+
+    private fun setupWindowInsets() {
+        ViewCompat.setOnApplyWindowInsetsListener(this) { view, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.setPadding(0, insets.top, 0, insets.bottom)
+            WindowInsetsCompat.CONSUMED
+        }
+    }
+
+    private fun setupNavigation(initialContent: View) {
+        topBar = TopBar(
+            context = context,
+            title = "Wandering Ledger",
+            subtitle = null,
+            onBack = { navigateBack() },
+        )
+
+        bottomNav = BottomNavBar(
+            context = context,
+            onNavigate = { destination ->
+                handleDestination(destination)
+            },
+        )
+
+        addView(
+            topBar,
+            LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT),
+        )
+
+        contentView.layoutParams = LayoutParams(
+            LayoutParams.MATCH_PARENT,
+            0,
+            1f,
+        )
+        addView(contentView)
+
+        addView(
+            bottomNav,
+            LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT),
+        )
+
+        bottomNav.render(BottomNavBar.Destination.WORLD_MAP)
+        topBar.render("Wandering Ledger", null, showBack = false)
+    }
+
+    private fun handleDestination(destination: BottomNavBar.Destination) {
+        val screenType = when (destination) {
+            BottomNavBar.Destination.WORLD_MAP -> ScreenType.JOURNEY
+            BottomNavBar.Destination.TOWN -> ScreenType.TOWN
+            BottomNavBar.Destination.LEDGER -> ScreenType.LEDGER
+            BottomNavBar.Destination.COMPANIONS -> ScreenType.COMPANIONS
+        }
+        navigateTo(screenType)
+    }
+
+    fun navigateTo(screen: ScreenType, title: String? = null, subtitle: String? = null) {
+        if (currentScreen != screen) {
+            screenStack.add(currentScreen)
+        }
+        currentScreen = screen
+
+        updateNavForScreen(screen, title, subtitle)
+    }
+
+    fun navigateBack() {
+        if (screenStack.isNotEmpty()) {
+            val previous = screenStack.removeLast()
+            currentScreen = previous
+            updateNavForScreen(previous, null, null)
+        }
+    }
+
+    fun replaceContent(newContent: View) {
+        removeViewAt(1)
+        contentView = newContent
+        contentView.layoutParams = LayoutParams(
+            LayoutParams.MATCH_PARENT,
+            0,
+            1f,
+        )
+        addView(contentView, 1)
+    }
+
+    private fun updateNavForScreen(screen: ScreenType, title: String?, subtitle: String?) {
+        val (navDestination, topTitle, topSubtitle, showBack) = when (screen) {
+            ScreenType.JOURNEY -> Quad(
+                BottomNavBar.Destination.WORLD_MAP,
+                title ?: "Journey",
+                null,
+                false,
+            )
+            ScreenType.TOWN -> Quad(
+                BottomNavBar.Destination.TOWN,
+                title ?: "Town",
+                subtitle,
+                false,
+            )
+            ScreenType.MARKET -> Quad(
+                BottomNavBar.Destination.TOWN,
+                title ?: "Market",
+                subtitle,
+                true,
+            )
+            ScreenType.INVENTORY -> Quad(
+                BottomNavBar.Destination.TOWN,
+                title ?: "Inventory",
+                subtitle,
+                true,
+            )
+            ScreenType.LEDGER -> Quad(
+                BottomNavBar.Destination.LEDGER,
+                title ?: "Ledger",
+                subtitle,
+                true,
+            )
+            ScreenType.COMPANIONS -> Quad(
+                BottomNavBar.Destination.COMPANIONS,
+                title ?: "Party",
+                subtitle,
+                true,
+            )
+        }
+
+        bottomNav.setDestination(navDestination)
+        topBar.render(topTitle, topSubtitle, showBack)
+    }
+
+    private data class Quad<A, B, C, D>(val first: A, val second: B, val third: C, val fourth: D)
+}

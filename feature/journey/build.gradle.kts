@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.wanderingledger.core.designsystem"
+    namespace = "com.wanderingledger.feature.journey"
     compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
@@ -21,13 +21,12 @@ dependencies {
     api(platform(libs.compose.bom))
     api(libs.compose.ui)
     api(libs.compose.ui.graphics)
-    api(libs.compose.ui.tooling.preview)
     api(libs.compose.material3)
     api(libs.compose.foundation)
     api(libs.compose.runtime)
-    api(libs.androidx.core.ktx)
 
-    api(project(":core:model"))
-
-    debugApi(libs.compose.ui.tooling)
+    implementation(projects.core.designsystem)
+    implementation(projects.core.model)
+    implementation(projects.core.data)
+    implementation(projects.core.ui)
 }

@@ -10,6 +10,9 @@ import com.wanderingledger.core.model.InventoryItem
 import com.wanderingledger.core.model.PriceHistory
 import com.wanderingledger.core.model.SupplyLevel
 import com.wanderingledger.core.model.TownPrice
+import com.wanderingledger.core.telemetry.MarketAnomalyType
+import com.wanderingledger.core.telemetry.TelemetryEvent
+import com.wanderingledger.core.telemetry.TelemetryService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
@@ -243,6 +246,21 @@ class MarketRepository(
             // Record price history snapshot and trim
             recordPriceSnapshot(townId, goodId, newSellPrice, newBuyPrice, newSupply, now)
 
+            // Telemetry: record transaction
+            TelemetryService.tryRecord(
+                TelemetryEvent.MarketTransaction(
+                    timestamp = now,
+                    townId = townId,
+                    goodId = goodId.toString(),
+                    transactionType = "buy",
+                    quantity = quantity,
+                    pricePerUnit = priceEntity.sellPrice,
+                ),
+            )
+
+            // Telemetry: detect market anomalies
+            detectMarketAnomalies(townId, goodId, good.baseValue, priceEntity.sellPrice, newSellPrice, currentSupply, newSupply)
+
             BuyResult.Success(
                 goodId = goodId,
                 quantity = quantity,
@@ -321,6 +339,21 @@ class MarketRepository(
             // Record price history snapshot and trim
             recordPriceSnapshot(townId, goodId, newSellPrice, newBuyPrice, newSupply, now)
 
+            // Telemetry: record transaction
+            TelemetryService.tryRecord(
+                TelemetryEvent.MarketTransaction(
+                    timestamp = now,
+                    townId = townId,
+                    goodId = goodId.toString(),
+                    transactionType = "sell",
+                    quantity = quantity,
+                    pricePerUnit = priceEntity.buyPrice,
+                ),
+            )
+
+            // Telemetry: detect market anomalies
+            detectMarketAnomalies(townId, goodId, good.baseValue, priceEntity.sellPrice, newSellPrice, currentSupply, newSupply)
+
             SellResult.Success(
                 goodId = goodId,
                 quantity = quantity,
@@ -359,6 +392,80 @@ class MarketRepository(
         val excess = count - PriceHistoryEntity.MAX_HISTORY_PER_GOOD_TOWN
         if (excess > 0) {
             database.priceHistoryDao().trimOldest(townId, goodId, excess)
+        }
+    }
+
+    private fun detectMarketAnomalies(
+        townId: Long,
+        goodId: Long,
+        baseValue: Long,
+        oldPrice: Long,
+        newPrice: Long,
+        oldSupply: SupplyLevel,
+        newSupply: SupplyLevel,
+    ) {
+        val now = System.currentTimeMillis()
+        val priceChangePercent = if (oldPrice > 0) {
+            ((newPrice - oldPrice).toDouble() / oldPrice * 100).toLong()
+        } else 0L
+
+        // Price spike: >50% increase
+        if (priceChangePercent > 50) {
+            TelemetryService.tryRecord(
+                TelemetryEvent.MarketAnomaly(
+                    timestamp = now,
+                    anomalyType = MarketAnomalyType.PriceSpike,
+                    townId = townId,
+                    goodId = goodId.toString(),
+                    value = newPrice,
+                    threshold = (oldPrice * 1.5).toLong(),
+                ),
+            )
+        }
+
+        // Price crash: >30% decrease
+        if (priceChangePercent < -30) {
+            TelemetryService.tryRecord(
+                TelemetryEvent.MarketAnomaly(
+                    timestamp = now,
+                    anomalyType = MarketAnomalyType.PriceCrash,
+                    townId = townId,
+                    goodId = goodId.toString(),
+                    value = newPrice,
+                    threshold = (oldPrice * 0.7).toLong(),
+                ),
+            )
+        }
+
+        // Supply depleted: moved to Scarce
+        if (oldSupply != SupplyLevel.Scarce && newSupply == SupplyLevel.Scarce) {
+            TelemetryService.tryRecord(
+                TelemetryEvent.MarketAnomaly(
+                    timestamp = now,
+                    anomalyType = MarketAnomalyType.SupplyDepleted,
+                    townId = townId,
+                    goodId = goodId.toString(),
+                    value = newSupply.ordinal.toLong(),
+                    threshold = SupplyLevel.Scarce.ordinal.toLong(),
+                ),
+            )
+        }
+
+        // Unusual volume: check if price deviates significantly from base value (>100%)
+        val deviationPercent = if (baseValue > 0) {
+            ((newPrice - baseValue).toDouble() / baseValue * 100).toLong()
+        } else 0L
+        if (deviationPercent > 100) {
+            TelemetryService.tryRecord(
+                TelemetryEvent.MarketAnomaly(
+                    timestamp = now,
+                    anomalyType = MarketAnomalyType.UnusualVolume,
+                    townId = townId,
+                    goodId = goodId.toString(),
+                    value = newPrice,
+                    threshold = baseValue * 2,
+                ),
+            )
         }
     }
 }

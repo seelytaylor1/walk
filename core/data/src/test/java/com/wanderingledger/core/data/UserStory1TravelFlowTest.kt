@@ -26,8 +26,10 @@ import org.robolectric.RobolectricTestRunner
 class UserStory1TravelFlowTest {
 
     private lateinit var database: WanderingLedgerDatabase
-    private lateinit var gameRepository: GameRepository
+    private lateinit var companionRepository: CompanionRepository
+    private lateinit var encounterRepository: EncounterRepository
     private lateinit var rumorRepository: RumorRepository
+    private lateinit var gameRepository: GameRepository
     private lateinit var stepBankRepository: RoomStepBankRepository
     private lateinit var stepTrackerService: StepTrackerService
 
@@ -35,8 +37,10 @@ class UserStory1TravelFlowTest {
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         database = TestDatabaseFactory.createInMemoryDatabase(context)
+        companionRepository = CompanionRepository(database)
+        encounterRepository = EncounterRepository(database, companionRepository)
         rumorRepository = RumorRepository(database)
-        gameRepository = GameRepository(database, rumorRepository)
+        gameRepository = GameRepository(database, rumorRepository, encounterRepository)
         stepBankRepository = RoomStepBankRepository(database)
         stepTrackerService = StepTrackerService(stepBankRepository)
     }

@@ -16,6 +16,7 @@ composeCompiler = "1.5.8"
 junit = "4.13.2"
 androidxTestCore = "1.5.0"
 robolectric = "4.11.1"
+jacoco = "0.8.11"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidxCore" }
@@ -40,6 +41,7 @@ compose-runtime = { group = "androidx.compose.runtime", name = "runtime" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-test-core = { group = "androidx.test", name = "core", version.ref = "androidxTestCore" }
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
+jacoco = { group = "org.jacoco", name = "org.jacoco.core", version.ref = "jacoco" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }

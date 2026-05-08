@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.ktlint) apply false
+    id("jacoco")
 }
 
 // Root-level ktlint check aggregates all subproject ktlintCheck tasks.
@@ -26,8 +27,17 @@ tasks.register("ktlintFormat") {
 
 tasks.register("jacocoTestReport") {
     group = "verification"
-    description = "Placeholder coverage task until coverage gates are wired by T036."
+    description = "Generate aggregated JaCoCo coverage report for critical modules."
+    dependsOn(subprojects.mapNotNull { it.tasks.findByName("jacocoTestReport") })
 }
+
+val coverageModules = setOf(
+    "core:data",
+    "core:steptracker",
+    "core:telemetry",
+    "core:database",
+    "core:model",
+)
 
 subprojects {
     // Apply ktlint to every subproject.
@@ -81,5 +91,16 @@ subprojects {
 
     tasks.withType<KotlinCompile>().configureEach {
         kotlinOptions.jvmTarget = JavaVersion.VERSION_17.toString()
+    }
+
+    // Apply JaCoCo coverage to critical modules
+    if (project.path in coverageModules) {
+        plugins.apply("jacoco")
+        tasks.named("testDebugUnitTest") {
+            extensions.configure<JacocoTaskExtension> {
+                isIncludeNoLocationClasses = true
+                excludes = listOf("jdk.internal.*")
+            }
+        }
     }
 }

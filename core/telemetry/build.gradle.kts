@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.wanderingledger.core.steptracker"
+    namespace = "com.wanderingledger.core.telemetry"
     compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
@@ -14,7 +14,7 @@ android {
 
 dependencies {
     implementation(libs.kotlinx.coroutines.core)
-    implementation(projects.core.telemetry)
+    implementation(projects.core.model)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

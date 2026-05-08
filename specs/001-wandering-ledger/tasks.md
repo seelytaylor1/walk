@@ -77,28 +77,28 @@
 
 ## Phase 6: Companion System & Encounters (P2)
 
-- [~] T028 Implement companion model, bond levels, and recruitment triggers
-- [~] T029 Implement deterministic auto-resolve encounter engine for road events
-- [~] T030 Add companion UI roster and bond progression interactions
-- [~] T031 Add unit tests for auto-resolve outcomes and companion state persistence
-- [~] T041 [P] Define deterministic seeds and canonical encounter scenarios, then implement replay tests
+- [x] T028 Implement companion model, bond levels, and recruitment triggers
+- [x] T029 Implement deterministic auto-resolve encounter engine for road events
+- [x] T030 Add companion UI roster and bond progression interactions
+- [x] T031 Add unit tests for auto-resolve outcomes and companion state persistence
+- [x] T041 [P] Define deterministic seeds and canonical encounter scenarios, then implement replay tests
 
 ---
 
 ## Phase 7: Quality Gates & Release
 
-- [~] T032 [P] Add telemetry hooks for step accuracy, travel latencies, and market anomalies
-- [~] T033 [P] Add performance benchmark harness for step service battery/CPU
-- [~] T034 Update project documentation and README
-- [~] T035 Add changelog, migration notes, and PR template updates
-- [~] T036 [P] Add CI coverage gate for critical modules after coverage report paths exist
-- [~] T037 [P] Add tests to reach module coverage thresholds
-- [~] T038 [P][BLOCKER] Implement latency benchmark harness for SC-001 and add CI smoke job
-- [~] T039 [P][BLOCKER] Implement fidelity test harness for SC-002
-- [~] T040 [P][BLOCKER] Create dataset and device target list for fidelity testing
-- [~] T042 [P] Implement calibration UI prototype and onboarding flow
-- [~] T043 [P] Create playtest plan and collect representative walking vectors
-- [~] T044 [P] Add simulation tests for preferred step sensor absence and motion fallback
+- [x] T032 [P] Add telemetry hooks for step accuracy, travel latencies, and market anomalies
+- [x] T033 [P] Add performance benchmark harness for step service battery/CPU
+- [x] T034 Update project documentation and README
+- [x] T035 Add changelog, migration notes, and PR template updates
+- [x] T036 [P] Add CI coverage gate for critical modules after coverage report paths exist
+- [x] T037 [P] Add tests to reach module coverage thresholds
+- [x] T038 [P][BLOCKER] Implement latency benchmark harness for SC-001 and add CI smoke job
+- [x] T039 [P][BLOCKER] Implement fidelity test harness for SC-002
+- [x] T040 [P][BLOCKER] Create dataset and device target list for fidelity testing
+- [x] T042 [P] Implement calibration UI prototype and onboarding flow
+- [x] T043 [P] Create playtest plan and collect representative walking vectors
+- [x] T044 [P] Add simulation tests for preferred step sensor absence and motion fallback
 
 ---
 

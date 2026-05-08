@@ -8,51 +8,62 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 
-/**
- * Repository for managing companions and their relationships with the player.
- */
+const val MAX_ACTIVE_COMPANIONS = 3
+const val MAX_BOND_LEVEL = 5
+
+sealed class RecruitmentResult {
+    data object Success : RecruitmentResult()
+    data object AlreadyActive : RecruitmentResult()
+    data object PartyFull : RecruitmentResult()
+    data object NotFound : RecruitmentResult()
+}
+
 class CompanionRepository(
     private val database: WanderingLedgerDatabase,
 ) {
-    /**
-     * Observe the list of companions currently in the player's party.
-     */
     fun observeActiveCompanions(): Flow<List<Companion>> =
         database.companionDao().listActiveCompanions().map { entities ->
             entities.map { it.toModel() }
         }
 
-    /**
-     * Observe the list of recruitable companions at a specific town.
-     */
     fun observeRecruitableCompanionsAtTown(townId: Long): Flow<List<Companion>> =
         database.companionDao().listRecruitableCompanions().map { entities ->
             entities.filter { it.locationTownId == townId }.map { it.toModel() }
         }
 
-    /**
-     * Recruit a companion into the party.
-     */
-    suspend fun recruitCompanion(companionId: Long) {
+    suspend fun recruitCompanion(companionId: Long): RecruitmentResult {
         val recruitable = database.companionDao().listRecruitableCompanions().map { entities ->
             entities.find { it.companionId == companionId }
-        }.firstOrNull() ?: return
-        
+        }.firstOrNull() ?: return RecruitmentResult.NotFound
+
+        val activeCount = database.companionDao().listActiveCompanions().firstOrNull()?.size ?: 0
+        if (activeCount >= MAX_ACTIVE_COMPANIONS) {
+            return RecruitmentResult.PartyFull
+        }
+
         database.companionDao().upsertCompanion(
-            recruitable.copy(isActive = true, questState = "recruited")
+            recruitable.copy(isActive = true, questState = "recruited", bondLevel = 0)
         )
+        return RecruitmentResult.Success
     }
 
-    /**
-     * Increase or decrease the bond level with a companion.
-     */
     suspend fun updateBond(companionId: Long, delta: Int) {
         val active = database.companionDao().listActiveCompanions().map { entities ->
             entities.find { it.companionId == companionId }
         }.firstOrNull() ?: return
-        
+
         database.companionDao().upsertCompanion(
-            active.copy(bondLevel = (active.bondLevel + delta).coerceIn(0, 100))
+            active.copy(bondLevel = (active.bondLevel + delta).coerceIn(0, MAX_BOND_LEVEL))
+        )
+    }
+
+    suspend fun dismissCompanion(companionId: Long) {
+        val active = database.companionDao().listActiveCompanions().map { entities ->
+            entities.find { it.companionId == companionId }
+        }.firstOrNull() ?: return
+
+        database.companionDao().upsertCompanion(
+            active.copy(isActive = false, questState = "dismissed")
         )
     }
 }

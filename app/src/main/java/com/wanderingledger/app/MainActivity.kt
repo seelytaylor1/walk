@@ -45,6 +45,7 @@ import com.wanderingledger.feature.ledger.buildLedgerScreenState
 import com.wanderingledger.feature.companions.CompanionsActions
 import com.wanderingledger.feature.companions.CompanionNavigationCallback
 import com.wanderingledger.feature.companions.CompanionRecruitCallback
+import com.wanderingledger.feature.companions.CompanionInteractCallback
 import com.wanderingledger.feature.companions.CompanionsScreenView
 import com.wanderingledger.feature.companions.buildCompanionsScreenState
 import kotlinx.coroutines.CoroutineScope
@@ -63,6 +64,7 @@ class MainActivity : Activity() {
     private lateinit var gameRepository: GameRepository
     private lateinit var rumorRepository: RumorRepository
     private lateinit var companionRepository: CompanionRepository
+    private lateinit var encounterRepository: EncounterRepository
     private lateinit var marketRepository: MarketRepository
     private lateinit var inventoryRepository: InventoryRepository
     private lateinit var stepTrackerService: StepTrackerService
@@ -88,7 +90,8 @@ class MainActivity : Activity() {
         database = WanderingLedgerDatabase.create(this)
         rumorRepository = RumorRepository(database)
         companionRepository = CompanionRepository(database)
-        gameRepository = GameRepository(database, rumorRepository)
+        encounterRepository = EncounterRepository(database, companionRepository)
+        gameRepository = GameRepository(database, rumorRepository, encounterRepository)
         marketRepository = MarketRepository(database)
         inventoryRepository = InventoryRepository(database)
         stepTrackerService = StepTrackerService(RoomStepBankRepository(database))
@@ -240,7 +243,11 @@ class MainActivity : Activity() {
                     withContext(Dispatchers.IO) {
                         companionRepository.recruitCompanion(companionId)
                     }
-                    // The reactive flow will update the UI
+                }
+            },
+            onInteract = CompanionInteractCallback { companionId ->
+                scope.launch {
+                    showTownView(townId)
                 }
             }
         )
@@ -410,10 +417,6 @@ class MainActivity : Activity() {
             is SellResult.Success -> "Sold ${quantity}x for ${goldEarned}g. Gold: ${remainingGold}g."
             is SellResult.NotEnoughInventory -> "You only have ${available} of that good."
             SellResult.GoodNotAvailable -> "That good is not available here."
-            SellResult.InvalidQuantity -> null
-        }
-}
-tAvailable -> "That good is not available here."
             SellResult.InvalidQuantity -> null
         }
 }

@@ -1,5 +1,8 @@
-import com.android.build.gradle.BaseExtension
+import com.android.build.api.dsl.ApplicationExtension
+import com.android.build.api.dsl.LibraryExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.gradle.api.tasks.compile.JavaCompile
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.application) apply false
@@ -8,6 +11,8 @@ plugins {
     alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.ktlint) apply false
+    id("jacoco")
+    alias(libs.plugins.kotlin.compose) apply false
 }
 
 // Root-level ktlint check aggregates all subproject ktlintCheck tasks.
@@ -26,8 +31,17 @@ tasks.register("ktlintFormat") {
 
 tasks.register("jacocoTestReport") {
     group = "verification"
-    description = "Placeholder coverage task until coverage gates are wired by T036."
+    description = "Generate aggregated JaCoCo coverage report for critical modules."
+    dependsOn(subprojects.mapNotNull { it.tasks.findByName("jacocoTestReport") })
 }
+
+val coverageModules = setOf(
+    "core:data",
+    "core:steptracker",
+    "core:telemetry",
+    "core:database",
+    "core:model",
+)
 
 subprojects {
     // Apply ktlint to every subproject.
@@ -62,7 +76,7 @@ subprojects {
     }
 
     plugins.withId("com.android.application") {
-        extensions.configure<BaseExtension>("android") {
+        extensions.configure<ApplicationExtension>("android") {
             compileOptions {
                 sourceCompatibility = JavaVersion.VERSION_17
                 targetCompatibility = JavaVersion.VERSION_17
@@ -71,7 +85,7 @@ subprojects {
     }
 
     plugins.withId("com.android.library") {
-        extensions.configure<BaseExtension>("android") {
+        extensions.configure<LibraryExtension>("android") {
             compileOptions {
                 sourceCompatibility = JavaVersion.VERSION_17
                 targetCompatibility = JavaVersion.VERSION_17
@@ -79,7 +93,25 @@ subprojects {
         }
     }
 
+    tasks.withType<JavaCompile>().configureEach {
+        sourceCompatibility = JavaVersion.VERSION_17.toString()
+        targetCompatibility = JavaVersion.VERSION_17.toString()
+    }
+
     tasks.withType<KotlinCompile>().configureEach {
-        kotlinOptions.jvmTarget = JavaVersion.VERSION_17.toString()
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_17)
+        }
+    }
+
+    // Apply JaCoCo coverage to critical modules
+    if (project.path in coverageModules) {
+        plugins.apply("jacoco")
+        tasks.named("testDebugUnitTest") {
+            extensions.configure<JacocoTaskExtension> {
+                isIncludeNoLocationClasses = true
+                excludes = listOf("jdk.internal.*")
+            }
+        }
     }
 }

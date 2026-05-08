@@ -15,6 +15,8 @@ import com.wanderingledger.core.model.Town
 import com.wanderingledger.core.steptracker.StepBankRepository
 import com.wanderingledger.core.steptracker.StepSource
 import com.wanderingledger.core.steptracker.StepSpendResult
+import com.wanderingledger.core.telemetry.TelemetryEvent
+import com.wanderingledger.core.telemetry.TelemetryService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
@@ -113,15 +115,54 @@ class GameRepository(
     }
 
     suspend fun travel(segmentId: Long): TravelResult {
+        val startedAt = System.currentTimeMillis()
         return database.withTransaction {
             val player = database.playerDao().getPlayerSnapshot()
                 ?: error("Seed world before traveling.")
             val road = database.roadSegmentDao().getRoadSnapshot(segmentId)
-                ?: return@withTransaction TravelResult.RoadNotFound
+                ?: run {
+                    TelemetryService.tryRecord(
+                        TelemetryEvent.TravelCompleted(
+                            timestamp = startedAt,
+                            segmentId = segmentId,
+                            latencyMs = System.currentTimeMillis() - startedAt,
+                            success = false,
+                        ),
+                    )
+                    return@withTransaction TravelResult.RoadNotFound
+                }
             if (road.fromTownId != player.currentTownId) {
+                TelemetryService.tryRecord(
+                    TelemetryEvent.TravelCompleted(
+                        timestamp = startedAt,
+                        segmentId = segmentId,
+                        latencyMs = System.currentTimeMillis() - startedAt,
+                        success = false,
+                    ),
+                )
                 return@withTransaction TravelResult.NotAtRoadOrigin
             }
+
+            TelemetryService.tryRecord(
+                TelemetryEvent.TravelStarted(
+                    timestamp = startedAt,
+                    segmentId = segmentId,
+                    fromTownId = player.currentTownId,
+                    toTownId = road.toTownId,
+                    requiredSteps = road.stepCost,
+                    availableSteps = player.bankedSteps,
+                ),
+            )
+
             if (player.bankedSteps < road.stepCost) {
+                TelemetryService.tryRecord(
+                    TelemetryEvent.TravelCompleted(
+                        timestamp = startedAt,
+                        segmentId = segmentId,
+                        latencyMs = System.currentTimeMillis() - startedAt,
+                        success = false,
+                    ),
+                )
                 return@withTransaction TravelResult.NotEnoughSteps(
                     required = road.stepCost.toLong(),
                     available = player.bankedSteps,
@@ -142,7 +183,7 @@ class GameRepository(
             database.rumorDao().decrementAllActive()
             rumorRepository.generateRumorFromRoadEvent(segmentId)
             rumorRepository.generateRumorForTownVisit(road.toTownId)
-            
+
             // Resolve road encounter if pool exists
             val eventPool = try {
                 road.eventPool.trim('[', ']').split(',').map { it.trim(' ', '"') }.filter { it.isNotEmpty() }
@@ -162,6 +203,15 @@ class GameRepository(
                     meta = "{\"segmentId\":$segmentId,\"toTownId\":${road.toTownId}}",
                     result = "Arrived after spending ${road.stepCost} steps.",
                     createdAt = arrivedAt,
+                ),
+            )
+            val latencyMs = System.currentTimeMillis() - startedAt
+            TelemetryService.tryRecord(
+                TelemetryEvent.TravelCompleted(
+                    timestamp = startedAt,
+                    segmentId = segmentId,
+                    latencyMs = latencyMs,
+                    success = true,
                 ),
             )
             TravelResult.Arrived(road.toTownId, player.bankedSteps - road.stepCost)

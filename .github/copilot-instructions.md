@@ -2,15 +2,16 @@
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
 
--- NOTE: Repository workflow tips to avoid prerequisite/script detection issues --
-- Always run feature work on a feature branch (named like `001-name`); if a precheck
-	script fails because you're on `master`, switch to the intended feature branch first.
-- If the `.specify` prerequisite script does not detect `spec.md` or `plan.md`, verify
-	that those files live under `specs/<feature>/` and that the branch you're on contains them.
-- When updating spec artifacts, commit and push your branch before running the prereq checker
-	so the script can inspect the repository state matching CI expectations.
-- If you need to force-check while on `master`, run the prereq script with `-Verbose` to
-	surface detection logic and paths; consider running it from the feature branch instead.
+## Local Preview
 
-These notes are for contributors to avoid missing-file false negatives from the prereq checker.
+To run a local preview of the app:
+1. Launch Android Studio (via Start menu, desktop shortcut, or find the installation path)
+2. Open the project folder (File > Open > select `D:\Taylor Projects\code\walk`)
+3. Wait for Gradle sync to complete
+4. Select the `app` run configuration
+5. Click `Run` (or press Shift+F10) to launch on an emulator or connected device
+6. If no emulator exists, create one in Android Studio via Tools > AVD Manager > Create Virtual Device
+
+Emulator tip: Use API 26+ (Android 8.0+) for best compatibility. Start the emulator before running the app.
+
 <!-- SPECKIT END -->

@@ -20,6 +20,7 @@ dependencies {
     implementation(projects.core.model)
     implementation(projects.core.database)
     implementation(projects.core.steptracker)
+    implementation(projects.core.telemetry)
     implementation(libs.room.ktx)
     implementation(libs.kotlinx.coroutines.core)
 

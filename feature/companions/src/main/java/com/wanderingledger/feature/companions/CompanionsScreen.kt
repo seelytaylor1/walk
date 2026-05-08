@@ -7,6 +7,8 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import com.wanderingledger.core.model.Companion
 
+const val MAX_BOND_LEVEL_UI = 5
+
 data class CompanionsScreenState(
     val activeCompanions: List<Companion>,
     val recruitableCompanions: List<Companion>,
@@ -21,9 +23,14 @@ fun interface CompanionRecruitCallback {
     fun onRecruit(companionId: Long)
 }
 
+fun interface CompanionInteractCallback {
+    fun onInteract(companionId: Long)
+}
+
 data class CompanionsActions(
     val onNavigateBack: CompanionNavigationCallback,
     val onRecruit: CompanionRecruitCallback,
+    val onInteract: CompanionInteractCallback,
 )
 
 fun buildCompanionsScreenState(
@@ -36,6 +43,11 @@ fun buildCompanionsScreenState(
         recruitableCompanions = recruitable,
         message = message,
     )
+
+private fun formatBondLevel(level: Int): String {
+    val stars = "★".repeat(level) + "☆".repeat(MAX_BOND_LEVEL_UI - level)
+    return "$stars ($level/$MAX_BOND_LEVEL_UI)"
+}
 
 class CompanionsScreenView(context: Context) : LinearLayout(context) {
     private val headerText = TextView(context).apply {
@@ -104,11 +116,21 @@ class CompanionsScreenView(context: Context) : LinearLayout(context) {
             activeContainer.addView(TextView(context).apply { text = "You are traveling alone." })
         } else {
             state.activeCompanions.forEach { companion ->
-                val view = TextView(context).apply {
-                    text = "${companion.name} (${companion.role}) - Bond: ${companion.bondLevel}% - Power: ${companion.combatPower}"
+                val row = LinearLayout(context).apply {
+                    orientation = HORIZONTAL
                     setPadding(0, 8, 0, 8)
                 }
-                activeContainer.addView(view)
+                val info = TextView(context).apply {
+                    text = "${companion.name} (${companion.role})\nBond: ${formatBondLevel(companion.bondLevel)}\nPower: ${companion.combatPower}"
+                    layoutParams = LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+                }
+                val interactBtn = Button(context).apply {
+                    text = "Talk"
+                    setOnClickListener { actions.onInteract.onInteract(companion.companionId) }
+                }
+                row.addView(info)
+                row.addView(interactBtn)
+                activeContainer.addView(row)
             }
         }
 

@@ -14,6 +14,7 @@ android {
 
 dependencies {
     implementation(libs.kotlinx.coroutines.core)
+    implementation(projects.core.telemetry)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

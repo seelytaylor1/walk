@@ -2,13 +2,13 @@
 compileSdk = "34"
 minSdk = "26"
 targetSdk = "34"
-kotlin = "1.9.22"
-ksp = "1.9.22-1.0.17"
-androidGradlePlugin = "8.2.2"
+kotlin = "2.2.10"
+ksp = "2.3.2"
+androidGradlePlugin = "9.2.1"
 ktlint = "12.1.0"
 androidxCore = "1.12.0"
 androidxActivity = "1.8.2"
-androidxRoom = "2.6.1"
+androidxRoom = "2.8.4"
 androidxDataStore = "1.0.0"
 kotlinxCoroutines = "1.7.3"
 composeBom = "2024.01.00"
@@ -16,6 +16,7 @@ composeCompiler = "1.5.8"
 junit = "4.13.2"
 androidxTestCore = "1.5.0"
 robolectric = "4.11.1"
+jacoco = "0.8.11"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidxCore" }
@@ -40,6 +41,7 @@ compose-runtime = { group = "androidx.compose.runtime", name = "runtime" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-test-core = { group = "androidx.test", name = "core", version.ref = "androidxTestCore" }
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
+jacoco = { group = "org.jacoco", name = "org.jacoco.core", version.ref = "jacoco" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
@@ -48,3 +50,4 @@ kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

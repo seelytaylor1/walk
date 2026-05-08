@@ -39,12 +39,23 @@ object SeedWorld {
             )
             database.townPriceDao().upsertPrices(
                 listOf(
-                    TownPriceEntity(townId = 1, goodId = 1, buyPrice = 5, sellPrice = 8, supplyLevel = "Abundant", lastUpdatedAt = now),
-                    TownPriceEntity(townId = 1, goodId = 2, buyPrice = 22, sellPrice = 30, supplyLevel = "Scarce", lastUpdatedAt = now),
-                    TownPriceEntity(townId = 2, goodId = 2, buyPrice = 12, sellPrice = 18, supplyLevel = "Abundant", lastUpdatedAt = now),
-                    TownPriceEntity(townId = 2, goodId = 3, buyPrice = 35, sellPrice = 44, supplyLevel = "Scarce", lastUpdatedAt = now),
-                    TownPriceEntity(townId = 3, goodId = 3, buyPrice = 20, sellPrice = 30, supplyLevel = "Abundant", lastUpdatedAt = now),
-                    TownPriceEntity(townId = 3, goodId = 1, buyPrice = 12, sellPrice = 16, supplyLevel = "Scarce", lastUpdatedAt = now),
+                    // Hearthwick (1)
+                    // Apples (1), Base 8, Abundant: Sell=5, Buy=3
+                    TownPriceEntity(townId = 1, goodId = 1, buyPrice = 3, sellPrice = 5, supplyLevel = "Abundant", lastUpdatedAt = now),
+                    // Iron (2), Base 18, Scarce: Sell=27, Buy=17
+                    TownPriceEntity(townId = 1, goodId = 2, buyPrice = 17, sellPrice = 27, supplyLevel = "Scarce", lastUpdatedAt = now),
+                    
+                    // Stoneford (2)
+                    // Iron (2), Base 18, Abundant: Sell=12, Buy=7
+                    TownPriceEntity(townId = 2, goodId = 2, buyPrice = 7, sellPrice = 12, supplyLevel = "Abundant", lastUpdatedAt = now),
+                    // Silk (3), Base 30, Scarce: Sell=45, Buy=29
+                    TownPriceEntity(townId = 2, goodId = 3, buyPrice = 29, sellPrice = 45, supplyLevel = "Scarce", lastUpdatedAt = now),
+                    
+                    // Mistfall (3)
+                    // Silk (3), Base 30, Abundant: Sell=21, Buy=13
+                    TownPriceEntity(townId = 3, goodId = 3, buyPrice = 13, sellPrice = 21, supplyLevel = "Abundant", lastUpdatedAt = now),
+                    // Apples (1), Base 8, Scarce: Sell=12, Buy=7
+                    TownPriceEntity(townId = 3, goodId = 1, buyPrice = 7, sellPrice = 12, supplyLevel = "Scarce", lastUpdatedAt = now),
                 ),
             )
             database.roadSegmentDao().insertRoads(

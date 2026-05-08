@@ -2,6 +2,7 @@ package com.wanderingledger.core.data
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import com.wanderingledger.core.database.WanderingLedgerDatabase
 import com.wanderingledger.core.testing.TestDatabaseFactory
 import com.wanderingledger.core.steptracker.StepSource
 import com.wanderingledger.core.steptracker.StepTrackerService
@@ -20,35 +21,33 @@ import org.robolectric.RobolectricTestRunner
  *
  * Independent Test: Simulate step input, spend steps to traverse one road segment,
  * and verify arrival opens the destination town state.
- *
- * Spec acceptance scenarios covered:
- * 1. Given the player has at least the segment cost in banked steps, when they choose to travel,
- *    then their step bank decreases by the segment cost and their location updates to the destination.
- * 2. Given the player has fewer banked steps than the segment cost, when they view the travel option,
- *    then travel is disabled and the result explains the shortfall.
  */
 @RunWith(RobolectricTestRunner::class)
 class UserStory1TravelFlowTest {
 
+    private lateinit var database: WanderingLedgerDatabase
     private lateinit var gameRepository: GameRepository
+    private lateinit var rumorRepository: RumorRepository
     private lateinit var stepBankRepository: RoomStepBankRepository
     private lateinit var stepTrackerService: StepTrackerService
 
     @Before
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        val database = TestDatabaseFactory.createInMemoryDatabase(context)
-        gameRepository = GameRepository(database)
+        database = TestDatabaseFactory.createInMemoryDatabase(context)
+        rumorRepository = RumorRepository(database)
+        gameRepository = GameRepository(database, rumorRepository)
         stepBankRepository = RoomStepBankRepository(database)
         stepTrackerService = StepTrackerService(stepBankRepository)
     }
 
+    @After
+    fun tearDown() {
+        database.close()
+    }
+
     /**
      * US1 Scenario 1: Simulate steps → travel → verify arrival.
-     *
-     * Seeds the world, simulates step input via StepTrackerService, calls travel(),
-     * and verifies PlayerState.currentTownId updates, step bank decreases by road cost,
-     * and TravelResult.Arrived is returned with correct values.
      */
     @Test
     fun simulatedStepsEnableTravelAndArrivalUpdatesPlayerState() = runTest {
@@ -90,9 +89,6 @@ class UserStory1TravelFlowTest {
 
     /**
      * US1 Scenario 2: Insufficient steps block travel without mutating player state.
-     *
-     * Verifies that when the player has fewer banked steps than the segment cost,
-     * travel returns NotEnoughSteps with the correct shortfall and player state is unchanged.
      */
     @Test
     fun insufficientSimulatedStepsBlockTravelAndPreservePlayerState() = runTest {

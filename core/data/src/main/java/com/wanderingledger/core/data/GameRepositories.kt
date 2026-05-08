@@ -73,6 +73,8 @@ class RoomStepBankRepository(
 
 class GameRepository(
     private val database: WanderingLedgerDatabase,
+    private val rumorRepository: RumorRepository,
+    private val encounterRepository: EncounterRepository,
 ) {
     fun observePlayerState(): Flow<PlayerState> =
         database.playerDao().getPlayer().filterNotNull().map { it.toModel() }
@@ -138,6 +140,22 @@ class GameRepository(
                 database.townDao().updateTown(destination.copy(storyState = "visited", lastVisitedAt = arrivedAt))
             }
             database.rumorDao().decrementAllActive()
+            rumorRepository.generateRumorFromRoadEvent(segmentId)
+            rumorRepository.generateRumorForTownVisit(road.toTownId)
+            
+            // Resolve road encounter if pool exists
+            val eventPool = try {
+                road.eventPool.trim('[', ']').split(',').map { it.trim(' ', '"') }.filter { it.isNotEmpty() }
+            } catch (e: Exception) {
+                emptyList()
+            }
+            if (eventPool.isNotEmpty()) {
+                val encounterId = eventPool.random()
+                // Use a seed derived from time and road for determinism within this run
+                val seed = arrivedAt + segmentId
+                encounterRepository.resolveRoadEncounter(seed, encounterId)
+            }
+
             database.eventLogDao().insertEvent(
                 EventLogEntity(
                     type = "arrival",

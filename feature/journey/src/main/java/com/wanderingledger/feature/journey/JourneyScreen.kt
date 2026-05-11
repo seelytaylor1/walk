@@ -136,6 +136,27 @@ fun JourneyScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
 
+                Spacer(modifier = Modifier.height(16.dp))
+
+                if (state.campState?.isCamping == true) {
+                    androidx.compose.material3.Button(
+                        onClick = actions.onWakeFromCamp,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.secondary
+                        )
+                    ) {
+                        Text("Break Camp")
+                    }
+                } else {
+                    androidx.compose.material3.OutlinedButton(
+                        onClick = actions.onMakeCamp,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Make Camp")
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Text(
@@ -189,6 +210,7 @@ fun buildJourneyScreenState(
     weather: WeatherCondition = WeatherCondition.Clear,
     timeOfDay: TimeOfDay = TimeOfDay.Day,
     message: String? = null,
+    campState: CampState? = null,
 ): JourneyScreenState = buildJourneyScreenState(
     currentTownName = currentTownName,
     currentTownRegion = currentTownRegion,
@@ -212,6 +234,7 @@ fun buildJourneyScreenState(
     weather = weather,
     timeOfDay = timeOfDay,
     message = message,
+    campState = campState,
 )
 
 fun buildJourneyScreenState(
@@ -227,6 +250,7 @@ fun buildJourneyScreenState(
     weather: WeatherCondition = WeatherCondition.Clear,
     timeOfDay: TimeOfDay = TimeOfDay.Day,
     message: String? = null,
+    campState: CampState? = null,
 ): JourneyScreenState = JourneyScreenState(
     currentTownName = currentTownName,
     currentTownRegion = currentTownRegion,
@@ -248,6 +272,7 @@ fun buildJourneyScreenState(
     weather = weather,
     timeOfDay = timeOfDay,
     message = message,
+    campState = campState,
 )
 
 fun parseEventPool(eventPoolJson: String): List<String> {

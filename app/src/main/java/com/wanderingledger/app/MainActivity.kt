@@ -77,6 +77,8 @@ class MainActivity : Activity() {
     private lateinit var stepTrackerService: StepTrackerService
 
     private lateinit var journeyView: ComposeView
+    private lateinit var worldMapView: ComposeView
+    private lateinit var townArrivalView: ComposeView
     private lateinit var townView: TownScreenView
     private lateinit var marketView: MarketScreenView
     private lateinit var inventoryView: InventoryScreenView
@@ -85,6 +87,8 @@ class MainActivity : Activity() {
     private lateinit var navigationShell: NavigationShell
 
     private var currentTownId: Long = 1L
+    private var lastTravelTime: Long = System.currentTimeMillis()
+    private var currentCampState: com.wanderingledger.feature.journey.CampState? = null
 
     private val journeyScreenState = MutableStateFlow(
         com.wanderingledger.feature.journey.JourneyScreenState(
@@ -95,6 +99,25 @@ class MainActivity : Activity() {
             lifetimeSteps = 0,
             routes = emptyList(),
             message = null
+        )
+    )
+
+    private val worldMapScreenState = MutableStateFlow(
+        com.wanderingledger.feature.worldmap.WorldMapScreenState(
+            currentTownName = "",
+            currentTownRegion = "",
+            bankedSteps = 0,
+            lifetimeSteps = 0,
+            routes = emptyList(),
+            message = null
+        )
+    )
+
+    private val townArrivalScreenState = MutableStateFlow(
+        com.wanderingledger.feature.town.TownArrivalScreenState(
+            townName = "",
+            townRegion = "",
+            biome = com.wanderingledger.core.model.Biome.Forest
         )
     )
 
@@ -125,7 +148,10 @@ class MainActivity : Activity() {
                                     gameRepository.travel(segmentId)
                                 }
                                 when (result) {
-                                    is TravelResult.Arrived -> showTownView(result.townId, result.remainingSteps)
+                                    is TravelResult.Arrived -> {
+                                        lastTravelTime = System.currentTimeMillis()
+                                        showTownArrival(result.townId, result.remainingSteps)
+                                    }
                                     else -> refreshJourneyScreen(result.toMessage())
                                 }
                             }
@@ -135,7 +161,32 @@ class MainActivity : Activity() {
                                 withContext(Dispatchers.IO) {
                                     stepTrackerService.recordSensorDelta(75, StepSource.Simulation)
                                 }
+                                currentCampState = currentCampState?.let {
+                                    it.copy(stepsEarnedWhileCamping = it.stepsEarnedWhileCamping + 75)
+                                }
                                 refreshJourneyScreen("Banked 75 simulated steps.")
+                            }
+                        },
+                        onMakeCamp = {
+                            scope.launch {
+                                val companions = withContext(Dispatchers.IO) {
+                                    companionRepository.observeActiveCompanions().first()
+                                }
+                                val town = withContext(Dispatchers.IO) {
+                                    gameRepository.observeCurrentTown().first()
+                                }
+                                currentCampState = com.wanderingledger.feature.journey.CampState.camping(
+                                    biome = town.biome,
+                                    companions = companions
+                                )
+                                refreshJourneyScreen("Setting up camp...")
+                            }
+                        },
+                        onWakeFromCamp = {
+                            scope.launch {
+                                currentCampState = null
+                                lastTravelTime = System.currentTimeMillis()
+                                refreshJourneyScreen("Breaking camp...")
                             }
                         }
                     )
@@ -147,20 +198,75 @@ class MainActivity : Activity() {
                 )
             }
         }
+
+        worldMapView = ComposeView(this).apply {
+            setContent {
+                val state = worldMapScreenState.collectAsState()
+                val actions = remember {
+                    com.wanderingledger.feature.worldmap.WorldMapActions(
+                        onTravel = { segmentId ->
+                            scope.launch {
+                                val result = withContext(Dispatchers.IO) {
+                                    gameRepository.travel(segmentId)
+                                }
+                                when (result) {
+                                    is TravelResult.Arrived -> {
+                                        lastTravelTime = System.currentTimeMillis()
+                                        showTownArrival(result.townId, result.remainingSteps)
+                                    }
+                                    else -> {
+                                        // If we started traveling, switch to Journey screen
+                                        refreshJourneyScreen(result.toMessage())
+                                    }
+                                }
+                            }
+                        },
+                        onSimulateSteps = {
+                            scope.launch {
+                                withContext(Dispatchers.IO) {
+                                    stepTrackerService.recordSensorDelta(75, StepSource.Simulation)
+                                }
+                                refreshWorldMapScreen("Banked 75 simulated steps.")
+                            }
+                        }
+                    )
+                }
+                com.wanderingledger.feature.worldmap.WorldMapScreen(
+                    state = state.value,
+                    actions = actions,
+                    modifier = androidx.compose.ui.Modifier.fillMaxSize()
+                )
+            }
+        }
+
+        townArrivalView = ComposeView(this).apply {
+            setContent {
+                val state = townArrivalScreenState.collectAsState()
+                com.wanderingledger.feature.town.TownArrivalScreen(
+                    state = state.value,
+                    onFinish = {
+                        scope.launch {
+                            showTownView(currentTownId)
+                        }
+                    }
+                )
+            }
+        }
+
         townView = TownScreenView(this)
         marketView = MarketScreenView(this)
         inventoryView = InventoryScreenView(this)
         ledgerView = LedgerScreenView(this)
         companionsView = CompanionsScreenView(this)
 
-        navigationShell = NavigationShell(this, journeyView)
+        navigationShell = NavigationShell(this, worldMapView)
         setContentView(navigationShell)
 
         scope.launch {
             withContext(Dispatchers.IO) {
                 gameRepository.initializeNewGame()
             }
-            refreshJourneyScreen("Welcome to the road.")
+            refreshWorldMapScreen("Welcome to the road.")
         }
     }
 
@@ -170,12 +276,52 @@ class MainActivity : Activity() {
         database.close()
     }
 
+    private suspend fun refreshWorldMapScreen(message: String? = null) {
+        cancelAllObservers()
+        val screenState = withContext(Dispatchers.IO) {
+            val player = gameRepository.observePlayerState().first()
+            currentTownId = player.currentTownId
+            val town = gameRepository.observeCurrentTown().first()
+            val allTowns = database.townDao().listAllTowns().first().map { it.toModel() }
+            val allRoads = database.roadSegmentDao().listAllRoads().first().map { it.toModel() }
+            val availableRoutes = gameRepository.observeTravelRoutesFromCurrentTown().first()
+
+            com.wanderingledger.feature.worldmap.buildWorldMapScreenState(
+                playerState = player,
+                currentTown = town,
+                allTowns = allTowns,
+                availableRoutes = availableRoutes,
+                allRoads = allRoads,
+                message = message,
+            )
+        }
+
+        worldMapScreenState.value = screenState
+        navigationShell.replaceContent(worldMapView)
+        navigationShell.navigateTo(NavigationShell.ScreenType.WORLD_MAP, "World Map", null)
+    }
+
     private suspend fun refreshJourneyScreen(message: String? = null) {
         cancelAllObservers()
         val screenState = withContext(Dispatchers.IO) {
             val player = gameRepository.observePlayerState().first()
             currentTownId = player.currentTownId
             val town = gameRepository.observeCurrentTown().first()
+            val activeCompanions = companionRepository.observeActiveCompanions().first()
+
+            if (currentCampState == null && com.wanderingledger.feature.journey.CampStateDetector.shouldEnterCamp(
+                    lastTravelTime = lastTravelTime,
+                    currentTime = System.currentTimeMillis(),
+                    bankedSteps = player.bankedSteps
+                )) {
+                currentCampState = com.wanderingledger.feature.journey.CampState.camping(
+                    biome = town.biome,
+                    companions = activeCompanions
+                )
+            } else {
+                currentCampState = currentCampState?.withUpdatedDuration(System.currentTimeMillis())
+            }
+
             buildJourneyScreenState(
                 currentTownName = town.name,
                 currentTownRegion = town.region,
@@ -190,12 +336,29 @@ class MainActivity : Activity() {
                     )
                 },
                 message = message,
+                campState = currentCampState,
+                activeCompanions = activeCompanions,
             )
         }
 
         journeyScreenState.value = screenState
         navigationShell.replaceContent(journeyView)
         navigationShell.navigateTo(NavigationShell.ScreenType.JOURNEY, "Journey", null)
+    }
+
+    private suspend fun showTownArrival(townId: Long, remainingSteps: Long? = null) {
+        cancelAllObservers()
+        currentTownId = townId
+        val town = withContext(Dispatchers.IO) {
+            gameRepository.observeTown(townId).first() ?: error("Town $townId not found.")
+        }
+        townArrivalScreenState.value = com.wanderingledger.feature.town.TownArrivalScreenState(
+            townName = town.name,
+            townRegion = town.region,
+            biome = town.biome
+        )
+        navigationShell.replaceContent(townArrivalView)
+        navigationShell.navigateTo(NavigationShell.ScreenType.TOWN_ARRIVAL, "Arrival", null)
     }
 
     private suspend fun showTownView(townId: Long, remainingSteps: Long? = null) {
@@ -220,7 +383,7 @@ class MainActivity : Activity() {
             screenState,
             TownActions(
                 onNavigateToWorldMap = TownNavigationCallback {
-                    scope.launch { refreshJourneyScreen() }
+                    scope.launch { refreshWorldMapScreen() }
                 },
                 onOpenMarket = TownMarketCallback {
                     scope.launch { showMarketView(townId) }

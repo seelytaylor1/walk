@@ -350,6 +350,10 @@ Idle app state becomes emotionally rewarding.
 * users enjoy opening app while idle
 * camp scenes feel cozy and alive
 
+## Status
+
+**COMPLETE** ✓
+
 ---
 
 # 9. World Map Exploration Slice
@@ -384,6 +388,10 @@ World exploration becomes aspirational.
 * map never resembles GPS UI
 * exploration feels inviting
 
+## Status
+
+**COMPLETE** ✓
+
 ---
 
 # 10. Town Arrival Slice
@@ -415,6 +423,10 @@ Travel has emotional payoff.
 
 * arrivals feel rewarding
 * transitions feel cinematic but skippable
+
+## Status
+
+**COMPLETE** ✓
 
 ---
 
@@ -448,6 +460,10 @@ Town interaction becomes spatial and tactile.
 * town navigation readable one-handed
 * districts visually distinct
 
+## Status
+
+**COMPLETE** ✓
+
 ---
 
 # 12. Market Presentation Slice
@@ -480,6 +496,10 @@ Trading feels physical instead of spreadsheet-driven.
 * goods readable at glance
 * scarcity emotionally legible
 
+## Status
+
+**COMPLETE** ✓
+
 ---
 
 # 13. Trade Opportunity Slice
@@ -511,6 +531,10 @@ Players quickly understand profitable trades.
 
 * profitable routes discoverable visually
 * emphasis feels atmospheric rather than gamified
+
+## Status
+
+**COMPLETE** ✓
 
 ---
 

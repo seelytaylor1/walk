@@ -13,14 +13,16 @@ class NavigationShell(
 
     enum class ScreenType {
         JOURNEY,
+        WORLD_MAP,
         TOWN,
+        TOWN_ARRIVAL,
         MARKET,
         INVENTORY,
         LEDGER,
         COMPANIONS,
     }
 
-    private var currentScreen: ScreenType = ScreenType.JOURNEY
+    private var currentScreen: ScreenType = ScreenType.WORLD_MAP
     private var contentView: View = initialContent
     private lateinit var topBar: TopBar
     private lateinit var bottomNav: BottomNavBar
@@ -79,7 +81,7 @@ class NavigationShell(
 
     private fun handleDestination(destination: BottomNavBar.Destination) {
         val screenType = when (destination) {
-            BottomNavBar.Destination.WORLD_MAP -> ScreenType.JOURNEY
+            BottomNavBar.Destination.WORLD_MAP -> ScreenType.WORLD_MAP
             BottomNavBar.Destination.TOWN -> ScreenType.TOWN
             BottomNavBar.Destination.LEDGER -> ScreenType.LEDGER
             BottomNavBar.Destination.COMPANIONS -> ScreenType.COMPANIONS
@@ -117,9 +119,21 @@ class NavigationShell(
 
     private fun updateNavForScreen(screen: ScreenType, title: String?, subtitle: String?) {
         val (navDestination, topTitle, topSubtitle, showBack) = when (screen) {
+            ScreenType.WORLD_MAP -> Quad(
+                BottomNavBar.Destination.WORLD_MAP,
+                title ?: "World Map",
+                null,
+                false,
+            )
             ScreenType.JOURNEY -> Quad(
                 BottomNavBar.Destination.WORLD_MAP,
                 title ?: "Journey",
+                null,
+                true,
+            )
+            ScreenType.TOWN_ARRIVAL -> Quad(
+                BottomNavBar.Destination.TOWN,
+                title ?: "Arrival",
                 null,
                 false,
             )

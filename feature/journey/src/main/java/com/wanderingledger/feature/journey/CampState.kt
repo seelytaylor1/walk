@@ -21,6 +21,7 @@ enum class CampActivity {
 data class CampState(
     val journeyMode: JourneyMode = JourneyMode.ActiveTravel,
     val campsiteBiome: Biome = Biome.Forest,
+    val startTime: Long = System.currentTimeMillis(),
     val durationMinutes: Int = 0,
     val stepsEarnedWhileCamping: Long = 0,
     val currentCompanions: List<CoreCompanion> = emptyList(),
@@ -30,6 +31,11 @@ data class CampState(
 ) {
     val isCamping: Boolean
         get() = journeyMode == JourneyMode.Camping
+
+    fun withUpdatedDuration(currentTime: Long): CampState {
+        val diffMs = currentTime - startTime
+        return copy(durationMinutes = (diffMs / (60 * 1000)).toInt())
+    }
 
     companion object {
         fun camping(
@@ -47,6 +53,7 @@ data class CampState(
             return CampState(
                 journeyMode = JourneyMode.Camping,
                 campsiteBiome = biome,
+                startTime = System.currentTimeMillis(),
                 currentCompanions = companions,
                 campActivities = activities,
                 campfireLit = campfireLit,

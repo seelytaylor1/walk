@@ -146,12 +146,29 @@
       "exitCode": 0,
       "completionDetected": false,
       "errors": []
+    },
+    {
+      "iteration": 12,
+      "startedAt": "2026-05-12T04:08:24.793Z",
+      "endedAt": "2026-05-12T04:24:16.269Z",
+      "durationMs": 951305,
+      "agent": "opencode",
+      "model": "",
+      "toolsUsed": {},
+      "filesModified": [],
+      "exitCode": 0,
+      "completionDetected": false,
+      "errors": [
+        "+ CategoryInfo          : ParserError: (:) [], ParentContainsErrorRecordException"
+      ]
     }
   ],
-  "totalDurationMs": 10516338,
+  "totalDurationMs": 11467643,
   "struggleIndicators": {
-    "repeatedErrors": {},
-    "noProgressIterations": 11,
+    "repeatedErrors": {
+      "+ CategoryInfo          : ParserError: (:) [], ParentContainsErrorRecordException": 1
+    },
+    "noProgressIterations": 12,
     "shortIterations": 0
   }
 }

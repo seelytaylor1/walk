@@ -64,6 +64,8 @@ fun CampRenderer(
         CampAmbientOverlay(
             timeOfDay = TimeOfDay.Night,
             campfireIntensity = campfireIntensity,
+            biome = campState.campsiteBiome,
+            reducedMotion = reducedMotion,
             modifier = Modifier.fillMaxSize()
         )
 
@@ -86,6 +88,8 @@ fun CampRenderer(
 
             CampfireEffect(
                 intensity = campfireIntensity,
+                biome = campState.campsiteBiome,
+                reducedMotion = reducedMotion,
                 modifier = Modifier
             )
 
@@ -252,7 +256,8 @@ fun CampTransition(
     fromJourney: Boolean,
     progress: Float,
     campState: CampState,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    reducedMotion: Boolean = false
 ) {
     val animatedProgress by animateFloatAsState(
         targetValue = progress,
@@ -265,11 +270,13 @@ fun CampTransition(
             EnvironmentBackground(
                 biome = campState.campsiteBiome,
                 activeCompanions = campState.currentCompanions,
+                reducedMotion = reducedMotion,
                 modifier = Modifier.fillMaxSize()
             )
         } else {
             CampRenderer(
                 campState = campState,
+                reducedMotion = reducedMotion,
                 modifier = Modifier.fillMaxSize()
             )
         }

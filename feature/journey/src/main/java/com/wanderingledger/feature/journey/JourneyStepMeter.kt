@@ -22,6 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.wanderingledger.core.designsystem.theme.WLTheme
@@ -32,15 +34,13 @@ import androidx.compose.animation.core.Spring
 fun JourneyStepMeter(
     bankedSteps: Long,
     maxSteps: Long,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    reducedMotion: Boolean = false,
 ) {
     val progress = (bankedSteps.toFloat() / maxSteps.toFloat()).coerceIn(0f, 1f)
     val animatedProgress by animateFloatAsState(
         targetValue = progress,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
-        ),
+        animationSpec = stepSpringAnimationSpec(reducedMotion),
         label = "step_progress"
     )
 
@@ -50,6 +50,9 @@ fun JourneyStepMeter(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
+            .semantics {
+                contentDescription = "$bankedSteps steps banked. Maximum: $maxSteps steps."
+            }
     ) {
         Text(
             text = "Travel Energy",
@@ -96,6 +99,7 @@ fun JourneyStepMeter(
 
             StepPulseWrapper(
                 bankedSteps = bankedSteps,
+                reducedMotion = reducedMotion,
                 modifier = Modifier
             ) {
                 Text(

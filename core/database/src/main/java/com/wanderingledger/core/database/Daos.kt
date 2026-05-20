@@ -115,6 +115,9 @@ interface CompanionDao {
 
 @Dao
 interface RoadSegmentDao {
+    @Query("SELECT * FROM road_segments ORDER BY segmentId")
+    fun listRoads(): Flow<List<RoadSegmentEntity>>
+
     @Query("SELECT * FROM road_segments WHERE fromTownId = :townId ORDER BY segmentId")
     fun listRoadsFrom(townId: Long): Flow<List<RoadSegmentEntity>>
 

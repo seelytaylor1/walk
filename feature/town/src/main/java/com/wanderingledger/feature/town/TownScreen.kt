@@ -33,8 +33,16 @@ fun interface TownLedgerCallback {
     fun onOpenLedger()
 }
 
+fun interface TownChronicleCallback {
+    fun onOpenChronicle()
+}
+
 fun interface TownCompanionsCallback {
     fun onOpenCompanions()
+}
+
+fun interface TownSettingsCallback {
+    fun onOpenSettings()
 }
 
 data class TownActions(
@@ -42,7 +50,9 @@ data class TownActions(
     val onOpenMarket: TownMarketCallback,
     val onOpenInventory: TownInventoryCallback,
     val onOpenLedger: TownLedgerCallback,
+    val onOpenChronicle: TownChronicleCallback,
     val onOpenCompanions: TownCompanionsCallback,
+    val onOpenSettings: TownSettingsCallback,
 )
 
 fun buildTownScreenState(
@@ -86,8 +96,14 @@ class TownScreenView(context: Context) : LinearLayout(context) {
     private val ledgerButton = Button(context).apply {
         text = "Open Ledger"
     }
+    private val chronicleButton = Button(context).apply {
+        text = "Open Chronicle"
+    }
     private val companionsButton = Button(context).apply {
         text = "Companions"
+    }
+    private val settingsButton = Button(context).apply {
+        text = "Settings"
     }
 
     init {
@@ -143,7 +159,25 @@ class TownScreenView(context: Context) : LinearLayout(context) {
             },
         )
         addView(
+            chronicleButton,
+            LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            ).apply {
+                topMargin = 16
+            },
+        )
+        addView(
             companionsButton,
+            LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            ).apply {
+                topMargin = 16
+            },
+        )
+        addView(
+            settingsButton,
             LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -162,7 +196,9 @@ class TownScreenView(context: Context) : LinearLayout(context) {
         marketButton.setOnClickListener { actions.onOpenMarket.onOpenMarket() }
         inventoryButton.setOnClickListener { actions.onOpenInventory.onOpenInventory() }
         ledgerButton.setOnClickListener { actions.onOpenLedger.onOpenLedger() }
+        chronicleButton.setOnClickListener { actions.onOpenChronicle.onOpenChronicle() }
         companionsButton.setOnClickListener { actions.onOpenCompanions.onOpenCompanions() }
+        settingsButton.setOnClickListener { actions.onOpenSettings.onOpenSettings() }
     }
 
     private fun TownScreenState.toHeaderText(): String =

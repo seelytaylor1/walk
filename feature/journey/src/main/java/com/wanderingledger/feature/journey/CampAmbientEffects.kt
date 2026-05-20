@@ -20,6 +20,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.wanderingledger.core.model.Biome
 import kotlin.random.Random
 
 private const val FIRE_PARTICLE_COUNT = 12
@@ -29,6 +30,8 @@ private const val STAR_COUNT = 20
 @Composable
 fun CampfireEffect(
     intensity: Float = 1f,
+    biome: Biome = Biome.Forest,
+    reducedMotion: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "campfire")
@@ -79,13 +82,12 @@ fun CampfireEffect(
             modifier = Modifier.offset(y = (-10).dp)
         )
 
-        repeat(FIRE_PARTICLE_COUNT) { index ->
-            FireParticle(
-                index = index,
-                intensity = intensity,
-                modifier = Modifier
-            )
-        }
+        AtmosphericCampfireSparks(
+            biome = biome,
+            intensity = intensity,
+            reducedMotion = reducedMotion,
+            modifier = Modifier.fillMaxSize(),
+        )
     }
 }
 
@@ -282,19 +284,29 @@ private fun Firefly(
 fun CampAmbientOverlay(
     timeOfDay: TimeOfDay,
     campfireIntensity: Float,
+    biome: Biome = Biome.Forest,
+    reducedMotion: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     Box(modifier = modifier.fillMaxSize()) {
+        AtmosphericFxLayer(
+            config = AtmosphericFxConfig(
+                biome = biome,
+                timeOfDay = timeOfDay,
+                campfireIntensity = campfireIntensity,
+                includeBiomeAmbient = true,
+                includeWeather = false,
+                includeNightSky = timeOfDay == TimeOfDay.Night,
+                reducedMotion = reducedMotion,
+            ),
+            modifier = Modifier.fillMaxSize(),
+        )
+
         when (timeOfDay) {
             TimeOfDay.Night -> {
-                NightStars()
                 if (campfireIntensity > 0f) {
                     CampfireGlowOverlay(intensity = campfireIntensity)
                 }
-                FireflyParticles(
-                    biome = com.wanderingledger.core.model.Biome.Forest,
-                    modifier = Modifier.fillMaxSize()
-                )
             }
             TimeOfDay.Dusk -> {
                 Box(

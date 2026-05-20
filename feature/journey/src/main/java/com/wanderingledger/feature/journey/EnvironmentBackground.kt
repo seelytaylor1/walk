@@ -56,6 +56,7 @@ fun EnvironmentBackground(
         ParallaxLayer(
             depth = ParallaxDepth.Background,
             biome = biome,
+            reducedMotion = reducedMotion,
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.TopCenter)
@@ -65,6 +66,7 @@ fun EnvironmentBackground(
         ParallaxLayer(
             depth = ParallaxDepth.Midground,
             biome = biome,
+            reducedMotion = reducedMotion,
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.TopCenter)
@@ -73,7 +75,21 @@ fun EnvironmentBackground(
 
         WeatherOverlay(
             weather = weather,
+            biome = biome,
+            reducedMotion = reducedMotion,
             modifier = Modifier.fillMaxSize()
+        )
+
+        AtmosphericFxLayer(
+            config = AtmosphericFxConfig(
+                biome = biome,
+                weather = WeatherCondition.Clear,
+                timeOfDay = timeOfDay,
+                includeBiomeAmbient = true,
+                includeWeather = false,
+                reducedMotion = reducedMotion,
+            ),
+            modifier = Modifier.fillMaxSize(),
         )
 
         TimeOfDayTint(
@@ -82,7 +98,10 @@ fun EnvironmentBackground(
         )
 
         if (weather == WeatherCondition.Fog) {
-            FogOverlay(modifier = Modifier.fillMaxSize())
+            FogOverlay(
+                reducedMotion = reducedMotion,
+                modifier = Modifier.fillMaxSize(),
+            )
         }
 
         Column(
@@ -125,6 +144,7 @@ fun EnvironmentBackground(
         ParallaxLayer(
             depth = ParallaxDepth.Foreground,
             biome = biome,
+            reducedMotion = reducedMotion,
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter)

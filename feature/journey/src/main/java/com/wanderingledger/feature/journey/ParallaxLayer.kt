@@ -4,12 +4,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.semantics.invisibleToUser
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -20,44 +24,64 @@ import com.wanderingledger.core.model.Biome
 
 private const val DRIFT_DURATION = 8000
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ParallaxLayer(
     depth: ParallaxDepth,
     biome: Biome,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    reducedMotion: Boolean = false,
 ) {
     val elements = getBiomeElements(biome, depth)
-    val infiniteTransition = rememberInfiniteTransition(label = "parallax_$depth")
 
-    val xOffset by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = when (depth) {
-            ParallaxDepth.Background -> -40f
-            ParallaxDepth.Midground -> -30f
-            ParallaxDepth.Foreground -> -20f
-        },
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = DRIFT_DURATION),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "x_drift"
-    )
+    // When reduced motion is active, render at the midpoint static offset instead of animating.
+    val xOffsetDp = if (reducedMotion) {
+        // Midpoint of the animation range (half of the target value)
+        when (depth) {
+            ParallaxDepth.Background -> (-20).dp
+            ParallaxDepth.Midground  -> (-15).dp
+            ParallaxDepth.Foreground -> (-10).dp
+        }
+    } else {
+        val infiniteTransition = rememberInfiniteTransition(label = "parallax_$depth")
+        val xOffset by infiniteTransition.animateFloat(
+            initialValue = 0f,
+            targetValue = when (depth) {
+                ParallaxDepth.Background -> -40f
+                ParallaxDepth.Midground  -> -30f
+                ParallaxDepth.Foreground -> -20f
+            },
+            animationSpec = infiniteRepeatable(
+                animation = tween(durationMillis = DRIFT_DURATION),
+                repeatMode = RepeatMode.Reverse,
+            ),
+            label = "x_drift",
+        )
+        xOffset.dp
+    }
 
-    Box(modifier = modifier.fillMaxWidth()) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            // Decorative — invisible to accessibility tree
+            .semantics { invisibleToUser() },
+    ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .offset(x = xOffsetDp),
             horizontalArrangement = Arrangement.spacedBy(60.dp),
-            verticalAlignment = Alignment.Bottom
+            verticalAlignment = Alignment.Bottom,
         ) {
             elements.forEach { element ->
                 Text(
                     text = element,
                     style = when (depth) {
                         ParallaxDepth.Background -> MaterialTheme.typography.displayMedium
-                        ParallaxDepth.Midground -> MaterialTheme.typography.displayLarge
+                        ParallaxDepth.Midground  -> MaterialTheme.typography.displayLarge
                         ParallaxDepth.Foreground -> MaterialTheme.typography.headlineLarge
                     },
-                    modifier = Modifier.align(Alignment.Bottom)
+                    modifier = Modifier.align(Alignment.Bottom),
                 )
             }
         }

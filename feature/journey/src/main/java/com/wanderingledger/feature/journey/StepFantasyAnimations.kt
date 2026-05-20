@@ -64,8 +64,15 @@ fun stepSpringAnimationSpec(reducedMotion: Boolean) = if (reducedMotion) {
 fun StepPulseWrapper(
     bankedSteps: Long,
     modifier: Modifier = Modifier,
+    reducedMotion: Boolean = false,
     content: @Composable () -> Unit
 ) {
+    if (reducedMotion) {
+        // Skip the scale animation entirely — just render content at 1:1
+        Box(modifier = modifier) { content() }
+        return
+    }
+
     val scale = rememberStepAnimationState(bankedSteps)
 
     Box(modifier = modifier.graphicsLayer {

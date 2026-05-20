@@ -41,6 +41,7 @@ data class JourneyScreenState(
     val activeCompanions: List<Companion> = emptyList(),
     val weather: WeatherCondition = WeatherCondition.Clear,
     val timeOfDay: TimeOfDay = TimeOfDay.Day,
+    val reducedMotion: Boolean = false,
     val message: String? = null,
     val campState: CampState? = null,
 )
@@ -78,6 +79,7 @@ fun JourneyScreen(
             if (state.campState != null && state.campState.isCamping) {
                 CampRenderer(
                     campState = state.campState,
+                    reducedMotion = state.reducedMotion,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(screenHeight * 0.45f)
@@ -93,6 +95,7 @@ fun JourneyScreen(
                         activeCompanions = state.activeCompanions,
                         weather = state.weather,
                         timeOfDay = state.timeOfDay,
+                        reducedMotion = state.reducedMotion,
                         modifier = Modifier.fillMaxSize()
                     )
 
@@ -133,6 +136,7 @@ fun JourneyScreen(
                 JourneyStepMeter(
                     bankedSteps = state.bankedSteps,
                     maxSteps = 49000L,
+                    reducedMotion = state.reducedMotion,
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -209,6 +213,7 @@ fun buildJourneyScreenState(
     activeCompanions: List<Companion> = emptyList(),
     weather: WeatherCondition = WeatherCondition.Clear,
     timeOfDay: TimeOfDay = TimeOfDay.Day,
+    reducedMotion: Boolean = false,
     message: String? = null,
     campState: CampState? = null,
 ): JourneyScreenState = buildJourneyScreenState(
@@ -233,6 +238,7 @@ fun buildJourneyScreenState(
     activeCompanions = activeCompanions,
     weather = weather,
     timeOfDay = timeOfDay,
+    reducedMotion = reducedMotion,
     message = message,
     campState = campState,
 )
@@ -249,6 +255,7 @@ fun buildJourneyScreenState(
     activeCompanions: List<Companion> = emptyList(),
     weather: WeatherCondition = WeatherCondition.Clear,
     timeOfDay: TimeOfDay = TimeOfDay.Day,
+    reducedMotion: Boolean = false,
     message: String? = null,
     campState: CampState? = null,
 ): JourneyScreenState = JourneyScreenState(
@@ -271,6 +278,7 @@ fun buildJourneyScreenState(
     activeCompanions = activeCompanions,
     weather = weather,
     timeOfDay = timeOfDay,
+    reducedMotion = reducedMotion,
     message = message,
     campState = campState,
 )

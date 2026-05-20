@@ -24,6 +24,10 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import com.wanderingledger.core.designsystem.component.WLClickableCard
 import com.wanderingledger.core.designsystem.theme.StepBankColor
 import com.wanderingledger.core.designsystem.theme.WLTheme
@@ -68,6 +72,13 @@ fun JourneyRouteCard(
         enabled = route.canAfford,
         modifier = modifier
             .fillMaxWidth()
+            .semantics {
+                val affordText = if (route.canAfford) "Affordable."
+                    else "Need ${route.shortfall} more steps."
+                contentDescription = "Travel to ${route.destinationName}: " +
+                    "costs ${route.stepCost} steps. $affordText"
+                role = Role.Button
+            }
             .border(
                 width = 2.dp,
                 brush = Brush.horizontalGradient(

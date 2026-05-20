@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
 }
 
@@ -28,6 +27,8 @@ dependencies {
     api(libs.androidx.core.ktx)
 
     api(project(":core:model"))
+
+    implementation(libs.androidx.datastore.preferences)
 
     debugApi(libs.compose.ui.tooling)
 }

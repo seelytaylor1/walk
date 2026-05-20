@@ -19,7 +19,9 @@ class NavigationShell(
         MARKET,
         INVENTORY,
         LEDGER,
+        CHRONICLE,
         COMPANIONS,
+        SETTINGS,
     }
 
     private var currentScreen: ScreenType = ScreenType.WORLD_MAP
@@ -161,10 +163,22 @@ class NavigationShell(
                 subtitle,
                 true,
             )
+            ScreenType.CHRONICLE -> Quad(
+                BottomNavBar.Destination.LEDGER,
+                title ?: "Chronicle",
+                subtitle,
+                true,
+            )
             ScreenType.COMPANIONS -> Quad(
                 BottomNavBar.Destination.COMPANIONS,
                 title ?: "Party",
                 subtitle,
+                true,
+            )
+            ScreenType.SETTINGS -> Quad(
+                BottomNavBar.Destination.WORLD_MAP,
+                title ?: "Settings",
+                null,
                 true,
             )
         }

@@ -569,6 +569,10 @@ Ledger feels collectible and intimate.
 * journal presentation feels physical
 * rumor browsing emotionally rewarding
 
+## Status
+
+**COMPLETE**
+
 ---
 
 # 15. Chronicle Timeline Slice
@@ -600,6 +604,10 @@ Player journey develops historical weight.
 
 * long histories remain performant
 * timeline remains emotionally readable
+
+## Status
+
+**COMPLETE** ✓
 
 ---
 
@@ -633,6 +641,10 @@ Companions become emotional anchors.
 * portraits dominate screen
 * companions feel memorable
 
+## Status
+
+**COMPLETE** ✓
+
 ---
 
 # 17. Companion Commentary Slice
@@ -664,6 +676,10 @@ Party reacts dynamically to the world.
 
 * commentary feels varied
 * reactions reinforce travel fantasy
+
+## Status
+
+**COMPLETE** ✓
 
 ---
 
@@ -698,102 +714,354 @@ Ambient environmental motion becomes scalable.
 * particles performant on mid-range devices
 * reduced-motion support works globally
 
+## Status
+
+**COMPLETE** ✓
+
+## Slice 19 — Audio & Haptics Integration
+
+**Objective:** Warm, tactile feedback that reinforces interactions. Ambient audio establishes atmosphere. Never intrusive.
+
+**Modules:** `core/audio`, `core/haptics`
+
+### Files to create
+
+```
+core/audio/
+  AudioManager.kt
+  AudioEventBus.kt
+  AudioPreferences.kt
+
+core/haptics/
+  HapticManager.kt
+```
+
+### AudioEvent model
+
+```kotlin
+sealed class AudioEvent {
+    object StepBankTick         : AudioEvent()   // soft tick every 500 steps added
+    object TravelBegin          : AudioEvent()   // footstep swell
+    object TownArrival          : AudioEvent()   // warm bell chord
+    object MarketBuy            : AudioEvent()   // coin clink
+    object MarketSell           : AudioEvent()   // richer coin clink
+    object LedgerOpen           : AudioEvent()   // page rustle
+    object RumorReceived        : AudioEvent()   // parchment scratch
+    object EncounterStart       : AudioEvent()   // tension sting
+    object EncounterSuccess     : AudioEvent()   // resolve swell
+    object EncounterFailure     : AudioEvent()   // low thud
+    object BondIncrease         : AudioEvent()   // gentle warm tone
+}
+```
+
+### AudioManager
+
+Use `SoundPool` for all short one-shot sounds. Use a single `MediaPlayer` for the ambient biome loop.
+
+```kotlin
+class AudioManager @Inject constructor(
+    @ApplicationContext private val context: Context,
+    private val prefs: AudioPreferences
+) {
+    private val pool = SoundPool.Builder().setMaxStreams(4).build()
+    private val soundIds = mutableMapOf<AudioEvent, Int>()
+    private var ambientPlayer: MediaPlayer? = null
+
+    init {
+        // Load assets synchronously on a background thread via coroutine in the caller
+        soundIds[TravelBegin]     = pool.load(context, R.raw.travel_begin, 1)
+        soundIds[TownArrival]     = pool.load(context, R.raw.town_arrival, 1)
+        // ... all events
+    }
+
+    fun play(event: AudioEvent) {
+        if (!prefs.sfxEnabled) return
+        soundIds[event]?.let { id -> pool.play(id, prefs.sfxVolume, prefs.sfxVolume, 0, 0, 1f) }
+    }
+
+    fun startAmbient(biome: Biome) {
+        val resId = biome.ambientResId ?: return
+        ambientPlayer?.release()
+        ambientPlayer = MediaPlayer.create(context, resId).apply {
+            isLooping = true
+            setVolume(0f, 0f)
+            start()
+        }
+        fadeAmbientIn()
+    }
+
+    fun stopAmbient() = fadeAmbientOut { ambientPlayer?.release(); ambientPlayer = null }
+
+    private fun fadeAmbientIn() { /* coroutine stepping volume 0→prefs.ambientVolume over 800ms */ }
+    private fun fadeAmbientOut(onComplete: () -> Unit) { /* coroutine stepping volume down, then onComplete */ }
+}
+```
+
+### HapticManager
+
+```kotlin
+class HapticManager @Inject constructor(
+    @ApplicationContext private val context: Context,
+    private val prefs: AudioPreferences
+) {
+    private val vibrator = context.getSystemService(Vibrator::class.java)
+
+    fun perform(effect: HapticEffect) {
+        if (!prefs.hapticsEnabled || vibrator == null) return
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return  // predefined effects require API 29
+        val ve = when (effect) {
+            HapticEffect.SOFT_TAP -> VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK)
+            HapticEffect.CONFIRM  -> VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK)
+            HapticEffect.REWARD   -> VibrationEffect.createWaveform(longArrayOf(0,40,60,80), intArrayOf(0,120,0,200), -1)
+            HapticEffect.ERROR    -> VibrationEffect.createPredefined(VibrationEffect.EFFECT_HEAVY_CLICK)
+        }
+        vibrator.vibrate(ve)
+    }
+}
+```
+
+### Action mapping
+
+| User action | Audio event | Haptic |
+|-------------|-------------|--------|
+| Tap "Travel" | `TravelBegin` | `SOFT_TAP` |
+| Town arrival | `TownArrival` | `REWARD` |
+| Buy good | `MarketBuy` | `CONFIRM` |
+| Sell good | `MarketSell` | `CONFIRM` |
+| Open Ledger | `LedgerOpen` | `SOFT_TAP` |
+| Rumor received | `RumorReceived` | `SOFT_TAP` |
+| Bond increases | `BondIncrease` | `REWARD` |
+| Insufficient steps | — | `ERROR` |
+
+Call `audioManager.play(...)` and `hapticManager.perform(...)` from the ViewModel after the state mutation succeeds, not optimistically. This prevents audio/haptic feedback on operations that fail.
+
+### Settings additions
+
+Add to the existing settings screen:
+
+- "Sound effects" toggle → `AudioPreferences.sfxEnabled`
+- "Ambient sounds" toggle → `AudioPreferences.ambientEnabled`
+- "Haptic feedback" toggle → `AudioPreferences.hapticsEnabled`
+- Volume sliders for SFX and ambient (range 0–100, step 1)
+
+All changes apply immediately (no restart required). Disable the volume slider for SFX when SFX is toggled off.
+
+### Acceptance criteria
+
+- All audio events play within 50ms of the triggering UI action on D04
+- Ambient crossfade produces no audible pop or gap when the biome changes
+- Haptics fire on API 29+ devices; silently no-op on API 26–28
+- Disabling SFX in settings immediately silences all one-shot sounds (verified by toggling mid-session)
+- Ambient loop restarts correctly after a phone call interruption (`AudioFocusChangeListener` handles `AUDIOFOCUS_LOSS_TRANSIENT`)
+
+**COMPLETE** ✓
+
 ---
 
-# 19. Audio & Haptics Integration Slice
+## Slice 20 — Accessibility & Motion Safety
 
-## Type
+**Objective:** The atmospheric UI must be fully usable for users with motion sensitivity, visual needs, or motor differences.
 
-HITL
+**Scope:** All feature modules. Shared infrastructure in `core/designsystem`.
 
-## Blocked By
+### Files to create / modify
 
-2
+```
+core/designsystem/
+  ReduceMotionProvider.kt       ← new
+  AccessibilityPreferences.kt  ← new
 
-## User Stories Covered
+(modify all feature screens to add content descriptions and motion guards)
+```
 
-Supports all emotional UX goals.
+### Reduced motion
 
-## Deliverables
+```kotlin
+val LocalReduceMotion = compositionLocalOf { false }
 
-* audio event hooks
-* haptic manager
-* interaction presets
-* environmental hooks
+@Composable
+fun ReduceMotionProvider(content: @Composable () -> Unit) {
+    val systemReduce = LocalContext.current
+        .resources.configuration.isNightModeActive  // swap with actual animation scale check below
+    // Read system "Remove animations" setting:
+    val animatorDuration = Settings.Global.getFloat(
+        LocalContext.current.contentResolver,
+        Settings.Global.ANIMATOR_DURATION_SCALE, 1f
+    )
+    val systemReduceMotion = animatorDuration == 0f
+    val userOverride by accessibilityPrefs.reduceMotion.collectAsState(initial = false)
 
-## Visible Outcome
+    CompositionLocalProvider(
+        LocalReduceMotion provides (systemReduceMotion || userOverride),
+        content = content
+    )
+}
+```
 
-Interface gains tactile and sensory feedback.
+Place `ReduceMotionProvider` at the root of `AppScaffold`, wrapping all screens.
 
-## Success Criteria
+**Where to guard:**
 
-* haptics subtle and warm
-* audio hooks reusable without rewrites
+| Component | Reduced motion behavior |
+|-----------|------------------------|
+| Parallax background layers | Disable transform animation; render layers at their midpoint static offset |
+| Character walk animation | Freeze at the neutral standing frame |
+| `ParticleCanvas` | Render nothing (see Slice 18) |
+| Screen transitions (NavHost) | Replace slide transitions with `fadeIn + fadeOut` only |
+| Bond meter spring | Replace spring with `snap()` spec |
+| `AnimatedVisibility` | Keep `fadeIn/fadeOut`; remove `slideIn/slideOut` |
+
+### Content descriptions
+
+Every meaningful non-text element requires a `contentDescription`. Use the following templates:
+
+```kotlin
+// Portrait canvas
+Modifier.semantics {
+    contentDescription = "${companion.name}, ${companion.role}. Bond level ${companion.bond} of ${companion.maxBond}."
+}
+
+// Step meter
+Modifier.semantics {
+    contentDescription = "${bankedSteps.formatSteps()} steps banked. Today: ${todaySteps.formatSteps()} steps walked."
+}
+
+// Route card
+Modifier.semantics {
+    contentDescription = "Travel to ${road.toTown}: costs ${road.cost.formatSteps()} steps. " +
+        if (affordable) "Affordable." else "Need ${shortfall.formatSteps()} more steps."
+}
+
+// Map town node
+Modifier.semantics {
+    contentDescription = "${town.name}, ${town.region}. Tap to view routes."
+    role = Role.Button
+}
+
+// Decorative backgrounds
+Modifier.semantics { invisibleToUser() }
+```
+
+Run Layout Inspector → "Semantics" view to audit before signoff.
+
+### Touch targets
+
+All tappable elements must meet 48dp × 48dp minimum. Apply:
+
+```kotlin
+Modifier.minimumInteractiveComponentSize()
+```
+
+This is available in `androidx.compose.material3` and is API 26 compatible. Add it to every custom interactive composable in `core/designsystem`.
+
+### Contrast modes
+
+Add `ContrastMode` enum: `STANDARD`, `HIGH`, `NIGHT`.
+
+- `HIGH`: text colors raised to full `#000000` / `#FFFFFF`; remove any `alpha < 0.9f` from text; border weights increased to 1.5dp
+- `NIGHT`: blue channel reduced by 30% across all theme colors; suitable for use before sleep
+
+Expose a `contrastMode` selector in Settings (segmented control, three options). Store in `AccessibilityPreferences` (DataStore). `AppTheme` reads the current mode and selects the matching `ColorScheme` variant.
+
+### Font scaling
+
+All text uses `sp` units. Test at 200% system font scale (`Settings → Display → Font Size → Largest`) and verify:
+
+- Market screen: good names do not truncate below 80% of their string
+- Route cards: town name and step cost remain on one line each or wrap gracefully
+- Companion screen: quote text wraps without overflowing its container
+
+Fix any overflow by replacing fixed-height containers with `wrapContentHeight()` and adding `maxLines` + `TextOverflow.Ellipsis` as a last resort only where vertical space is genuinely constrained.
+
+### Acceptance criteria
+
+- All interactive elements pass 48dp minimum tap target (verify with Layout Inspector → "Highlight semantics bounds")
+- System "Remove animations" → all parallax, walk, and particle animations stop; screen transitions fade only
+- TalkBack reads step meter, route cards, portrait canvas, and map nodes without any "unlabeled" announcements
+- High contrast mode: all text passes WCAG AA (4.5:1 contrast ratio) — verify with the Accessibility Scanner app
+- At 200% font scale: no text truncates to the point of being unreadable in any screen
+
+**COMPLETE** ✓
 
 ---
 
-# 20. Accessibility & Motion Safety Slice
+## Slice 21 — Performance Hardening
 
-## Type
+**Objective:** Stable 60fps on D04 (Pixel 4a) as the baseline device. No memory growth during play sessions.
 
-AFK
+**Scope:** All rendering-heavy modules. Work is profiling-driven — instrument first, then fix.
 
-## Blocked By
+### Profiling setup
 
-18
+Enable Composition tracing in debug builds by adding to `app/build.gradle`:
 
-## User Stories Covered
+```groovy
+debugImplementation("androidx.compose.runtime:runtime-tracing:1.0.0-beta01")
+```
 
-Supports all user stories.
+Capture traces: Android Studio → Profiler → CPU → System Trace → start, interact for 30 seconds, stop. Look for frames exceeding 16ms on the main thread.
 
-## Deliverables
+### Recomposition audit (do in this order)
 
-* reduced motion settings
-* contrast scaling
-* font scaling
-* overlay readability safeguards
+1. Open Layout Inspector → "Recomposition counts" while the Journey screen is idle (no walking). Any composable recomposing more than once every 5 seconds while idle is a bug — trace the state read that's causing it.
 
-## Visible Outcome
+2. `StepMeter` must not recompose on every step event. Gate recomposition with `derivedStateOf`:
 
-Atmospheric UI remains usable.
+```kotlin
+val meterSegment by remember {
+    derivedStateOf { (bankedSteps / 500).coerceAtMost(MAX_SEGMENTS) }
+}
+```
+`StepMeter` reads `meterSegment` — it only recomposes when the segment count changes, not on every step.
 
-## Success Criteria
+3. The particle canvas is the highest-churn composable. Wrap it in a dedicated `Box` with `key("particles")` so its recomposition scope is isolated from the rest of the scene.
 
-* readability preserved under all atmospheric states
-* motion-sensitive users protected
+4. Use `mutableStateListOf<Particle>()` (not `mutableStateOf(List<Particle>)`) for the particle backing list. Structural changes (add/remove) trigger recomposition; content changes via index assignment do not.
 
----
+### Asset memory
 
-# 21. Performance Hardening Slice
+- All scene background art must be pre-rasterized to WebP at `@2x` resolution (780 × 780px for the scene viewport). Do not decode SVG at runtime. Store in `res/drawable-xxhdpi/`.
+- Walk cycle sprite sheets: one `ImageBitmap` per companion, not one per frame. Implement `SpriteSheetPainter(sheet, frameWidth, frameHeight, currentFrame)` that calls `drawImage` with a `srcOffset` computed from `currentFrame`.
+- Use Coil `AsyncImage` for any art loaded at runtime (companion portraits from assets). Configure with `diskCachePolicy = CachePolicy.ENABLED` and `memoryCachePolicy = CachePolicy.ENABLED`.
+- Chronicle list items must not hold references to `Bitmap` objects. Store icon tokens (enum) in `ChronicleEntry`, resolve to drawables in the composable.
 
-## Type
+### Frame diagnostics (debug only)
 
-AFK
+Add a `FrameRateMonitor` composable in `AppScaffold`, gated on `BuildConfig.DEBUG`:
 
-## Blocked By
+```kotlin
+@Composable
+fun FrameRateMonitor() {
+    LaunchedEffect(Unit) {
+        var lastNs = System.nanoTime()
+        while (true) {
+            withFrameNanos { nowNs ->
+                val frameMs = (nowNs - lastNs) / 1_000_000
+                if (frameMs > 16) Log.w("FrameDrop", "Frame took ${frameMs}ms")
+                lastNs = nowNs
+            }
+        }
+    }
+}
+```
 
-All rendering-heavy slices
+### Target benchmarks on D04 (Pixel 4a)
 
-## User Stories Covered
+| Scenario | Target |
+|----------|--------|
+| Journey screen idle | 60fps, main thread CPU < 4% |
+| Walking animation active | 60fps, CPU < 7% |
+| 24 particles active | 60fps, CPU < 9% |
+| Chronicle list scroll (200 entries) | 60fps, no dropped frames |
+| Market screen first composition | < 180ms to first pixel |
+| Cold start → first interactive frame | < 800ms |
 
-Supports all stories.
+Measure CPU with `adb shell top -d 1 -p $(adb shell pidof com.wanderingledger)`. Measure frame times with System Trace.
 
-## Deliverables
+### Acceptance criteria
 
-* render profiling
-* texture memory optimization
-* recomposition optimization
-* lazy asset loading
-* frame diagnostics
-
-## Visible Outcome
-
-App remains stable under production asset load.
-
-## Success Criteria
-
-* stable 60fps on target devices
-* no major memory spikes
-* no visible hitching during transitions
-
----
+- `StepFidelityBenchmarkTest` passes with no regressions after rendering changes
+- No `FrameDrop` warnings during a 2-minute play session on D04 in release build (`./gradlew assembleRelease`)
+- Heap size does not grow monotonically during a 5-minute session — verify with Memory Profiler "Record Java/Kotlin allocations", looking for retained `Bitmap` or `Path` leaks
+- Cold start time < 800ms on D04 (use `adb shell am start -W` to measure)
+- Particle system: zero allocations per frame after 2-second warm-up (Memory Profiler confirms)

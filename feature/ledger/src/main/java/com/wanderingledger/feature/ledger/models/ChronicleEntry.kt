@@ -1,13 +1,11 @@
 package com.wanderingledger.feature.ledger.model
 
-import androidx.compose.ui.graphics.vector.ImageVector
-
 enum class EntryType {
     TRAVEL,
     ENCOUNTER,
     MARKET,
     COMPANION,
-    RUMOR
+    RUMOR,
 }
 
 enum class ChronicleIcon(val vectorName: String) {
@@ -16,4 +14,21 @@ enum class ChronicleIcon(val vectorName: String) {
     DIALOG("tablerchatcircle"),
     FIST("tablerhandshake"),
     CIGAR("tablercigar");
+}
+
+data class ChronicleEntry(
+    val id: Long,
+    val type: EntryType,
+    val title: String,
+    val summary: String,
+    val townName: String,
+    val timestampMs: Long,
+    val routeLabel: String? = null,
+    val companionName: String? = null,
+    val companionNote: String? = null,
+    val goldDelta: Long? = null,
+    val icon: ChronicleIcon = ChronicleIcon.COMPASS,
+) {
+    val timestampFormatted: String
+        get() = "Day ${timestampMs / 86_400_000L + 1}"
 }

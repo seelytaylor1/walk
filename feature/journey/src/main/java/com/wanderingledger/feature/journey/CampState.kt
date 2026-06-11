@@ -43,13 +43,15 @@ data class CampState(
             companions: List<CoreCompanion>,
             campfireLit: Boolean = true,
         ): CampState {
-            val activities = companions.associate { companion: CoreCompanion ->
-                companion.companionId to when {
-                    companion.role.name == "Scout" -> CampActivity.KeepingWatch
-                    companion.role.name == "Healer" -> CampActivity.Cooking
-                    else -> CampActivity.Sitting
+            val activities =
+                companions.associate { companion: CoreCompanion ->
+                    companion.companionId to
+                        when {
+                            companion.role.name == "Scout" -> CampActivity.KeepingWatch
+                            companion.role.name == "Healer" -> CampActivity.Cooking
+                            else -> CampActivity.Sitting
+                        }
                 }
-            }
             return CampState(
                 journeyMode = JourneyMode.Camping,
                 campsiteBiome = biome,
@@ -75,12 +77,11 @@ object CampStateDetector {
         return timeSinceTravel >= MIN_CAMP_DURATION_MS && bankedSteps >= MIN_IDLE_STEPS
     }
 
-    fun determineCampActivity(companion: CoreCompanion): CampActivity {
-        return when {
+    fun determineCampActivity(companion: CoreCompanion): CampActivity =
+        when {
             companion.role.name == "Scout" -> CampActivity.KeepingWatch
             companion.role.name == "Healer" -> CampActivity.Cooking
             companion.bondLevel >= 5 -> CampActivity.Chatting
             else -> CampActivity.Sitting
         }
-    }
 }

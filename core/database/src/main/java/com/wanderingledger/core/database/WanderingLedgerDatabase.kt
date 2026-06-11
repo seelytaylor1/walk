@@ -30,23 +30,34 @@ import androidx.room.RoomDatabase
 )
 abstract class WanderingLedgerDatabase : RoomDatabase() {
     abstract fun townDao(): TownDao
+
     abstract fun goodDao(): GoodDao
+
     abstract fun townPriceDao(): TownPriceDao
+
     abstract fun playerDao(): PlayerDao
+
     abstract fun inventoryDao(): InventoryDao
+
     abstract fun companionDao(): CompanionDao
+
     abstract fun roadSegmentDao(): RoadSegmentDao
+
     abstract fun rumorDao(): RumorDao
+
     abstract fun stepRecordDao(): StepRecordDao
+
     abstract fun eventLogDao(): EventLogDao
+
     abstract fun priceHistoryDao(): PriceHistoryDao
 
     companion object {
         fun create(context: Context): WanderingLedgerDatabase =
-            Room.databaseBuilder(
-                context.applicationContext,
-                WanderingLedgerDatabase::class.java,
-                "wandering-ledger.db",
-            ).build()
+            Room
+                .databaseBuilder(
+                    context.applicationContext,
+                    WanderingLedgerDatabase::class.java,
+                    "wandering-ledger.db",
+                ).build()
     }
 }

@@ -1,6 +1,7 @@
 package com.wanderingledger.core.steptracker
 
 import kotlin.math.PI
+import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.random.Random
 
@@ -27,7 +28,6 @@ import kotlin.random.Random
  * The harness is a plain JVM test — no Android, Room, or sensors required.
  */
 class StepFidelityBenchmark {
-
     data class TraceResult(
         val label: String,
         val groundTruth: Int,
@@ -49,30 +49,33 @@ class StepFidelityBenchmark {
     fun runAllTraces(sensitivity: Float = 1.0f): BenchmarkSummary {
         val results = mutableListOf<TraceResult>()
 
-        val speedBuckets = listOf(
-            0.8 to "very_slow",
-            1.0 to "slow",
-            1.2 to "normal",
-            1.5 to "fast",
-            1.6 to "very_fast",
-            0.4 to "edge_slow",
-            2.0 to "edge_fast",
-            0.0 to "stationary_noise",
-            -1 to "no_steps_sustained",
-        )
+        val speedBuckets =
+            listOf(
+                0.8 to "very_slow",
+                1.0 to "slow",
+                1.2 to "normal",
+                1.5 to "fast",
+                1.6 to "very_fast",
+                0.4 to "edge_slow",
+                2.0 to "edge_fast",
+                0.0 to "stationary_noise",
+                -1.0 to "no_steps_sustained",
+            )
 
         for ((speed, label) in speedBuckets) {
             val trace = generateSyntheticTrace(speed = speed, label = label)
             val detected = runDetector(trace, sensitivity)
-            val result = computeMetrics(label = "$label (${speed}m/s)", groundTruth = trace.steps.size, detected = detected)
+            val result =
+                computeMetrics(label = "$label (${speed}m/s)", groundTruth = trace.steps.size, detected = detected)
             results.add(result)
         }
 
         val allGroundTruth = results.sumOf { it.groundTruth }
         val allDetected = results.sumOf { it.detected }
-        val tp = results.zip(results).sumOf { (r, _) ->
-            minOf(r.groundTruth, r.detected)
-        }
+        val tp =
+            results.zip(results).sumOf { (r, _) ->
+                minOf(r.groundTruth, r.detected)
+            }
         val fp = (allDetected - tp).coerceAtLeast(0)
         val fn = (allGroundTruth - tp).coerceAtLeast(0)
 
@@ -88,28 +91,39 @@ class StepFidelityBenchmark {
         )
     }
 
-    fun runTraceAtSpeed(speed: Double, sensitivity: Float = 1.0f): TraceResult {
+    fun runTraceAtSpeed(
+        speed: Double,
+        sensitivity: Float = 1.0f,
+    ): TraceResult {
         val trace = generateSyntheticTrace(speed = speed, label = "${speed}m_s")
         val detected = runDetector(trace, sensitivity)
-        return computeMetrics(label = "speed_${speed}", groundTruth = trace.steps.size, detected = detected)
+        return computeMetrics(label = "speed_$speed", groundTruth = trace.steps.size, detected = detected)
     }
 
-    private fun runDetector(trace: SyntheticTrace, sensitivity: Float): Int {
+    private fun runDetector(
+        trace: SyntheticTrace,
+        sensitivity: Float,
+    ): Int {
         val detector = PeakDetectionStepDetector(sensitivity = sensitivity)
         var lastCount = 0
         for (sample in trace.samples) {
-            val count = detector.processSample(
-                timestampNs = sample.timestampNs,
-                ax = sample.ax,
-                ay = sample.ay,
-                az = sample.az,
-            )
+            val count =
+                detector.processSample(
+                    timestampNs = sample.timestampNs,
+                    ax = sample.ax,
+                    ay = sample.ay,
+                    az = sample.az,
+                )
             lastCount = count
         }
         return lastCount
     }
 
-    private fun computeMetrics(label: String, groundTruth: Int, detected: Int): TraceResult {
+    private fun computeMetrics(
+        label: String,
+        groundTruth: Int,
+        detected: Int,
+    ): TraceResult {
         val tp = minOf(groundTruth, detected)
         val fp = (detected - tp).coerceAtLeast(0)
         val fn = (groundTruth - tp).coerceAtLeast(0)
@@ -118,7 +132,14 @@ class StepFidelityBenchmark {
         val recall = if (groundTruth > 0) tp.toDouble() / groundTruth else 0.0
         val f1 = if (precision + recall > 0) 2 * precision * recall / (precision + recall) else 0.0
 
-        return TraceResult(label = label, groundTruth = groundTruth, detected = detected, precision = precision, recall = recall, f1 = f1)
+        return TraceResult(
+            label = label,
+            groundTruth = groundTruth,
+            detected = detected,
+            precision = precision,
+            recall = recall,
+            f1 = f1,
+        )
     }
 
     private data class SyntheticTrace(
@@ -133,7 +154,10 @@ class StepFidelityBenchmark {
         val az: Float,
     )
 
-    private fun generateSyntheticTrace(speed: Double, label: String): SyntheticTrace {
+    private fun generateSyntheticTrace(
+        speed: Double,
+        label: String,
+    ): SyntheticTrace {
         val samples = mutableListOf<AccelSample>()
         val groundTruthSteps = mutableListOf<Long>()
 

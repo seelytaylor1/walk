@@ -48,19 +48,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -136,43 +135,47 @@ fun CompanionsScreen(
     actions: CompanionsActions,
     modifier: Modifier = Modifier,
 ) {
-    val allCompanions = remember(state.activeCompanions, state.recruitableCompanions) {
-        state.activeCompanions + state.recruitableCompanions
-    }
+    val allCompanions =
+        remember(state.activeCompanions, state.recruitableCompanions) {
+            state.activeCompanions + state.recruitableCompanions
+        }
     var selectedCompanionId by remember(allCompanions) {
         mutableStateOf(allCompanions.firstOrNull()?.companionId ?: -1L)
     }
-    val selected = allCompanions.firstOrNull { it.companionId == selectedCompanionId }
-        ?: allCompanions.firstOrNull()
+    val selected =
+        allCompanions.firstOrNull { it.companionId == selectedCompanionId }
+            ?: allCompanions.firstOrNull()
     val selectedIsActive = selected?.isActive == true
 
     Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(NightDesk, Color(0xFF5E4C40)),
-                ),
-            )
-            .padding(horizontal = 14.dp, vertical = 12.dp),
+        modifier =
+            modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(NightDesk, Color(0xFF5E4C40)),
+                    ),
+                ).padding(horizontal = 14.dp, vertical = 12.dp),
     ) {
         CompanionDeskTexture()
 
         Surface(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = 76.dp)
-                .shadow(16.dp, RoundedCornerShape(18.dp))
-                .clip(RoundedCornerShape(18.dp)),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(bottom = 76.dp)
+                    .shadow(16.dp, RoundedCornerShape(18.dp))
+                    .clip(RoundedCornerShape(18.dp)),
             color = WarmPanel,
             contentColor = Ink,
         ) {
             Box(Modifier.fillMaxSize()) {
                 CompanionPageTexture()
                 BoxWithConstraints(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(20.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .padding(20.dp),
                 ) {
                     if (maxWidth < 620.dp) {
                         CompanionPortraitStack(
@@ -199,15 +202,17 @@ fun CompanionsScreen(
 
         Button(
             onClick = { actions.onNavigateBack.onNavigateBack() },
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 20.dp)
-                .shadow(8.dp, RoundedCornerShape(8.dp)),
+            modifier =
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 20.dp)
+                    .shadow(8.dp, RoundedCornerShape(8.dp)),
             shape = RoundedCornerShape(8.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF5E3F2E),
-                contentColor = Color.White,
-            ),
+            colors =
+                ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF5E3F2E),
+                    contentColor = Color.White,
+                ),
         ) {
             Text("Return to Town")
         }
@@ -234,18 +239,20 @@ private fun CompanionPortraitWide(
             recentCommentary = state.recentCommentary?.takeIf { it.companionId == selected?.companionId },
             actions = actions,
             reducedMotion = reducedMotion,
-            modifier = Modifier
-                .weight(1.18f)
-                .fillMaxHeight(),
+            modifier =
+                Modifier
+                    .weight(1.18f)
+                    .fillMaxHeight(),
         )
         CompanionRosterPanel(
             state = state,
             selectedId = selected?.companionId,
             onSelect = onSelect,
             actions = actions,
-            modifier = Modifier
-                .weight(0.82f)
-                .fillMaxHeight(),
+            modifier =
+                Modifier
+                    .weight(0.82f)
+                    .fillMaxHeight(),
         )
     }
 }
@@ -270,9 +277,10 @@ private fun CompanionPortraitStack(
             recentCommentary = state.recentCommentary?.takeIf { it.companionId == selected?.companionId },
             actions = actions,
             reducedMotion = reducedMotion,
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth(),
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
         )
         CompactRosterRail(
             companions = state.activeCompanions + state.recruitableCompanions,
@@ -295,21 +303,23 @@ private fun SelectedCompanionPanel(
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
             text = "Party",
-            style = MaterialTheme.typography.headlineMedium.copy(
-                fontFamily = FontFamily.Serif,
-                fontWeight = FontWeight.Bold,
-                color = Ink,
-            ),
+            style =
+                MaterialTheme.typography.headlineMedium.copy(
+                    fontFamily = FontFamily.Serif,
+                    fontWeight = FontWeight.Bold,
+                    color = Ink,
+                ),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
         Text(
             text = "Companions, bonds, and road temper",
-            style = MaterialTheme.typography.bodySmall.copy(
-                fontFamily = FontFamily.Serif,
-                fontStyle = FontStyle.Italic,
-                color = Ink.copy(alpha = 0.66f),
-            ),
+            style =
+                MaterialTheme.typography.bodySmall.copy(
+                    fontFamily = FontFamily.Serif,
+                    fontStyle = FontStyle.Italic,
+                    color = Ink.copy(alpha = 0.66f),
+                ),
             modifier = Modifier.padding(top = 3.dp, bottom = 14.dp),
         )
 
@@ -319,7 +329,8 @@ private fun SelectedCompanionPanel(
             transitionSpec = {
                 if (reducedMotion) {
                     // Fade only — no slide
-                    fadeIn(tween(220)).togetherWith(fadeOut(tween(160)))
+                    fadeIn(tween(220))
+                        .togetherWith(fadeOut(tween(160)))
                         .using(SizeTransform(clip = false))
                 } else {
                     (slideInHorizontally(tween(320)) { width -> width / 8 } + fadeIn(tween(220)))
@@ -368,30 +379,33 @@ private fun CompanionDetail(
             CompanionPortrait(
                 companion = companion,
                 moodColor = moodColor,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(270.dp)
-                    .semantics {
-                        contentDescription = "${companion.name}, ${companion.role.displayName()}. " +
-                            "Bond level ${companion.bondLevel} of $MAX_BOND_LEVEL_UI."
-                    },
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(270.dp)
+                        .semantics {
+                            contentDescription = "${companion.name}, ${companion.role.displayName()}. " +
+                                "Bond level ${companion.bondLevel} of $MAX_BOND_LEVEL_UI."
+                        },
             )
 
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 18.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = 18.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Top,
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = companion.name,
-                        style = MaterialTheme.typography.headlineSmall.copy(
-                            fontFamily = FontFamily.Serif,
-                            fontWeight = FontWeight.Bold,
-                            color = Ink,
-                        ),
+                        style =
+                            MaterialTheme.typography.headlineSmall.copy(
+                                fontFamily = FontFamily.Serif,
+                                fontWeight = FontWeight.Bold,
+                                color = Ink,
+                            ),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -407,10 +421,11 @@ private fun CompanionDetail(
 
             Text(
                 text = companion.attachmentLine(isActive),
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    fontFamily = FontFamily.Serif,
-                    color = Ink.copy(alpha = 0.84f),
-                ),
+                style =
+                    MaterialTheme.typography.bodyLarge.copy(
+                        fontFamily = FontFamily.Serif,
+                        color = Ink.copy(alpha = 0.84f),
+                    ),
                 modifier = Modifier.padding(top = 14.dp),
             )
 
@@ -440,10 +455,11 @@ private fun CompanionDetail(
             if (!message.isNullOrBlank()) {
                 Text(
                     text = message,
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        fontFamily = FontFamily.Serif,
-                        fontStyle = FontStyle.Italic,
-                    ),
+                    style =
+                        MaterialTheme.typography.bodySmall.copy(
+                            fontFamily = FontFamily.Serif,
+                            fontStyle = FontStyle.Italic,
+                        ),
                     color = SoftInk,
                     modifier = Modifier.padding(top = 14.dp),
                 )
@@ -458,14 +474,16 @@ private fun CompanionDetail(
                     actions.onRecruit.onRecruit(companion.companionId)
                 }
             },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 18.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = 18.dp),
             shape = RoundedCornerShape(8.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = if (isActive) Moss else Rosewood,
-                contentColor = Color.White,
-            ),
+            colors =
+                ButtonDefaults.buttonColors(
+                    containerColor = if (isActive) Moss else Rosewood,
+                    contentColor = Color.White,
+                ),
             contentPadding = PaddingValues(vertical = 12.dp),
         ) {
             Text(if (isActive) "Talk" else "Recruit")
@@ -480,9 +498,10 @@ private fun CompanionCommentaryScrap(
     modifier: Modifier = Modifier,
 ) {
     Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .border(1.dp, color.copy(alpha = 0.28f), RoundedCornerShape(8.dp)),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .border(1.dp, color.copy(alpha = 0.28f), RoundedCornerShape(8.dp)),
         shape = RoundedCornerShape(8.dp),
         color = Color.White.copy(alpha = 0.46f),
         contentColor = Ink,
@@ -498,10 +517,11 @@ private fun CompanionCommentaryScrap(
             ) {
                 Text(
                     text = commentary.companionName,
-                    style = MaterialTheme.typography.labelLarge.copy(
-                        fontFamily = FontFamily.Serif,
-                        fontWeight = FontWeight.Bold,
-                    ),
+                    style =
+                        MaterialTheme.typography.labelLarge.copy(
+                            fontFamily = FontFamily.Serif,
+                            fontWeight = FontWeight.Bold,
+                        ),
                     color = color,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -516,11 +536,12 @@ private fun CompanionCommentaryScrap(
             }
             Text(
                 text = commentary.line,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontFamily = FontFamily.Serif,
-                    fontStyle = FontStyle.Italic,
-                    color = Ink.copy(alpha = 0.86f),
-                ),
+                style =
+                    MaterialTheme.typography.bodyMedium.copy(
+                        fontFamily = FontFamily.Serif,
+                        fontStyle = FontStyle.Italic,
+                        color = Ink.copy(alpha = 0.86f),
+                    ),
             )
         }
     }
@@ -609,10 +630,11 @@ private fun CompactRosterRail(
                 label = "compact-companion-scale",
             )
             Surface(
-                modifier = Modifier
-                    .width(136.dp)
-                    .scale(scale)
-                    .clickable { onSelect(companion.companionId) },
+                modifier =
+                    Modifier
+                        .width(136.dp)
+                        .scale(scale)
+                        .clickable { onSelect(companion.companionId) },
                 shape = RoundedCornerShape(8.dp),
                 color = if (selected) companion.moodColor().copy(alpha = 0.16f) else Color.White.copy(alpha = 0.32f),
                 contentColor = Ink,
@@ -658,10 +680,11 @@ private fun CompanionRosterRow(
         label = "companion-row-scale",
     )
     Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .scale(scale)
-            .clickable(onClick = onSelect),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .scale(scale)
+                .clickable(onClick = onSelect),
         shape = RoundedCornerShape(8.dp),
         color = if (selected) companion.moodColor().copy(alpha = 0.14f) else Color.White.copy(alpha = 0.36f),
         contentColor = Ink,
@@ -694,10 +717,11 @@ private fun CompanionRosterRow(
             Button(
                 onClick = onAction,
                 shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = companion.moodColor(),
-                    contentColor = Color.White,
-                ),
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor = companion.moodColor(),
+                        contentColor = Color.White,
+                    ),
                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
             ) {
                 Text(actionLabel)
@@ -713,8 +737,9 @@ private fun CompanionPortrait(
     modifier: Modifier = Modifier,
 ) {
     Surface(
-        modifier = modifier
-            .border(1.dp, WarmPanelDeep.copy(alpha = 0.9f), RoundedCornerShape(8.dp)),
+        modifier =
+            modifier
+                .border(1.dp, WarmPanelDeep.copy(alpha = 0.9f), RoundedCornerShape(8.dp)),
         shape = RoundedCornerShape(8.dp),
         color = Color(0xFFF1E1BF),
         contentColor = Ink,
@@ -722,9 +747,10 @@ private fun CompanionPortrait(
         Box(Modifier.fillMaxSize()) {
             Canvas(Modifier.fillMaxSize()) {
                 drawRect(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(moodColor.copy(alpha = 0.24f), Color.Transparent),
-                    ),
+                    brush =
+                        Brush.verticalGradient(
+                            colors = listOf(moodColor.copy(alpha = 0.24f), Color.Transparent),
+                        ),
                 )
                 drawCircle(
                     color = Color.White.copy(alpha = 0.28f),
@@ -734,7 +760,9 @@ private fun CompanionPortrait(
                 drawOval(
                     color = moodColor.copy(alpha = 0.28f),
                     topLeft = Offset(size.width * 0.24f, size.height * 0.34f),
-                    size = androidx.compose.ui.geometry.Size(size.width * 0.52f, size.height * 0.56f),
+                    size =
+                        androidx.compose.ui.geometry
+                            .Size(size.width * 0.52f, size.height * 0.56f),
                 )
                 drawCircle(
                     color = companion.skinTone(),
@@ -742,13 +770,29 @@ private fun CompanionPortrait(
                     center = Offset(size.width * 0.5f, size.height * 0.31f),
                 )
                 drawPath(
-                    path = Path().apply {
-                        moveTo(size.width * 0.38f, size.height * 0.25f)
-                        quadraticBezierTo(size.width * 0.5f, size.height * 0.12f, size.width * 0.63f, size.height * 0.25f)
-                        quadraticBezierTo(size.width * 0.57f, size.height * 0.2f, size.width * 0.5f, size.height * 0.2f)
-                        quadraticBezierTo(size.width * 0.43f, size.height * 0.2f, size.width * 0.38f, size.height * 0.25f)
-                        close()
-                    },
+                    path =
+                        Path().apply {
+                            moveTo(size.width * 0.38f, size.height * 0.25f)
+                            quadraticBezierTo(
+                                size.width * 0.5f,
+                                size.height * 0.12f,
+                                size.width * 0.63f,
+                                size.height * 0.25f,
+                            )
+                            quadraticBezierTo(
+                                size.width * 0.57f,
+                                size.height * 0.2f,
+                                size.width * 0.5f,
+                                size.height * 0.2f,
+                            )
+                            quadraticBezierTo(
+                                size.width * 0.43f,
+                                size.height * 0.2f,
+                                size.width * 0.38f,
+                                size.height * 0.25f,
+                            )
+                            close()
+                        },
                     color = companion.hairColor(),
                 )
                 drawLine(
@@ -767,9 +811,10 @@ private fun CompanionPortrait(
                 text = companion.role.displayName(),
                 style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
                 color = Ink.copy(alpha = 0.7f),
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(14.dp),
+                modifier =
+                    Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(14.dp),
             )
         }
     }
@@ -792,7 +837,9 @@ private fun MiniPortrait(companion: Companion) {
             drawOval(
                 color = companion.moodColor().copy(alpha = 0.55f),
                 topLeft = Offset(size.width * 0.26f, size.height * 0.48f),
-                size = androidx.compose.ui.geometry.Size(size.width * 0.48f, size.height * 0.36f),
+                size =
+                    androidx.compose.ui.geometry
+                        .Size(size.width * 0.48f, size.height * 0.36f),
             )
             drawCircle(
                 color = companion.hairColor(),
@@ -809,11 +856,12 @@ private fun RelationshipMeter(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .semantics {
-                contentDescription = "Relationship: bond level $bondLevel of $MAX_BOND_LEVEL_UI."
-            },
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .semantics {
+                    contentDescription = "Relationship: bond level $bondLevel of $MAX_BOND_LEVEL_UI."
+                },
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -843,11 +891,12 @@ private fun RelationshipMeter(
                     label = "bond-alpha",
                 )
                 Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(9.dp)
-                        .clip(RoundedCornerShape(5.dp))
-                        .background(Brass.copy(alpha = alpha)),
+                    modifier =
+                        Modifier
+                            .weight(1f)
+                            .height(9.dp)
+                            .clip(RoundedCornerShape(5.dp))
+                            .background(Brass.copy(alpha = alpha)),
                 )
             }
         }
@@ -865,19 +914,23 @@ private fun MiniBondDots(
     ) {
         repeat(MAX_BOND_LEVEL_UI) { index ->
             Box(
-                modifier = Modifier
-                    .size(6.dp)
-                    .background(
-                        color = if (index < bondLevel) Brass else SoftInk.copy(alpha = 0.22f),
-                        shape = CircleShape,
-                    ),
+                modifier =
+                    Modifier
+                        .size(6.dp)
+                        .background(
+                            color = if (index < bondLevel) Brass else SoftInk.copy(alpha = 0.22f),
+                            shape = CircleShape,
+                        ),
             )
         }
     }
 }
 
 @Composable
-private fun MoodBadge(label: String, color: Color) {
+private fun MoodBadge(
+    label: String,
+    color: Color,
+) {
     Surface(
         shape = RoundedCornerShape(4.dp),
         color = color.copy(alpha = 0.14f),
@@ -892,7 +945,10 @@ private fun MoodBadge(label: String, color: Color) {
 }
 
 @Composable
-private fun CompanionTrait(label: String, color: Color) {
+private fun CompanionTrait(
+    label: String,
+    color: Color,
+) {
     Surface(
         shape = RoundedCornerShape(4.dp),
         color = color.copy(alpha = 0.12f),
@@ -907,7 +963,10 @@ private fun CompanionTrait(label: String, color: Color) {
 }
 
 @Composable
-private fun RosterSectionLabel(title: String, count: Int) {
+private fun RosterSectionLabel(
+    title: String,
+    count: Int,
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -915,11 +974,12 @@ private fun RosterSectionLabel(title: String, count: Int) {
     ) {
         Text(
             text = title,
-            style = MaterialTheme.typography.titleMedium.copy(
-                fontFamily = FontFamily.Serif,
-                fontWeight = FontWeight.Bold,
-                color = Ink,
-            ),
+            style =
+                MaterialTheme.typography.titleMedium.copy(
+                    fontFamily = FontFamily.Serif,
+                    fontWeight = FontWeight.Bold,
+                    color = Ink,
+                ),
         )
         Text(
             text = count.toString(),
@@ -933,10 +993,11 @@ private fun RosterSectionLabel(title: String, count: Int) {
 private fun RosterEmptyLine(text: String) {
     Text(
         text = text,
-        style = MaterialTheme.typography.bodyMedium.copy(
-            fontFamily = FontFamily.Serif,
-            fontStyle = FontStyle.Italic,
-        ),
+        style =
+            MaterialTheme.typography.bodyMedium.copy(
+                fontFamily = FontFamily.Serif,
+                fontStyle = FontStyle.Italic,
+            ),
         color = SoftInk,
         modifier = Modifier.padding(vertical = 8.dp),
     )
@@ -950,9 +1011,10 @@ private fun EmptyCompanionAttachment(modifier: Modifier = Modifier) {
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Canvas(
-                modifier = Modifier
-                    .size(width = 170.dp, height = 126.dp)
-                    .alpha(0.62f),
+                modifier =
+                    Modifier
+                        .size(width = 170.dp, height = 126.dp)
+                        .alpha(0.62f),
             ) {
                 drawCircle(
                     color = Ink.copy(alpha = 0.26f),
@@ -969,18 +1031,20 @@ private fun EmptyCompanionAttachment(modifier: Modifier = Modifier) {
             }
             Text(
                 text = "No companions nearby",
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontFamily = FontFamily.Serif,
-                    fontWeight = FontWeight.Bold,
-                    color = Ink,
-                ),
+                style =
+                    MaterialTheme.typography.titleMedium.copy(
+                        fontFamily = FontFamily.Serif,
+                        fontWeight = FontWeight.Bold,
+                        color = Ink,
+                    ),
             )
             Text(
                 text = "New bonds begin in town.",
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontFamily = FontFamily.Serif,
-                    color = SoftInk,
-                ),
+                style =
+                    MaterialTheme.typography.bodyMedium.copy(
+                        fontFamily = FontFamily.Serif,
+                        color = SoftInk,
+                    ),
                 modifier = Modifier.padding(top = 6.dp),
             )
         }
@@ -1007,11 +1071,12 @@ private fun CompanionDeskTexture() {
 private fun CompanionPageTexture() {
     Canvas(Modifier.fillMaxSize()) {
         drawRect(
-            brush = Brush.radialGradient(
-                colors = listOf(Color.Transparent, WarmPanelDeep.copy(alpha = 0.34f)),
-                center = Offset(size.width * 0.18f, size.height * 0.12f),
-                radius = size.maxDimension * 0.9f,
-            ),
+            brush =
+                Brush.radialGradient(
+                    colors = listOf(Color.Transparent, WarmPanelDeep.copy(alpha = 0.34f)),
+                    center = Offset(size.width * 0.18f, size.height * 0.12f),
+                    radius = size.maxDimension * 0.9f,
+                ),
         )
         val ruleColor = Ink.copy(alpha = 0.045f)
         var y = 86f
@@ -1027,8 +1092,7 @@ private fun CompanionPageTexture() {
     }
 }
 
-private fun CompanionRole.displayName(): String =
-    name.replaceFirstChar { it.titlecase() }
+private fun CompanionRole.displayName(): String = name.replaceFirstChar { it.titlecase() }
 
 private fun Companion.moodLabel(): String =
     when {
@@ -1073,17 +1137,21 @@ private fun Companion.roleStrength(): String =
     }
 
 private fun Companion.attachmentLine(isActive: Boolean): String {
-    val bond = when {
-        bondLevel >= 4 -> "trusts your pace without looking back"
-        bondLevel >= 2 -> "has learned the shape of your road"
-        bondLevel == 1 -> "is beginning to settle into the party"
-        else -> "is still deciding what kind of traveler you are"
-    }
+    val bond =
+        when {
+            bondLevel >= 4 -> "trusts your pace without looking back"
+            bondLevel >= 2 -> "has learned the shape of your road"
+            bondLevel == 1 -> "is beginning to settle into the party"
+            else -> "is still deciding what kind of traveler you are"
+        }
     val place = if (isActive) "beside you" else "near the town gate"
-    return "${name} waits $place and $bond."
+    return "$name waits $place and $bond."
 }
 
-private fun Companion.roleMark(width: Float, height: Float): Path =
+private fun Companion.roleMark(
+    width: Float,
+    height: Float,
+): Path =
     Path().apply {
         when (role) {
             CompanionRole.Fighter -> {
@@ -1124,15 +1192,21 @@ private fun Companion.roleMark(width: Float, height: Float): Path =
         }
     }
 
-class CompanionsScreenView(context: Context) : FrameLayout(context) {
-    private val composeView = ComposeView(context).also { view ->
-        addView(
-            view,
-            LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT),
-        )
-    }
+class CompanionsScreenView(
+    context: Context,
+) : FrameLayout(context) {
+    private val composeView =
+        ComposeView(context).also { view ->
+            addView(
+                view,
+                LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT),
+            )
+        }
 
-    fun render(state: CompanionsScreenState, actions: CompanionsActions) {
+    fun render(
+        state: CompanionsScreenState,
+        actions: CompanionsActions,
+    ) {
         composeView.setContent {
             WanderingLedgerTheme {
                 CompanionsScreen(state, actions)

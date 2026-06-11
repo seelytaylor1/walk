@@ -24,40 +24,42 @@ fun WLListItem(
     modifier: Modifier = Modifier,
     subtitle: String? = null,
     trailing: @Composable (() -> Unit)? = null,
-    onClick: (() -> Unit)? = null
+    onClick: (() -> Unit)? = null,
 ) {
-    val itemModifier = if (onClick != null) {
-        modifier.clickable(onClick = onClick)
-    } else {
-        modifier
-    }
+    val itemModifier =
+        if (onClick != null) {
+            modifier.clickable(onClick = onClick)
+        } else {
+            modifier
+        }
 
     Column(modifier = itemModifier) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 Text(
                     text = title,
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
                 if (subtitle != null) {
                     Text(
                         text = subtitle,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
-            
+
             if (trailing != null) {
                 trailing()
             }
@@ -77,7 +79,7 @@ fun MarketListItem(
     modifier: Modifier = Modifier,
     supplyLevel: Int? = null,
     isContraband: Boolean = false,
-    onClick: (() -> Unit)? = null
+    onClick: (() -> Unit)? = null,
 ) {
     WLListItem(
         title = goodName,
@@ -86,7 +88,7 @@ fun MarketListItem(
         trailing = {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 if (isContraband) {
                     ContrabandBadge()
@@ -96,7 +98,7 @@ fun MarketListItem(
                 }
             }
         },
-        onClick = onClick
+        onClick = onClick,
     )
 }
 
@@ -109,13 +111,13 @@ fun InventoryListItem(
     quantity: Int,
     modifier: Modifier = Modifier,
     isSealed: Boolean = false,
-    onClick: (() -> Unit)? = null
+    onClick: (() -> Unit)? = null,
 ) {
     WLListItem(
         title = goodName,
         subtitle = if (isSealed) "Quantity: $quantity (Sealed)" else "Quantity: $quantity",
         modifier = modifier,
-        onClick = onClick
+        onClick = onClick,
     )
 }
 
@@ -129,7 +131,7 @@ fun CompanionListItem(
     bondLevel: Int,
     modifier: Modifier = Modifier,
     isActive: Boolean = false,
-    onClick: (() -> Unit)? = null
+    onClick: (() -> Unit)? = null,
 ) {
     WLListItem(
         title = name,
@@ -140,10 +142,10 @@ fun CompanionListItem(
                 WLBadge(
                     text = "Active",
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
             }
         },
-        onClick = onClick
+        onClick = onClick,
     )
 }

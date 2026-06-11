@@ -17,7 +17,6 @@ import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class CompanionRepositoryTest {
-
     private lateinit var database: WanderingLedgerDatabase
     private lateinit var companionRepository: CompanionRepository
     private lateinit var encounterRepository: EncounterRepository
@@ -40,84 +39,90 @@ class CompanionRepositoryTest {
     }
 
     @Test
-    fun observeRecruitableCompanions() = runTest {
-        gameRepository.initializeNewGame(seed = 1L)
-        
-        val recruitable = companionRepository.observeRecruitableCompanionsAtTown(1L).first()
-        assertEquals(1, recruitable.size)
-        assertEquals("Mira", recruitable.first().name)
-    }
+    fun observeRecruitableCompanions() =
+        runTest {
+            gameRepository.initializeNewGame(seed = 1L)
+
+            val recruitable = companionRepository.observeRecruitableCompanionsAtTown(1L).first()
+            assertEquals(1, recruitable.size)
+            assertEquals("Mira", recruitable.first().name)
+        }
 
     @Test
-    fun recruitCompanionUpdatesState() = runTest {
-        gameRepository.initializeNewGame(seed = 1L)
-        
-        val result = companionRepository.recruitCompanion(1L)
-        assertEquals(RecruitmentResult.Success, result)
-        
-        val active = companionRepository.observeActiveCompanions().first()
-        assertEquals(1, active.size)
-        assertEquals("Mira", active.first().name)
-        assertTrue(active.first().isActive)
-        
-        val recruitable = companionRepository.observeRecruitableCompanionsAtTown(1L).first()
-        assertTrue(recruitable.isEmpty())
-    }
+    fun recruitCompanionUpdatesState() =
+        runTest {
+            gameRepository.initializeNewGame(seed = 1L)
+
+            val result = companionRepository.recruitCompanion(1L)
+            assertEquals(RecruitmentResult.Success, result)
+
+            val active = companionRepository.observeActiveCompanions().first()
+            assertEquals(1, active.size)
+            assertEquals("Mira", active.first().name)
+            assertTrue(active.first().isActive)
+
+            val recruitable = companionRepository.observeRecruitableCompanionsAtTown(1L).first()
+            assertTrue(recruitable.isEmpty())
+        }
 
     @Test
-    fun recruitCompanionInitializesBondToZero() = runTest {
-        gameRepository.initializeNewGame(seed = 1L)
-        
-        companionRepository.recruitCompanion(1L)
-        
-        val active = companionRepository.observeActiveCompanions().first()
-        assertEquals(0, active.first().bondLevel)
-    }
+    fun recruitCompanionInitializesBondToZero() =
+        runTest {
+            gameRepository.initializeNewGame(seed = 1L)
+
+            companionRepository.recruitCompanion(1L)
+
+            val active = companionRepository.observeActiveCompanions().first()
+            assertEquals(0, active.first().bondLevel)
+        }
 
     @Test
-    fun updateBondClampsAtMaxLevel() = runTest {
-        gameRepository.initializeNewGame(seed = 1L)
-        companionRepository.recruitCompanion(1L)
-        
-        companionRepository.updateBond(1L, 10)
-        
-        val active = companionRepository.observeActiveCompanions().first()
-        assertEquals(5, active.first().bondLevel)
-    }
+    fun updateBondClampsAtMaxLevel() =
+        runTest {
+            gameRepository.initializeNewGame(seed = 1L)
+            companionRepository.recruitCompanion(1L)
+
+            companionRepository.updateBond(1L, 10)
+
+            val active = companionRepository.observeActiveCompanions().first()
+            assertEquals(5, active.first().bondLevel)
+        }
 
     @Test
-    fun partyFullPreventsRecruitment() = runTest {
-        gameRepository.initializeNewGame(seed = 1L)
-        
-        companionRepository.recruitCompanion(1L) // Mira
-        companionRepository.recruitCompanion(2L) // Bram
-        
-        // Add third companion (Lina) and recruit
-        database.companionDao().upsertCompanion(
-            CompanionEntity(3, "Lina", "Healer", 4, 0, "available", 1, false)
-        )
-        var result = companionRepository.recruitCompanion(3L)
-        assertEquals(RecruitmentResult.Success, result)
-        
-        // Add fourth companion (Zara) - party should be full
-        database.companionDao().upsertCompanion(
-            CompanionEntity(4, "Zara", "Mage", 5, 0, "available", 1, false)
-        )
-        result = companionRepository.recruitCompanion(4L)
-        assertEquals(RecruitmentResult.PartyFull, result)
-    }
+    fun partyFullPreventsRecruitment() =
+        runTest {
+            gameRepository.initializeNewGame(seed = 1L)
+
+            companionRepository.recruitCompanion(1L) // Mira
+            companionRepository.recruitCompanion(2L) // Bram
+
+            // Add third companion (Lina) and recruit
+            database.companionDao().upsertCompanion(
+                CompanionEntity(3, "Lina", "Healer", 4, 0, "available", 1, false),
+            )
+            var result = companionRepository.recruitCompanion(3L)
+            assertEquals(RecruitmentResult.Success, result)
+
+            // Add fourth companion (Zara) - party should be full
+            database.companionDao().upsertCompanion(
+                CompanionEntity(4, "Zara", "Mage", 5, 0, "available", 1, false),
+            )
+            result = companionRepository.recruitCompanion(4L)
+            assertEquals(RecruitmentResult.PartyFull, result)
+        }
 
     @Test
-    fun dismissCompanionMakesAvailableAgain() = runTest {
-        gameRepository.initializeNewGame(seed = 1L)
-        
-        companionRepository.recruitCompanion(1L)
-        companionRepository.dismissCompanion(1L)
-        
-        val active = companionRepository.observeActiveCompanions().first()
-        assertTrue(active.isEmpty())
-        
-        val recruitable = companionRepository.observeRecruitableCompanionsAtTown(1L).first()
-        assertEquals(1, recruitable.size)
-    }
+    fun dismissCompanionMakesAvailableAgain() =
+        runTest {
+            gameRepository.initializeNewGame(seed = 1L)
+
+            companionRepository.recruitCompanion(1L)
+            companionRepository.dismissCompanion(1L)
+
+            val active = companionRepository.observeActiveCompanions().first()
+            assertTrue(active.isEmpty())
+
+            val recruitable = companionRepository.observeRecruitableCompanionsAtTown(1L).first()
+            assertEquals(1, recruitable.size)
+        }
 }

@@ -57,7 +57,6 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.wanderingledger.core.designsystem.theme.BackgroundLight
 import com.wanderingledger.core.designsystem.theme.OnBackgroundLight
 import com.wanderingledger.core.designsystem.theme.PrimaryLight
 import com.wanderingledger.core.designsystem.theme.SecondaryLight
@@ -101,30 +100,33 @@ fun LedgerScreen(
     modifier: Modifier = Modifier,
 ) {
     Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(DesktopBrown, Color(0xFF6E5746)),
-                ),
-            )
-            .padding(horizontal = 14.dp, vertical = 12.dp),
+        modifier =
+            modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(DesktopBrown, Color(0xFF6E5746)),
+                    ),
+                ).padding(horizontal = 14.dp, vertical = 12.dp),
     ) {
         LedgerDeskTexture()
 
         LedgerJournal(
             rumorCount = state.activeRumors.size,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = 76.dp),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(bottom = 76.dp),
         ) {
             AnimatedContent(
                 targetState = state.activeRumors,
                 transitionSpec = {
-                    (slideInHorizontally(
-                        animationSpec = tween(360),
-                        initialOffsetX = { width -> width / 6 },
-                    ) + fadeIn(tween(260))).togetherWith(
+                    (
+                        slideInHorizontally(
+                            animationSpec = tween(360),
+                            initialOffsetX = { width -> width / 6 },
+                        ) + fadeIn(tween(260))
+                    ).togetherWith(
                         slideOutHorizontally(
                             animationSpec = tween(260),
                             targetOffsetX = { width -> -width / 8 },
@@ -146,15 +148,17 @@ fun LedgerScreen(
 
         Button(
             onClick = { actions.onNavigateBack.onNavigateBack() },
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 20.dp)
-                .shadow(8.dp, RoundedCornerShape(8.dp)),
+            modifier =
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 20.dp)
+                    .shadow(8.dp, RoundedCornerShape(8.dp)),
             shape = RoundedCornerShape(8.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF5E3F2E),
-                contentColor = Color.White,
-            ),
+            colors =
+                ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF5E3F2E),
+                    contentColor = Color.White,
+                ),
         ) {
             Text("Close Ledger")
         }
@@ -168,36 +172,40 @@ private fun LedgerJournal(
     content: @Composable () -> Unit,
 ) {
     Surface(
-        modifier = modifier
-            .shadow(16.dp, RoundedCornerShape(18.dp))
-            .clip(RoundedCornerShape(18.dp)),
+        modifier =
+            modifier
+                .shadow(16.dp, RoundedCornerShape(18.dp))
+                .clip(RoundedCornerShape(18.dp)),
         color = Parchment,
         contentColor = OnBackgroundLight,
     ) {
         Box(Modifier.fillMaxSize()) {
             LedgerPageTexture()
             Box(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .width(26.dp)
-                    .background(
-                        Brush.horizontalGradient(
-                            colors = listOf(
-                                Color.Black.copy(alpha = 0.24f),
-                                Color.Black.copy(alpha = 0.06f),
-                                Color.Transparent,
+                modifier =
+                    Modifier
+                        .fillMaxHeight()
+                        .width(26.dp)
+                        .background(
+                            Brush.horizontalGradient(
+                                colors =
+                                    listOf(
+                                        Color.Black.copy(alpha = 0.24f),
+                                        Color.Black.copy(alpha = 0.06f),
+                                        Color.Transparent,
+                                    ),
                             ),
                         ),
-                    ),
             )
             PageRibbon(
                 rumorCount = rumorCount,
                 modifier = Modifier.align(Alignment.TopEnd),
             )
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(start = 24.dp, top = 22.dp, end = 20.dp, bottom = 18.dp),
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(start = 24.dp, top = 22.dp, end = 20.dp, bottom = 18.dp),
             ) {
                 content()
             }
@@ -239,12 +247,13 @@ private fun RumorLedgerPage(
                 RumorScrap(
                     rumor = rumor,
                     index = index,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            start = if (index % 2 == 0) 2.dp else 14.dp,
-                            end = if (index % 2 == 0) 14.dp else 2.dp,
-                        ),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                start = if (index % 2 == 0) 2.dp else 14.dp,
+                                end = if (index % 2 == 0) 14.dp else 2.dp,
+                            ),
                 )
             }
         }
@@ -262,21 +271,23 @@ private fun LedgerHeader(rumorCount: Int) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = "Traveler's Ledger",
-                    style = MaterialTheme.typography.headlineMedium.copy(
-                        fontFamily = FontFamily.Serif,
-                        fontWeight = FontWeight.Bold,
-                        color = PageInk,
-                    ),
+                    style =
+                        MaterialTheme.typography.headlineMedium.copy(
+                            fontFamily = FontFamily.Serif,
+                            fontWeight = FontWeight.Bold,
+                            color = PageInk,
+                        ),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
                     text = "Rumors, market whispers, and road notes",
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        fontFamily = FontFamily.Serif,
-                        fontStyle = FontStyle.Italic,
-                        color = PageInk.copy(alpha = 0.68f),
-                    ),
+                    style =
+                        MaterialTheme.typography.bodySmall.copy(
+                            fontFamily = FontFamily.Serif,
+                            fontStyle = FontStyle.Italic,
+                            color = PageInk.copy(alpha = 0.68f),
+                        ),
                 )
             }
             Surface(
@@ -308,12 +319,13 @@ fun RumorScrap(
     modifier: Modifier = Modifier,
 ) {
     val rotation by animateFloatAsState(
-        targetValue = when (index % 4) {
-            0 -> -1.6f
-            1 -> 1.2f
-            2 -> -0.7f
-            else -> 1.7f
-        },
+        targetValue =
+            when (index % 4) {
+                0 -> -1.6f
+                1 -> 1.2f
+                2 -> -0.7f
+                else -> 1.7f
+            },
         animationSpec = tween(420),
         label = "rumor-scrap-rotation",
     )
@@ -322,25 +334,28 @@ fun RumorScrap(
 
     Box(modifier = modifier.rotate(rotation)) {
         Canvas(
-            modifier = Modifier
-                .matchParentSize()
-                .offset(y = 5.dp),
+            modifier =
+                Modifier
+                    .matchParentSize()
+                    .offset(y = 5.dp),
         ) {
             drawPath(
-                path = Path().apply {
-                    moveTo(size.width * 0.08f, 0f)
-                    lineTo(size.width * 0.96f, size.height * 0.04f)
-                    lineTo(size.width * 0.92f, size.height)
-                    lineTo(size.width * 0.04f, size.height * 0.94f)
-                    close()
-                },
+                path =
+                    Path().apply {
+                        moveTo(size.width * 0.08f, 0f)
+                        lineTo(size.width * 0.96f, size.height * 0.04f)
+                        lineTo(size.width * 0.92f, size.height)
+                        lineTo(size.width * 0.04f, size.height * 0.94f)
+                        close()
+                    },
                 color = Color.Black.copy(alpha = 0.16f),
             )
         }
         Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .border(1.dp, ParchmentDark.copy(alpha = 0.82f), RoundedCornerShape(5.dp)),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .border(1.dp, ParchmentDark.copy(alpha = 0.82f), RoundedCornerShape(5.dp)),
             shape = RoundedCornerShape(5.dp),
             color = scrapColor,
             contentColor = PageInk,
@@ -351,11 +366,12 @@ fun RumorScrap(
                 Column {
                     Text(
                         text = rumor.text,
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            fontFamily = FontFamily.Serif,
-                            fontStyle = FontStyle.Italic,
-                            color = PageInk,
-                        ),
+                        style =
+                            MaterialTheme.typography.bodyLarge.copy(
+                                fontFamily = FontFamily.Serif,
+                                fontStyle = FontStyle.Italic,
+                                color = PageInk,
+                            ),
                     )
                     Spacer(Modifier.height(12.dp))
                     Row(
@@ -364,20 +380,22 @@ fun RumorScrap(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
-                            text = if (rumor.expiryVisitsLeft == 1) {
-                                "Fades after 1 visit"
-                            } else {
-                                "Fades after ${rumor.expiryVisitsLeft} visits"
-                            },
+                            text =
+                                if (rumor.expiryVisitsLeft == 1) {
+                                    "Fades after 1 visit"
+                                } else {
+                                    "Fades after ${rumor.expiryVisitsLeft} visits"
+                                },
                             style = MaterialTheme.typography.labelSmall,
                             color = PageInk.copy(alpha = 0.62f),
                         )
                         RumorTag(
-                            label = when {
-                                rumor.isFalse -> "Untrusted"
-                                isMarketRumor -> "Market"
-                                else -> "Road"
-                            },
+                            label =
+                                when {
+                                    rumor.isFalse -> "Untrusted"
+                                    isMarketRumor -> "Market"
+                                    else -> "Road"
+                                },
                             emphasized = isMarketRumor && !rumor.isFalse,
                         )
                     }
@@ -410,12 +428,13 @@ private fun RumorTag(
 @Composable
 private fun RumorPin(modifier: Modifier = Modifier) {
     Box(
-        modifier = modifier
-            .offset(y = (-26).dp)
-            .size(18.dp)
-            .shadow(3.dp, CircleShape)
-            .background(PinRed, CircleShape)
-            .border(1.dp, Color.White.copy(alpha = 0.35f), CircleShape),
+        modifier =
+            modifier
+                .offset(y = (-26).dp)
+                .size(18.dp)
+                .shadow(3.dp, CircleShape)
+                .background(PinRed, CircleShape)
+                .border(1.dp, Color.White.copy(alpha = 0.35f), CircleShape),
     )
 }
 
@@ -455,18 +474,20 @@ fun EmptyLedgerState(modifier: Modifier = Modifier) {
         }
         Text(
             text = "No rumors pinned",
-            style = MaterialTheme.typography.titleMedium.copy(
-                fontFamily = FontFamily.Serif,
-                fontWeight = FontWeight.Bold,
-                color = PageInk,
-            ),
+            style =
+                MaterialTheme.typography.titleMedium.copy(
+                    fontFamily = FontFamily.Serif,
+                    fontWeight = FontWeight.Bold,
+                    color = PageInk,
+                ),
         )
         Text(
             text = "Visit towns and listen closely to fill these pages.",
-            style = MaterialTheme.typography.bodyMedium.copy(
-                fontFamily = FontFamily.Serif,
-                color = PageInk.copy(alpha = 0.62f),
-            ),
+            style =
+                MaterialTheme.typography.bodyMedium.copy(
+                    fontFamily = FontFamily.Serif,
+                    color = PageInk.copy(alpha = 0.62f),
+                ),
             modifier = Modifier.padding(top = 6.dp),
         )
     }
@@ -478,14 +499,15 @@ private fun PageRibbon(
     modifier: Modifier = Modifier,
 ) {
     Box(
-        modifier = modifier
-            .padding(end = 28.dp)
-            .width(28.dp)
-            .height(86.dp)
-            .background(
-                color = if (rumorCount > 0) PinRed else SecondaryLight.copy(alpha = 0.62f),
-                shape = RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp),
-            ),
+        modifier =
+            modifier
+                .padding(end = 28.dp)
+                .width(28.dp)
+                .height(86.dp)
+                .background(
+                    color = if (rumorCount > 0) PinRed else SecondaryLight.copy(alpha = 0.62f),
+                    shape = RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp),
+                ),
     )
 }
 
@@ -509,11 +531,12 @@ private fun LedgerDeskTexture() {
 private fun LedgerPageTexture() {
     Canvas(Modifier.fillMaxSize()) {
         drawRect(
-            brush = Brush.radialGradient(
-                colors = listOf(Color.Transparent, ParchmentDark.copy(alpha = 0.34f)),
-                center = Offset(size.width * 0.86f, size.height * 0.12f),
-                radius = size.maxDimension * 0.86f,
-            ),
+            brush =
+                Brush.radialGradient(
+                    colors = listOf(Color.Transparent, ParchmentDark.copy(alpha = 0.34f)),
+                    center = Offset(size.width * 0.86f, size.height * 0.12f),
+                    radius = size.maxDimension * 0.86f,
+                ),
         )
         val ruleColor = PageInk.copy(alpha = 0.055f)
         var y = 96f
@@ -547,15 +570,21 @@ private fun ScrapTexture() {
     }
 }
 
-class LedgerScreenView(context: Context) : FrameLayout(context) {
-    private val composeView = ComposeView(context).also { view ->
-        addView(
-            view,
-            LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT),
-        )
-    }
+class LedgerScreenView(
+    context: Context,
+) : FrameLayout(context) {
+    private val composeView =
+        ComposeView(context).also { view ->
+            addView(
+                view,
+                LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT),
+            )
+        }
 
-    fun render(state: LedgerScreenState, actions: LedgerActions) {
+    fun render(
+        state: LedgerScreenState,
+        actions: LedgerActions,
+    ) {
         composeView.setContent {
             WanderingLedgerTheme {
                 LedgerScreen(state, actions)

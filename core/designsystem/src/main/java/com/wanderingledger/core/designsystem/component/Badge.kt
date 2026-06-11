@@ -25,20 +25,20 @@ fun WLBadge(
     text: String,
     modifier: Modifier = Modifier,
     containerColor: Color = MaterialTheme.colorScheme.primaryContainer,
-    contentColor: Color = MaterialTheme.colorScheme.onPrimaryContainer
+    contentColor: Color = MaterialTheme.colorScheme.onPrimaryContainer,
 ) {
     Box(
-        modifier = modifier
-            .background(
-                color = containerColor,
-                shape = MaterialTheme.shapes.small
-            )
-            .padding(horizontal = 8.dp, vertical = 4.dp)
+        modifier =
+            modifier
+                .background(
+                    color = containerColor,
+                    shape = MaterialTheme.shapes.small,
+                ).padding(horizontal = 8.dp, vertical = 4.dp),
     ) {
         Text(
             text = text,
             style = MaterialTheme.typography.labelSmall,
-            color = contentColor
+            color = contentColor,
         )
     }
 }
@@ -49,20 +49,21 @@ fun WLBadge(
 @Composable
 fun SupplyBadge(
     supplyLevel: Int,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
-    val (text, color) = when (supplyLevel) {
-        0 -> "Scarce" to WarningLight
-        1 -> "Normal" to InfoLight
-        2 -> "Abundant" to SuccessLight
-        else -> "Unknown" to MaterialTheme.colorScheme.surfaceVariant
-    }
-    
+    val (text, color) =
+        when (supplyLevel) {
+            0 -> "Scarce" to WarningLight
+            1 -> "Normal" to InfoLight
+            2 -> "Abundant" to SuccessLight
+            else -> "Unknown" to MaterialTheme.colorScheme.surfaceVariant
+        }
+
     WLBadge(
         text = text,
         modifier = modifier,
         containerColor = color.copy(alpha = 0.2f),
-        contentColor = color
+        contentColor = color,
     )
 }
 
@@ -70,14 +71,12 @@ fun SupplyBadge(
  * Contraband badge for illegal goods.
  */
 @Composable
-fun ContrabandBadge(
-    modifier: Modifier = Modifier
-) {
+fun ContrabandBadge(modifier: Modifier = Modifier) {
     WLBadge(
         text = "Contraband",
         modifier = modifier,
         containerColor = ContrabandColor.copy(alpha = 0.2f),
-        contentColor = ContrabandColor
+        contentColor = ContrabandColor,
     )
 }
 
@@ -87,13 +86,13 @@ fun ContrabandBadge(
 @Composable
 fun StepBadge(
     steps: Int,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     WLBadge(
         text = "$steps steps",
         modifier = modifier,
         containerColor = StepBankColor.copy(alpha = 0.2f),
-        contentColor = StepBankColor
+        contentColor = StepBankColor,
     )
 }
 
@@ -103,12 +102,12 @@ fun StepBadge(
 @Composable
 fun GoldBadge(
     gold: Long,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     WLBadge(
         text = "$gold gold",
         modifier = modifier,
         containerColor = GoldColor.copy(alpha = 0.2f),
-        contentColor = GoldColorDark
+        contentColor = GoldColorDark,
     )
 }

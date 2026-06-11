@@ -7,7 +7,6 @@ import androidx.compose.ui.graphics.Color
  * Uses warm, earthy tones suitable for a walking and trading game.
  */
 
-// Primary - Warm amber/gold for trading theme
 val PrimaryLight = Color(0xFFB8860B) // Dark goldenrod
 val OnPrimaryLight = Color(0xFFFFFFFF)
 val PrimaryContainerLight = Color(0xFFFFE082)
@@ -96,34 +95,38 @@ data class BiomeColors(
     val surface: Color,
 )
 
-val ForestColors = BiomeColors(
-    primary = Color(0xFF2E7D32),     // Deep forest green
-    secondary = Color(0xFF795548),    // Earthy brown
-    tertiary = Color(0xFF8BC34A),    // Light green
-    background = Color(0xFFF1F8E9),  // Pale green tint
-    surface = Color(0xFFFFFFFF),
-)
+val ForestColors =
+    BiomeColors(
+        primary = Color(0xFF2E7D32), // Deep forest green
+        secondary = Color(0xFF795548), // Earthy brown
+        tertiary = Color(0xFF8BC34A), // Light green
+        background = Color(0xFFF1F8E9), // Pale green tint
+        surface = Color(0xFFFFFFFF),
+    )
 
-val MountainColors = BiomeColors(
-    primary = Color(0xFF455A64),    // Stone gray-blue
-    secondary = Color(0xFF795548),   // Earthy brown
-    tertiary = Color(0xFF90A4AE),    // Light stone
-    background = Color(0xFFECEFF1), // Pale gray tint
-    surface = Color(0xFFFFFFFF),
-)
+val MountainColors =
+    BiomeColors(
+        primary = Color(0xFF455A64), // Stone gray-blue
+        secondary = Color(0xFF795548), // Earthy brown
+        tertiary = Color(0xFF90A4AE), // Light stone
+        background = Color(0xFFECEFF1), // Pale gray tint
+        surface = Color(0xFFFFFFFF),
+    )
 
-val SwampColors = BiomeColors(
-    primary = Color(0xFF00695C),     // Teal swamp green
-    secondary = Color(0xFF5D4037),   // Dark brown
-    tertiary = Color(0xFF4DB6AC),    // Light teal
-    background = Color(0xFFE0F2F1), // Pale teal tint
-    surface = Color(0xFFFFFFFF),
-)
+val SwampColors =
+    BiomeColors(
+        primary = Color(0xFF00695C), // Teal swamp green
+        secondary = Color(0xFF5D4037), // Dark brown
+        tertiary = Color(0xFF4DB6AC), // Light teal
+        background = Color(0xFFE0F2F1), // Pale teal tint
+        surface = Color(0xFFFFFFFF),
+    )
 
-val CoastColors = BiomeColors(
-    primary = Color(0xFF0277BD),     // Ocean blue
-    secondary = Color(0xFFFFB74D),   // Sand/sunset
-    tertiary = Color(0xFF4FC3F7),    // Light blue
-    background = Color(0xFFE1F5FE), // Pale blue tint
-    surface = Color(0xFFFFFFFF),
-)
+val CoastColors =
+    BiomeColors(
+        primary = Color(0xFF0277BD), // Ocean blue
+        secondary = Color(0xFFFFB74D), // Sand/sunset
+        tertiary = Color(0xFF4FC3F7), // Light blue
+        background = Color(0xFFE1F5FE), // Pale blue tint
+        surface = Color(0xFFFFFFFF),
+    )

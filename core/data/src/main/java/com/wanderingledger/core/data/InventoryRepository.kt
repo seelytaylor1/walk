@@ -38,7 +38,6 @@ data class InventorySummary(
 class InventoryRepository(
     private val database: WanderingLedgerDatabase,
 ) {
-
     /**
      * Stream the player's inventory as a list of enriched [InventoryItem]s.
      * Emits whenever inventory changes.
@@ -71,24 +70,27 @@ class InventoryRepository(
         ) { items, player, goods ->
             val goodsById = goods.associateBy { it.goodId }
 
-            val rows = items.mapNotNull { entity ->
-                val good = goodsById[entity.goodId] ?: return@mapNotNull null
-                InventoryRow(
-                    item = InventoryItem(
-                        id = entity.id,
-                        playerId = entity.playerId,
-                        goodId = entity.goodId,
-                        quantity = entity.quantity,
-                        isSealed = entity.isSealed,
-                    ),
-                    good = Good(
-                        goodId = good.goodId,
-                        name = good.name,
-                        baseValue = good.baseValue,
-                        isContraband = good.isContraband,
-                    ),
-                )
-            }
+            val rows =
+                items.mapNotNull { entity ->
+                    val good = goodsById[entity.goodId] ?: return@mapNotNull null
+                    InventoryRow(
+                        item =
+                            InventoryItem(
+                                id = entity.id,
+                                playerId = entity.playerId,
+                                goodId = entity.goodId,
+                                quantity = entity.quantity,
+                                isSealed = entity.isSealed,
+                            ),
+                        good =
+                            Good(
+                                goodId = good.goodId,
+                                name = good.name,
+                                baseValue = good.baseValue,
+                                isContraband = good.isContraband,
+                            ),
+                    )
+                }
 
             InventorySummary(
                 totalItemsCarried = items.sumOf { it.quantity },

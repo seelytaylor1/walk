@@ -12,13 +12,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.wanderingledger.core.model.Biome
+import com.wanderingledger.core.data.TravelRoute
 import com.wanderingledger.core.model.PlayerState
 import com.wanderingledger.core.model.Town
-import com.wanderingledger.core.data.TravelRoute
-import androidx.compose.ui.geometry.Offset
 
 data class WorldMapRouteOption(
     val segmentId: Long,
@@ -50,40 +49,38 @@ data class WorldMapActions(
 fun WorldMapScreen(
     state: WorldMapScreenState,
     actions: WorldMapActions,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Box(modifier = modifier.fillMaxSize()) {
         WorldMapRenderer(
             locations = state.mapLocations,
             routes = state.mapRoutes,
             onLocationClick = { townId ->
-                val route = state.routes.find { 
-                    // This is a bit simplified, ideally we'd have a more robust way to link
-                    // map locations to travel routes.
-                    true 
+                val location = state.mapLocations.find { it.townId == townId }
+                state.routes.find { it.destinationName == location?.name && it.isEnabled }?.let {
+                    actions.onTravel(it.segmentId)
                 }
-                // For now, if there's a route to this town, we could trigger it.
-                // But usually you'd click a button in the UI or a specific route marker.
             },
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
         )
 
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
         ) {
             Text(
                 text = "World Map",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
+                color = MaterialTheme.colorScheme.onBackground,
             )
 
             Text(
                 text = "${state.currentTownName}, ${state.currentTownRegion}",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -91,17 +88,70 @@ fun WorldMapScreen(
             Text(
                 text = "Steps: ${state.bankedSteps}",
                 style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary,
             )
 
             Spacer(modifier = Modifier.weight(1f))
+
+            if (state.routes.isEmpty()) {
+                Text(
+                    text = "No roads lead from here.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            } else {
+                state.routes.forEach { route ->
+                    RouteButton(
+                        route = route,
+                        onClick = { actions.onTravel(route.segmentId) },
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            androidx.compose.material3.OutlinedButton(
+                onClick = { actions.onSimulateSteps() },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("+75 Steps")
+            }
 
             if (state.message != null) {
                 Text(
                     text = state.message,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    modifier = Modifier.padding(bottom = 8.dp),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun RouteButton(
+    route: WorldMapRouteOption,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    androidx.compose.material3.Button(
+        onClick = onClick,
+        enabled = route.isEnabled,
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(text = "Travel to ${route.destinationName}")
+            Text(
+                text = "${route.stepCost} steps (${route.narrativeDistance})",
+                style = MaterialTheme.typography.labelSmall,
+            )
+            if (!route.isEnabled) {
+                Text(
+                    text = "Need ${route.shortfall} more steps",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.error,
                 )
             }
         }
@@ -109,11 +159,12 @@ fun WorldMapScreen(
 }
 
 // Coordinate mapping for the vertical slice towns
-private val TownCoordinates = mapOf(
-    1L to Offset(0.3f, 0.4f), // Hearthwick
-    2L to Offset(0.7f, 0.2f), // Stoneford
-    3L to Offset(0.6f, 0.7f), // Mistfall
-)
+private val TownCoordinates =
+    mapOf(
+        1L to Offset(0.3f, 0.4f), // Hearthwick
+        2L to Offset(0.7f, 0.2f), // Stoneford
+        3L to Offset(0.6f, 0.7f), // Mistfall
+    )
 
 fun buildWorldMapScreenState(
     playerState: PlayerState,
@@ -123,41 +174,45 @@ fun buildWorldMapScreenState(
     allRoads: List<com.wanderingledger.core.model.RoadSegment>,
     message: String? = null,
 ): WorldMapScreenState {
-    val mapLocations = allTowns.map { town ->
-        MapLocation(
-            townId = town.townId,
-            name = town.name,
-            offset = TownCoordinates[town.townId] ?: Offset(0.5f, 0.5f),
-            isDiscovered = town.lastVisitedAt > 0,
-            isCurrentLocation = town.townId == currentTown.townId
-        )
-    }
+    val mapLocations =
+        allTowns.map { town ->
+            MapLocation(
+                townId = town.townId,
+                name = town.name,
+                offset = TownCoordinates[town.townId] ?: Offset(0.5f, 0.5f),
+                isDiscovered = town.lastVisitedAt > 0,
+                isCurrentLocation = town.townId == currentTown.townId,
+            )
+        }
 
-    val mapRoutes = allRoads.map { road ->
-        MapRoute(
-            fromId = road.fromTownId,
-            toId = road.toTownId,
-            fromOffset = TownCoordinates[road.fromTownId] ?: Offset(0.5f, 0.5f),
-            toOffset = TownCoordinates[road.toTownId] ?: Offset(0.5f, 0.5f),
-            isDiscovered = allTowns.find { it.townId == road.fromTownId }?.lastVisitedAt ?: 0 > 0 ||
-                           allTowns.find { it.townId == road.toTownId }?.lastVisitedAt ?: 0 > 0
-        )
-    }
+    val mapRoutes =
+        allRoads.map { road ->
+            MapRoute(
+                fromId = road.fromTownId,
+                toId = road.toTownId,
+                fromOffset = TownCoordinates[road.fromTownId] ?: Offset(0.5f, 0.5f),
+                toOffset = TownCoordinates[road.toTownId] ?: Offset(0.5f, 0.5f),
+                isDiscovered =
+                    allTowns.find { it.townId == road.fromTownId }?.lastVisitedAt ?: 0 > 0 ||
+                        allTowns.find { it.townId == road.toTownId }?.lastVisitedAt ?: 0 > 0,
+            )
+        }
 
     return WorldMapScreenState(
         currentTownName = currentTown.name,
         currentTownRegion = currentTown.region,
         bankedSteps = playerState.bankedSteps,
         lifetimeSteps = playerState.lifetimeSteps,
-        routes = availableRoutes.map { route ->
-            WorldMapRouteOption(
-                segmentId = route.segment.segmentId,
-                destinationName = route.destination.name,
-                stepCost = route.segment.stepCost,
-                narrativeDistance = route.segment.narrativeDistance,
-                shortfall = (route.segment.stepCost.toLong() - playerState.bankedSteps).coerceAtLeast(0),
-            )
-        },
+        routes =
+            availableRoutes.map { route ->
+                WorldMapRouteOption(
+                    segmentId = route.segment.segmentId,
+                    destinationName = route.destination.name,
+                    stepCost = route.segment.stepCost,
+                    narrativeDistance = route.segment.narrativeDistance,
+                    shortfall = (route.segment.stepCost.toLong() - playerState.bankedSteps).coerceAtLeast(0),
+                )
+            },
         mapLocations = mapLocations,
         mapRoutes = mapRoutes,
         message = message,

@@ -14,7 +14,6 @@ class TopBar(
     private val subtitle: String? = null,
     private val onBack: (() -> Unit)? = null,
 ) : LinearLayout(context) {
-
     init {
         orientation = VERTICAL
         gravity = Gravity.CENTER_HORIZONTAL or Gravity.BOTTOM
@@ -22,36 +21,43 @@ class TopBar(
         setBackgroundColor(ContextCompat.getColor(context, R.color.primary_container_light))
     }
 
-    fun render(title: String, subtitle: String?, showBack: Boolean) {
+    fun render(
+        title: String,
+        subtitle: String?,
+        showBack: Boolean,
+    ) {
         removeAllViews()
 
         if (showBack && onBack != null) {
-            val backButton = TextView(context).apply {
-                text = "← Back"
-                textSize = 14f
-                setTextColor(ContextCompat.getColor(context, R.color.primary_light))
-                setOnClickListener { onBack.invoke() }
-            }
+            val backButton =
+                TextView(context).apply {
+                    text = "← Back"
+                    textSize = 14f
+                    setTextColor(ContextCompat.getColor(context, R.color.primary_light))
+                    setOnClickListener { onBack.invoke() }
+                }
             addView(backButton)
         }
 
-        val titleText = TextView(context).apply {
-            text = title
-            textSize = 24f
-            typeface = Typeface.DEFAULT_BOLD
-            gravity = Gravity.CENTER
-            setTextColor(ContextCompat.getColor(context, R.color.on_primary_container_light))
-        }
+        val titleText =
+            TextView(context).apply {
+                text = title
+                textSize = 24f
+                typeface = Typeface.DEFAULT_BOLD
+                gravity = Gravity.CENTER
+                setTextColor(ContextCompat.getColor(context, R.color.on_primary_container_light))
+            }
         addView(titleText)
 
         subtitle?.let {
-            val subtitleText = TextView(context).apply {
-                text = it
-                textSize = 14f
-                gravity = Gravity.CENTER
-                setTextColor(ContextCompat.getColor(context, R.color.on_primary_container_light))
-                alpha = 0.8f
-            }
+            val subtitleText =
+                TextView(context).apply {
+                    text = it
+                    textSize = 14f
+                    gravity = Gravity.CENTER
+                    setTextColor(ContextCompat.getColor(context, R.color.on_primary_container_light))
+                    alpha = 0.8f
+                }
             addView(subtitleText)
         }
     }

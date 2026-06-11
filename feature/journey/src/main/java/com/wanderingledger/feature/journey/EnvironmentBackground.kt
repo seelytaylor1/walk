@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -34,67 +33,72 @@ fun EnvironmentBackground(
     weather: WeatherCondition = WeatherCondition.Clear,
     timeOfDay: TimeOfDay = TimeOfDay.Day,
     modifier: Modifier = Modifier,
-    reducedMotion: Boolean = false
+    reducedMotion: Boolean = false,
 ) {
     val biomeColors = WLTheme.current.biomeColors
 
     Box(modifier = modifier.fillMaxSize()) {
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            biomeColors.background,
-                            biomeColors.background.copy(alpha = 0.95f),
-                            MaterialTheme.colorScheme.surface
-                        )
-                    )
-                )
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors =
+                                listOf(
+                                    biomeColors.background,
+                                    biomeColors.background.copy(alpha = 0.95f),
+                                    MaterialTheme.colorScheme.surface,
+                                ),
+                        ),
+                    ),
         )
 
         ParallaxLayer(
             depth = ParallaxDepth.Background,
             biome = biome,
             reducedMotion = reducedMotion,
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.TopCenter)
-                .offset(y = 20.dp)
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.TopCenter)
+                    .offset(y = 20.dp),
         )
 
         ParallaxLayer(
             depth = ParallaxDepth.Midground,
             biome = biome,
             reducedMotion = reducedMotion,
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.TopCenter)
-                .offset(y = 40.dp)
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.TopCenter)
+                    .offset(y = 40.dp),
         )
 
         WeatherOverlay(
             weather = weather,
             biome = biome,
             reducedMotion = reducedMotion,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
         )
 
         AtmosphericFxLayer(
-            config = AtmosphericFxConfig(
-                biome = biome,
-                weather = WeatherCondition.Clear,
-                timeOfDay = timeOfDay,
-                includeBiomeAmbient = true,
-                includeWeather = false,
-                reducedMotion = reducedMotion,
-            ),
+            config =
+                AtmosphericFxConfig(
+                    biome = biome,
+                    weather = WeatherCondition.Clear,
+                    timeOfDay = timeOfDay,
+                    includeBiomeAmbient = true,
+                    includeWeather = false,
+                    reducedMotion = reducedMotion,
+                ),
             modifier = Modifier.fillMaxSize(),
         )
 
         TimeOfDayTint(
             timeOfDay = timeOfDay,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
         )
 
         if (weather == WeatherCondition.Fog) {
@@ -105,30 +109,31 @@ fun EnvironmentBackground(
         }
 
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 60.dp),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(top = 60.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Center,
         ) {
             Spacer(modifier = Modifier.height(32.dp))
 
             PartyRenderer(
                 companions = activeCompanions,
                 showPlayer = true,
-                modifier = Modifier.offset(y = 60.dp)
+                modifier = Modifier.offset(y = 60.dp),
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
+                horizontalArrangement = Arrangement.Center,
             ) {
                 Text(
                     text = "\uD83D\uDCCD",
                     style = MaterialTheme.typography.displayLarge,
-                    color = Color.White.copy(alpha = 0.9f)
+                    color = Color.White.copy(alpha = 0.9f),
                 )
             }
 
@@ -137,7 +142,7 @@ fun EnvironmentBackground(
             Text(
                 text = "Journey",
                 style = MaterialTheme.typography.titleLarge,
-                color = Color.White.copy(alpha = 0.8f)
+                color = Color.White.copy(alpha = 0.8f),
             )
         }
 
@@ -145,10 +150,11 @@ fun EnvironmentBackground(
             depth = ParallaxDepth.Foreground,
             biome = biome,
             reducedMotion = reducedMotion,
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.BottomCenter)
-                .offset(y = (-20).dp)
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+                    .offset(y = (-20).dp),
         )
     }
 }
@@ -160,13 +166,13 @@ private fun Text(
     text: String,
     style: androidx.compose.ui.text.TextStyle,
     color: Color,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     androidx.compose.material3.Text(
         text = text,
         style = style,
         color = color,
-        modifier = modifier
+        modifier = modifier,
     )
 }
 
@@ -175,12 +181,12 @@ fun BiomeTransition(
     fromBiome: Biome,
     toBiome: Biome,
     progress: Float,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val animatedProgress by animateFloatAsState(
         targetValue = progress,
         animationSpec = tween(durationMillis = BIOME_TRANSITION_DURATION),
-        label = "biome_transition"
+        label = "biome_transition",
     )
 
     val fromColors = getBiomeColors(fromBiome)
@@ -191,56 +197,63 @@ fun BiomeTransition(
     val blendedBottom = lerpColor(fromColors.primary, toColors.primary, animatedProgress)
 
     Box(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize(),
     ) {
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(blendedTop, blendedMid, blendedBottom)
-                    )
-                )
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(blendedTop, blendedMid, blendedBottom),
+                        ),
+                    ),
         )
     }
 }
 
-private fun lerpColor(from: Color, to: Color, fraction: Float): Color {
-    return Color(
+private fun lerpColor(
+    from: Color,
+    to: Color,
+    fraction: Float,
+): Color =
+    Color(
         red = from.red + (to.red - from.red) * fraction,
         green = from.green + (to.green - from.green) * fraction,
         blue = from.blue + (to.blue - from.blue) * fraction,
         alpha = from.alpha + (to.alpha - from.alpha) * fraction,
     )
-}
 
 private data class BiomeColorSet(
     val primary: Color,
     val tertiary: Color,
-    val background: Color
+    val background: Color,
 )
 
-private fun getBiomeColors(biome: Biome): BiomeColorSet {
-    return when (biome) {
-        Biome.Forest -> BiomeColorSet(
-            primary = Color(0xFF388E3C),
-            tertiary = Color(0xFF81C784),
-            background = Color(0xFFF1F8E9)
-        )
-        Biome.Mountain -> BiomeColorSet(
-            primary = Color(0xFF546E7A),
-            tertiary = Color(0xFF90A4AE),
-            background = Color(0xFFECEFF1)
-        )
-        Biome.Swamp -> BiomeColorSet(
-            primary = Color(0xFF00695C),
-            tertiary = Color(0xFF80CBC4),
-            background = Color(0xFFE0F2F1)
-        )
-        Biome.Coast -> BiomeColorSet(
-            primary = Color(0xFF0277BD),
-            tertiary = Color(0xFF81D4FA),
-            background = Color(0xFFE1F5FE)
-        )
+private fun getBiomeColors(biome: Biome): BiomeColorSet =
+    when (biome) {
+        Biome.Forest ->
+            BiomeColorSet(
+                primary = Color(0xFF388E3C),
+                tertiary = Color(0xFF81C784),
+                background = Color(0xFFF1F8E9),
+            )
+        Biome.Mountain ->
+            BiomeColorSet(
+                primary = Color(0xFF546E7A),
+                tertiary = Color(0xFF90A4AE),
+                background = Color(0xFFECEFF1),
+            )
+        Biome.Swamp ->
+            BiomeColorSet(
+                primary = Color(0xFF00695C),
+                tertiary = Color(0xFF80CBC4),
+                background = Color(0xFFE0F2F1),
+            )
+        Biome.Coast ->
+            BiomeColorSet(
+                primary = Color(0xFF0277BD),
+                tertiary = Color(0xFF81D4FA),
+                background = Color(0xFFE1F5FE),
+            )
     }
-}

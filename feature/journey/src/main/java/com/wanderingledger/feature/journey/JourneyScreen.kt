@@ -57,7 +57,7 @@ data class JourneyActions(
 fun JourneyScreen(
     state: JourneyScreenState,
     actions: JourneyActions,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     var currentMessage by remember { mutableStateOf(state.message) }
 
@@ -66,13 +66,13 @@ fun JourneyScreen(
     }
 
     BoxWithConstraints(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize(),
     ) {
         val screenHeight = maxHeight
 
         WLMessageOverlay(
             message = currentMessage,
-            onDismiss = { currentMessage = null }
+            onDismiss = { currentMessage = null },
         )
 
         Column(modifier = Modifier.fillMaxSize()) {
@@ -80,15 +80,17 @@ fun JourneyScreen(
                 CampRenderer(
                     campState = state.campState,
                     reducedMotion = state.reducedMotion,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(screenHeight * 0.45f)
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .height(screenHeight * 0.45f),
                 )
             } else {
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(screenHeight * 0.35f)
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .height(screenHeight * 0.35f),
                 ) {
                     EnvironmentBackground(
                         biome = state.currentBiome,
@@ -96,7 +98,7 @@ fun JourneyScreen(
                         weather = state.weather,
                         timeOfDay = state.timeOfDay,
                         reducedMotion = state.reducedMotion,
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize(),
                     )
 
                     if (state.routePathData.isNotEmpty()) {
@@ -104,7 +106,7 @@ fun JourneyScreen(
                             routes = state.routePathData,
                             biome = state.currentBiome,
                             currentTravelingRouteId = state.activeTravelingRouteId,
-                            modifier = Modifier.fillMaxSize()
+                            modifier = Modifier.fillMaxSize(),
                         )
                     }
                 }
@@ -113,22 +115,23 @@ fun JourneyScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .padding(horizontal = 16.dp)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(horizontal = 16.dp),
             ) {
                 Text(
                     text = state.currentTownName,
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
 
                 Text(
                     text = state.currentTownRegion,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -137,7 +140,7 @@ fun JourneyScreen(
                     bankedSteps = state.bankedSteps,
                     maxSteps = 49000L,
                     reducedMotion = state.reducedMotion,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -146,16 +149,17 @@ fun JourneyScreen(
                     androidx.compose.material3.Button(
                         onClick = actions.onWakeFromCamp,
                         modifier = Modifier.fillMaxWidth(),
-                        colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.secondary
-                        )
+                        colors =
+                            androidx.compose.material3.ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.secondary,
+                            ),
                     ) {
                         Text("Break Camp")
                     }
                 } else {
                     androidx.compose.material3.OutlinedButton(
                         onClick = actions.onMakeCamp,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
                     ) {
                         Text("Make Camp")
                     }
@@ -167,33 +171,34 @@ fun JourneyScreen(
                     text = "Destinations",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
 
                 if (state.routes.isEmpty()) {
                     Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 32.dp),
-                        contentAlignment = Alignment.Center
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 32.dp),
+                        contentAlignment = Alignment.Center,
                     ) {
                         Text(
                             text = "No roads leave this town yet.",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 } else {
                     LazyColumn(
                         verticalArrangement = Arrangement.spacedBy(12.dp),
-                        contentPadding = PaddingValues(bottom = 16.dp)
+                        contentPadding = PaddingValues(bottom = 16.dp),
                     ) {
                         items(state.routes) { route ->
                             JourneyRouteCard(
                                 route = route,
-                                onTravel = { actions.onTravel(route.segmentId) }
+                                onTravel = { actions.onTravel(route.segmentId) },
                             )
                         }
                     }
@@ -216,32 +221,34 @@ fun buildJourneyScreenState(
     reducedMotion: Boolean = false,
     message: String? = null,
     campState: CampState? = null,
-): JourneyScreenState = buildJourneyScreenState(
-    currentTownName = currentTownName,
-    currentTownRegion = currentTownRegion,
-    currentBiome = currentBiome,
-    bankedSteps = bankedSteps,
-    lifetimeSteps = lifetimeSteps,
-    routeDestinations = routeDestinations,
-    routePathData = routeDestinations.map { (segmentId, _, stepCostAndDistance) ->
-        RoutePathData(
-            segmentId = segmentId,
-            destinationName = "",
-            stepCost = stepCostAndDistance.first,
-            narrativeDistance = stepCostAndDistance.second,
-            eventPool = emptyList(),
-            isAffordable = bankedSteps >= stepCostAndDistance.first,
-            progress = 0f,
-        )
-    },
-    activeTravelingRouteId = null,
-    activeCompanions = activeCompanions,
-    weather = weather,
-    timeOfDay = timeOfDay,
-    reducedMotion = reducedMotion,
-    message = message,
-    campState = campState,
-)
+): JourneyScreenState =
+    buildJourneyScreenState(
+        currentTownName = currentTownName,
+        currentTownRegion = currentTownRegion,
+        currentBiome = currentBiome,
+        bankedSteps = bankedSteps,
+        lifetimeSteps = lifetimeSteps,
+        routeDestinations = routeDestinations,
+        routePathData =
+            routeDestinations.map { (segmentId, _, stepCostAndDistance) ->
+                RoutePathData(
+                    segmentId = segmentId,
+                    destinationName = "",
+                    stepCost = stepCostAndDistance.first,
+                    narrativeDistance = stepCostAndDistance.second,
+                    eventPool = emptyList(),
+                    isAffordable = bankedSteps >= stepCostAndDistance.first,
+                    progress = 0f,
+                )
+            },
+        activeTravelingRouteId = null,
+        activeCompanions = activeCompanions,
+        weather = weather,
+        timeOfDay = timeOfDay,
+        reducedMotion = reducedMotion,
+        message = message,
+        campState = campState,
+    )
 
 fun buildJourneyScreenState(
     currentTownName: String,
@@ -258,36 +265,37 @@ fun buildJourneyScreenState(
     reducedMotion: Boolean = false,
     message: String? = null,
     campState: CampState? = null,
-): JourneyScreenState = JourneyScreenState(
-    currentTownName = currentTownName,
-    currentTownRegion = currentTownRegion,
-    currentBiome = currentBiome,
-    bankedSteps = bankedSteps,
-    lifetimeSteps = lifetimeSteps,
-    routes = routeDestinations.map { (segmentId, destinationName, stepCostAndDistance) ->
-        JourneyRouteOption(
-            segmentId = segmentId,
-            destinationName = destinationName,
-            stepCost = stepCostAndDistance.first,
-            narrativeDistance = stepCostAndDistance.second,
-            bankedSteps = bankedSteps,
-        )
-    },
-    routePathData = routePathData,
-    activeTravelingRouteId = activeTravelingRouteId,
-    activeCompanions = activeCompanions,
-    weather = weather,
-    timeOfDay = timeOfDay,
-    reducedMotion = reducedMotion,
-    message = message,
-    campState = campState,
-)
+): JourneyScreenState =
+    JourneyScreenState(
+        currentTownName = currentTownName,
+        currentTownRegion = currentTownRegion,
+        currentBiome = currentBiome,
+        bankedSteps = bankedSteps,
+        lifetimeSteps = lifetimeSteps,
+        routes =
+            routeDestinations.map { (segmentId, destinationName, stepCostAndDistance) ->
+                JourneyRouteOption(
+                    segmentId = segmentId,
+                    destinationName = destinationName,
+                    stepCost = stepCostAndDistance.first,
+                    narrativeDistance = stepCostAndDistance.second,
+                    bankedSteps = bankedSteps,
+                )
+            },
+        routePathData = routePathData,
+        activeTravelingRouteId = activeTravelingRouteId,
+        activeCompanions = activeCompanions,
+        weather = weather,
+        timeOfDay = timeOfDay,
+        reducedMotion = reducedMotion,
+        message = message,
+        campState = campState,
+    )
 
-fun parseEventPool(eventPoolJson: String): List<String> {
-    return try {
+fun parseEventPool(eventPoolJson: String): List<String> =
+    try {
         val jsonArray = JSONArray(eventPoolJson)
         (0 until jsonArray.length()).map { jsonArray.getString(it) }
     } catch (e: Exception) {
         emptyList()
     }
-}

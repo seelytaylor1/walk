@@ -19,17 +19,18 @@ private val RENDERER_HEIGHT = 96.dp
 fun PartyRenderer(
     companions: List<Companion>,
     modifier: Modifier = Modifier,
-    showPlayer: Boolean = true
+    showPlayer: Boolean = true,
 ) {
     Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(RENDERER_HEIGHT),
-        contentAlignment = Alignment.Center
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .height(RENDERER_HEIGHT),
+        contentAlignment = Alignment.Center,
     ) {
         PartyFormation(
             companions = companions,
-            showPlayer = showPlayer
+            showPlayer = showPlayer,
         )
     }
 }
@@ -37,21 +38,21 @@ fun PartyRenderer(
 @Composable
 fun PartyRendererCompact(
     companions: List<Companion>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(24.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = "\uD83D\uDEB6",
-            style = MaterialTheme.typography.titleLarge
+            style = MaterialTheme.typography.titleLarge,
         )
         companions.forEach { companion ->
             Text(
                 text = companion.role.emoji,
-                style = MaterialTheme.typography.titleLarge
+                style = MaterialTheme.typography.titleLarge,
             )
         }
     }

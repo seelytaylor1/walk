@@ -27,37 +27,40 @@ fun WLAlertDialog(
     modifier: Modifier = Modifier,
     confirmText: String = "OK",
     dismissText: String? = null,
-    onConfirm: (() -> Unit)? = null
+    onConfirm: (() -> Unit)? = null,
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleLarge
+                style = MaterialTheme.typography.titleLarge,
             )
         },
         text = {
             Text(
                 text = message,
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
             )
         },
         confirmButton = {
             WLTextButton(
                 text = confirmText,
-                onClick = onConfirm ?: onDismiss
+                onClick = onConfirm ?: onDismiss,
             )
         },
-        dismissButton = if (dismissText != null) {
-            {
-                WLTextButton(
-                    text = dismissText,
-                    onClick = onDismiss
-                )
-            }
-        } else null,
-        modifier = modifier
+        dismissButton =
+            if (dismissText != null) {
+                {
+                    WLTextButton(
+                        text = dismissText,
+                        onClick = onDismiss,
+                    )
+                }
+            } else {
+                null
+            },
+        modifier = modifier,
     )
 }
 
@@ -68,14 +71,14 @@ fun WLAlertDialog(
 fun WLDialog(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             modifier = modifier,
             shape = MaterialTheme.shapes.large,
             color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 6.dp
+            tonalElevation = 6.dp,
         ) {
             content()
         }
@@ -93,7 +96,7 @@ fun WLConfirmationDialog(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
     confirmText: String = "Confirm",
-    dismissText: String = "Cancel"
+    dismissText: String = "Cancel",
 ) {
     WLAlertDialog(
         title = title,
@@ -102,7 +105,7 @@ fun WLConfirmationDialog(
         confirmText = confirmText,
         dismissText = dismissText,
         onConfirm = onConfirm,
-        modifier = modifier
+        modifier = modifier,
     )
 }
 
@@ -115,38 +118,39 @@ fun WLResultDialog(
     message: String,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
-    isSuccess: Boolean = true
+    isSuccess: Boolean = true,
 ) {
     WLDialog(onDismiss = onDismiss, modifier = modifier) {
         Column(
             modifier = Modifier.padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleLarge,
-                color = if (isSuccess) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.error
-                }
+                color =
+                    if (isSuccess) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.error
+                    },
             )
-            
+
             Text(
                 text = message,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
-            
+
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
+                horizontalArrangement = Arrangement.End,
             ) {
                 WLTextButton(
                     text = "OK",
-                    onClick = onDismiss
+                    onClick = onDismiss,
                 )
             }
         }

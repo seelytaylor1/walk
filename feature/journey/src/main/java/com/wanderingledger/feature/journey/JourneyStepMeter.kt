@@ -1,7 +1,6 @@
 package com.wanderingledger.feature.journey
 
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,14 +20,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.wanderingledger.core.designsystem.theme.WLTheme
 import com.wanderingledger.core.designsystem.theme.StepBankColor
-import androidx.compose.animation.core.Spring
+import com.wanderingledger.core.designsystem.theme.WLTheme
 
 @Composable
 fun JourneyStepMeter(
@@ -41,57 +38,62 @@ fun JourneyStepMeter(
     val animatedProgress by animateFloatAsState(
         targetValue = progress,
         animationSpec = stepSpringAnimationSpec(reducedMotion),
-        label = "step_progress"
+        label = "step_progress",
     )
 
     val biomeColors = WLTheme.current.biomeColors
 
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .semantics {
-                contentDescription = "$bankedSteps steps banked. Maximum: $maxSteps steps."
-            }
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .semantics {
+                    contentDescription = "$bankedSteps steps banked. Maximum: $maxSteps steps."
+                },
     ) {
         Text(
             text = "Travel Energy",
             style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
         Row(
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(24.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(
-                        Brush.horizontalGradient(
-                            colors = listOf(
-                                biomeColors.tertiary.copy(alpha = 0.3f),
-                                biomeColors.tertiary.copy(alpha = 0.1f)
-                            )
-                        )
-                    )
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(animatedProgress)
+                modifier =
+                    Modifier
+                        .weight(1f)
                         .height(24.dp)
                         .clip(RoundedCornerShape(12.dp))
                         .background(
                             Brush.horizontalGradient(
-                                colors = listOf(
-                                    StepBankColor,
-                                    biomeColors.primary
-                                )
-                            )
-                        )
+                                colors =
+                                    listOf(
+                                        biomeColors.tertiary.copy(alpha = 0.3f),
+                                        biomeColors.tertiary.copy(alpha = 0.1f),
+                                    ),
+                            ),
+                        ),
+            ) {
+                Box(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth(animatedProgress)
+                            .height(24.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(
+                                Brush.horizontalGradient(
+                                    colors =
+                                        listOf(
+                                            StepBankColor,
+                                            biomeColors.primary,
+                                        ),
+                                ),
+                            ),
                 )
             }
 
@@ -100,20 +102,20 @@ fun JourneyStepMeter(
             StepPulseWrapper(
                 bankedSteps = bankedSteps,
                 reducedMotion = reducedMotion,
-                modifier = Modifier
+                modifier = Modifier,
             ) {
                 Text(
                     text = "$bankedSteps",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = biomeColors.primary
+                    color = biomeColors.primary,
                 )
             }
 
             Text(
                 text = " / $maxSteps",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
@@ -123,44 +125,49 @@ fun JourneyStepMeter(
 fun JourneyStepMeterCompact(
     bankedSteps: Long,
     stepCost: Int,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val canAfford = bankedSteps >= stepCost
     val biomeColors = WLTheme.current.biomeColors
 
     Row(
-        modifier = modifier
-            .clip(RoundedCornerShape(8.dp))
-            .background(
-                if (canAfford) {
-                    biomeColors.tertiary.copy(alpha = 0.15f)
-                } else {
-                    MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
-                }
-            )
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+        modifier =
+            modifier
+                .clip(RoundedCornerShape(8.dp))
+                .background(
+                    if (canAfford) {
+                        biomeColors.tertiary.copy(alpha = 0.15f)
+                    } else {
+                        MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
+                    },
+                ).padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
-            modifier = Modifier
-                .size(12.dp)
-                .clip(RoundedCornerShape(6.dp))
-                .background(
-                    if (canAfford) StepBankColor
-                    else MaterialTheme.colorScheme.error
-                )
+            modifier =
+                Modifier
+                    .size(12.dp)
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(
+                        if (canAfford) {
+                            StepBankColor
+                        } else {
+                            MaterialTheme.colorScheme.error
+                        },
+                    ),
         )
 
         Spacer(modifier = Modifier.width(8.dp))
 
         Text(
-            text = if (canAfford) {
-                "Ready to travel"
-            } else {
-                "Need ${stepCost - bankedSteps} more"
-            },
+            text =
+                if (canAfford) {
+                    "Ready to travel"
+                } else {
+                    "Need ${stepCost - bankedSteps} more"
+                },
             style = MaterialTheme.typography.bodySmall,
-            color = if (canAfford) biomeColors.primary else MaterialTheme.colorScheme.error
+            color = if (canAfford) biomeColors.primary else MaterialTheme.colorScheme.error,
         )
     }
 }

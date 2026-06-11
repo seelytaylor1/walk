@@ -59,32 +59,37 @@ class RumorRepository(
         if (prices.isEmpty()) return
 
         // Prefer abundant or scarce goods for "interesting" rumors
-        val interestingPrices = prices.filter {
-            it.supplyLevel == SupplyLevel.Abundant.name || it.supplyLevel == SupplyLevel.Scarce.name
-        }
+        val interestingPrices =
+            prices.filter {
+                it.supplyLevel == SupplyLevel.Abundant.name || it.supplyLevel == SupplyLevel.Scarce.name
+            }
 
-        val targetPrice = if (interestingPrices.isNotEmpty() && Random.nextFloat() < 0.8f) {
-            interestingPrices.random()
-        } else {
-            prices.random()
-        }
+        val targetPrice =
+            if (interestingPrices.isNotEmpty() && Random.nextFloat() < 0.8f) {
+                interestingPrices.random()
+            } else {
+                prices.random()
+            }
 
         val good = database.goodDao().getGood(targetPrice.goodId).first() ?: return
-        
-        val isFalse = Random.nextFloat() < 0.15f // 15% chance of a lie
-        val supplyLevel = if (isFalse) {
-            // Flip it or pick random
-            val levels = SupplyLevel.entries.filter { it.name != targetPrice.supplyLevel }
-            if (levels.isNotEmpty()) levels.random() else SupplyLevel.valueOf(targetPrice.supplyLevel)
-        } else {
-            SupplyLevel.valueOf(targetPrice.supplyLevel)
-        }
 
-        val text = when (supplyLevel) {
-            SupplyLevel.Abundant -> "A traveler mentions that ${good.name} is plentiful in ${sourceTown.name} right now."
-            SupplyLevel.Scarce -> "Someone complains about the lack of ${good.name} in ${sourceTown.name}."
-            SupplyLevel.Normal -> "You hear that trade for ${good.name} is steady in ${sourceTown.name}."
-        }
+        val isFalse = Random.nextFloat() < 0.15f // 15% chance of a lie
+        val supplyLevel =
+            if (isFalse) {
+                // Flip it or pick random
+                val levels = SupplyLevel.entries.filter { it.name != targetPrice.supplyLevel }
+                if (levels.isNotEmpty()) levels.random() else SupplyLevel.valueOf(targetPrice.supplyLevel)
+            } else {
+                SupplyLevel.valueOf(targetPrice.supplyLevel)
+            }
+
+        val text =
+            when (supplyLevel) {
+                SupplyLevel.Abundant ->
+                    "A traveler mentions that ${good.name} is plentiful in ${sourceTown.name} right now."
+                SupplyLevel.Scarce -> "Someone complains about the lack of ${good.name} in ${sourceTown.name}."
+                SupplyLevel.Normal -> "You hear that trade for ${good.name} is steady in ${sourceTown.name}."
+            }
 
         addRumor(
             text = text,
@@ -99,22 +104,28 @@ class RumorRepository(
      */
     suspend fun generateRumorFromRoadEvent(segmentId: Long) {
         val road = database.roadSegmentDao().getRoadSnapshot(segmentId) ?: return
-        val eventPool = try {
-            // Simple JSON array parsing or just pick from the string if it's simple
-            road.eventPool.trim('[', ']').split(',').map { it.trim(' ', '"') }
-        } catch (e: Exception) {
-            emptyList()
-        }
+        val eventPool =
+            try {
+                // Simple JSON array parsing or just pick from the string if it's simple
+                road.eventPool
+                    .trim('[', ']')
+                    .split(',')
+                    .map { it.trim(' ', '"') }
+            } catch (e: Exception) {
+                emptyList()
+            }
 
         if (eventPool.isEmpty()) return
         val event = eventPool.random()
 
-        val text = when (event) {
-            "merchant-cart" -> "You passed a merchant cart whose driver mentioned a shortcut near ${road.narrativeDistance}."
-            "fog-bank" -> "A traveler in the fog whispered about strange lights in the marsh."
-            "old-road" -> "You found a carved stone on the old road that speaks of hidden wealth."
-            else -> "A strange occurrence on the road leaves you with a lingering thought."
-        }
+        val text =
+            when (event) {
+                "merchant-cart" ->
+                    "You passed a merchant cart whose driver mentioned a shortcut near ${road.narrativeDistance}."
+                "fog-bank" -> "A traveler in the fog whispered about strange lights in the marsh."
+                "old-road" -> "You found a carved stone on the old road that speaks of hidden wealth."
+                else -> "A strange occurrence on the road leaves you with a lingering thought."
+            }
 
         addRumor(
             text = text,

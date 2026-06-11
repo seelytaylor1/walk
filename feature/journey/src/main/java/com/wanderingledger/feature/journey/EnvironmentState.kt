@@ -8,39 +8,44 @@ enum class WeatherCondition {
     Rain,
     Snow,
     Fog,
-    Storm;
+    Storm,
+    ;
 
     val emoji: String
-        get() = when (this) {
-            Clear -> ""
-            Rain -> "\uD83C\uDF27\uFE0F"
-            Snow -> "\u2744\uFE0F"
-            Fog -> "\uD83C\uDF2B\uFE0F"
-            Storm -> "\u26C8\uFE0F"
-        }
+        get() =
+            when (this) {
+                Clear -> ""
+                Rain -> "\uD83C\uDF27\uFE0F"
+                Snow -> "\u2744\uFE0F"
+                Fog -> "\uD83C\uDF2B\uFE0F"
+                Storm -> "\u26C8\uFE0F"
+            }
 }
 
 enum class TimeOfDay {
     Dawn,
     Day,
     Dusk,
-    Night;
+    Night,
+    ;
 
     val tintColor: Color
-        get() = when (this) {
-            Dawn -> Color(0x30FFA726)
-            Day -> Color.Transparent
-            Dusk -> Color(0x30FF7043)
-            Night -> Color(0x251565D5)
-        }
+        get() =
+            when (this) {
+                Dawn -> Color(0x30FFA726)
+                Day -> Color.Transparent
+                Dusk -> Color(0x30FF7043)
+                Night -> Color(0x251565D5)
+            }
 
     val vignetteIntensity: Float
-        get() = when (this) {
-            Dawn -> 0.3f
-            Day -> 0f
-            Dusk -> 0.4f
-            Night -> 0.6f
-        }
+        get() =
+            when (this) {
+                Dawn -> 0.3f
+                Day -> 0f
+                Dusk -> 0.4f
+                Night -> 0.6f
+            }
 }
 
 data class EnvironmentState(
@@ -55,7 +60,9 @@ data class EnvironmentState(
     }
 }
 
-enum class ParallaxDepth(val speedMultiplier: Float) {
+enum class ParallaxDepth(
+    val speedMultiplier: Float,
+) {
     Background(0.3f),
     Midground(0.6f),
     Foreground(1.0f),

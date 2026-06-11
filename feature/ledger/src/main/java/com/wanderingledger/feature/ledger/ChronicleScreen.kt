@@ -18,12 +18,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -90,50 +88,54 @@ fun ChronicleScreen(
     modifier: Modifier = Modifier,
 ) {
     Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(DeskBrown, Color(0xFF6E5746)),
-                ),
-            )
-            .padding(horizontal = 14.dp, vertical = 12.dp),
+        modifier =
+            modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(DeskBrown, Color(0xFF6E5746)),
+                    ),
+                ).padding(horizontal = 14.dp, vertical = 12.dp),
     ) {
         ChronicleDeskTexture()
 
         Surface(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = 76.dp)
-                .shadow(16.dp, RoundedCornerShape(18.dp))
-                .clip(RoundedCornerShape(18.dp)),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(bottom = 76.dp)
+                    .shadow(16.dp, RoundedCornerShape(18.dp))
+                    .clip(RoundedCornerShape(18.dp)),
             color = Parchment,
             contentColor = DeepInk,
         ) {
             Box(Modifier.fillMaxSize()) {
                 ChroniclePageTexture()
                 Box(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .width(28.dp)
-                        .background(
-                            Brush.horizontalGradient(
-                                colors = listOf(
-                                    Color.Black.copy(alpha = 0.22f),
-                                    Color.Black.copy(alpha = 0.06f),
-                                    Color.Transparent,
+                    modifier =
+                        Modifier
+                            .fillMaxHeight()
+                            .width(28.dp)
+                            .background(
+                                Brush.horizontalGradient(
+                                    colors =
+                                        listOf(
+                                            Color.Black.copy(alpha = 0.22f),
+                                            Color.Black.copy(alpha = 0.06f),
+                                            Color.Transparent,
+                                        ),
                                 ),
                             ),
-                        ),
                 )
                 ChronicleRibbon(
                     entryCount = state.entries.size,
                     modifier = Modifier.align(Alignment.TopEnd),
                 )
                 Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(start = 26.dp, top = 24.dp, end = 22.dp, bottom = 18.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .padding(start = 26.dp, top = 24.dp, end = 22.dp, bottom = 18.dp),
                 ) {
                     ChronicleHeader(entryCount = state.entries.size)
                     AnimatedContent(
@@ -141,8 +143,9 @@ fun ChronicleScreen(
                         modifier = Modifier.weight(1f),
                         transitionSpec = {
                             (slideInVertically(tween(300)) { height -> height / 10 } + fadeIn(tween(240)))
-                                .togetherWith(slideOutVertically(tween(220)) { height -> -height / 14 } + fadeOut(tween(180)))
-                                .using(SizeTransform(clip = false))
+                                .togetherWith(
+                                    slideOutVertically(tween(220)) { height -> -height / 14 } + fadeOut(tween(180)),
+                                ).using(SizeTransform(clip = false))
                         },
                         label = "chronicle-timeline-change",
                     ) { entries ->
@@ -161,15 +164,17 @@ fun ChronicleScreen(
 
         Button(
             onClick = { actions.onNavigateBack.onNavigateBack() },
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 20.dp)
-                .shadow(8.dp, RoundedCornerShape(8.dp)),
+            modifier =
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 20.dp)
+                    .shadow(8.dp, RoundedCornerShape(8.dp)),
             shape = RoundedCornerShape(8.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF5E3F2E),
-                contentColor = Color.White,
-            ),
+            colors =
+                ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF5E3F2E),
+                    contentColor = Color.White,
+                ),
         ) {
             Text("Close Chronicle")
         }
@@ -187,21 +192,23 @@ private fun ChronicleHeader(entryCount: Int) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = "Chronicle",
-                    style = MaterialTheme.typography.headlineMedium.copy(
-                        fontFamily = FontFamily.Serif,
-                        fontWeight = FontWeight.Bold,
-                        color = DeepInk,
-                    ),
+                    style =
+                        MaterialTheme.typography.headlineMedium.copy(
+                            fontFamily = FontFamily.Serif,
+                            fontWeight = FontWeight.Bold,
+                            color = DeepInk,
+                        ),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
                     text = "Routes walked, encounters weathered, companions remembered",
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        fontFamily = FontFamily.Serif,
-                        fontStyle = FontStyle.Italic,
-                        color = DeepInk.copy(alpha = 0.68f),
-                    ),
+                    style =
+                        MaterialTheme.typography.bodySmall.copy(
+                            fontFamily = FontFamily.Serif,
+                            fontStyle = FontStyle.Italic,
+                            color = DeepInk.copy(alpha = 0.68f),
+                        ),
                 )
             }
             Surface(
@@ -218,10 +225,11 @@ private fun ChronicleHeader(entryCount: Int) {
             }
         }
         Canvas(
-            modifier = Modifier
-                .padding(top = 14.dp, bottom = 8.dp)
-                .fillMaxWidth()
-                .height(2.dp),
+            modifier =
+                Modifier
+                    .padding(top = 14.dp, bottom = 8.dp)
+                    .fillMaxWidth()
+                    .height(2.dp),
         ) {
             drawLine(
                 color = DeepInk.copy(alpha = 0.18f),
@@ -273,10 +281,11 @@ private fun ChronicleTimelineEntry(
             isLast = isLast,
         )
         Surface(
-            modifier = Modifier
-                .weight(1f)
-                .padding(bottom = 16.dp)
-                .border(1.dp, ParchmentEdge.copy(alpha = 0.8f), RoundedCornerShape(8.dp)),
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .padding(bottom = 16.dp)
+                    .border(1.dp, ParchmentEdge.copy(alpha = 0.8f), RoundedCornerShape(8.dp)),
             shape = RoundedCornerShape(8.dp),
             color = Color.White.copy(alpha = 0.42f),
             contentColor = DeepInk,
@@ -292,10 +301,11 @@ private fun ChronicleTimelineEntry(
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = entry.title,
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    fontFamily = FontFamily.Serif,
-                                    fontWeight = FontWeight.Bold,
-                                ),
+                                style =
+                                    MaterialTheme.typography.titleMedium.copy(
+                                        fontFamily = FontFamily.Serif,
+                                        fontWeight = FontWeight.Bold,
+                                    ),
                                 maxLines = 2,
                                 overflow = TextOverflow.Ellipsis,
                             )
@@ -316,10 +326,11 @@ private fun ChronicleTimelineEntry(
 
                     Text(
                         text = entry.summary,
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            fontFamily = FontFamily.Serif,
-                            color = DeepInk.copy(alpha = 0.86f),
-                        ),
+                        style =
+                            MaterialTheme.typography.bodyMedium.copy(
+                                fontFamily = FontFamily.Serif,
+                                color = DeepInk.copy(alpha = 0.86f),
+                            ),
                         modifier = Modifier.padding(top = 8.dp),
                     )
 
@@ -362,9 +373,10 @@ private fun TimelineRail(
     modifier: Modifier = Modifier,
 ) {
     Box(
-        modifier = modifier
-            .width(40.dp)
-            .height(156.dp),
+        modifier =
+            modifier
+                .width(40.dp)
+                .height(156.dp),
         contentAlignment = Alignment.TopCenter,
     ) {
         Canvas(Modifier.fillMaxSize()) {
@@ -387,9 +399,10 @@ private fun TimelineRail(
             }
         }
         Surface(
-            modifier = Modifier
-                .padding(top = 12.dp)
-                .size(28.dp),
+            modifier =
+                Modifier
+                    .padding(top = 12.dp)
+                    .size(28.dp),
             shape = CircleShape,
             color = entry.type.entryColor(),
             contentColor = Parchment,
@@ -410,21 +423,38 @@ private fun ChronicleGlyph(
         when (icon) {
             ChronicleIcon.COMPASS -> {
                 drawCircle(ink, radius = size.minDimension * 0.43f, style = Stroke(width = 2.2f))
-                drawLine(ink, Offset(size.width * 0.5f, size.height * 0.16f), Offset(size.width * 0.5f, size.height * 0.84f), strokeWidth = 2f)
-                drawLine(ink, Offset(size.width * 0.16f, size.height * 0.5f), Offset(size.width * 0.84f, size.height * 0.5f), strokeWidth = 2f)
+                drawLine(
+                    ink,
+                    Offset(size.width * 0.5f, size.height * 0.16f),
+                    Offset(
+                        size.width * 0.5f,
+                        size.height * 0.84f,
+                    ),
+                    strokeWidth = 2f,
+                )
+                drawLine(
+                    ink,
+                    Offset(size.width * 0.16f, size.height * 0.5f),
+                    Offset(
+                        size.width * 0.84f,
+                        size.height * 0.5f,
+                    ),
+                    strokeWidth = 2f,
+                )
             }
             ChronicleIcon.MAP -> {
-                val path = Path().apply {
-                    moveTo(size.width * 0.1f, size.height * 0.2f)
-                    lineTo(size.width * 0.38f, size.height * 0.08f)
-                    lineTo(size.width * 0.62f, size.height * 0.2f)
-                    lineTo(size.width * 0.9f, size.height * 0.08f)
-                    lineTo(size.width * 0.9f, size.height * 0.8f)
-                    lineTo(size.width * 0.62f, size.height * 0.92f)
-                    lineTo(size.width * 0.38f, size.height * 0.8f)
-                    lineTo(size.width * 0.1f, size.height * 0.92f)
-                    close()
-                }
+                val path =
+                    Path().apply {
+                        moveTo(size.width * 0.1f, size.height * 0.2f)
+                        lineTo(size.width * 0.38f, size.height * 0.08f)
+                        lineTo(size.width * 0.62f, size.height * 0.2f)
+                        lineTo(size.width * 0.9f, size.height * 0.08f)
+                        lineTo(size.width * 0.9f, size.height * 0.8f)
+                        lineTo(size.width * 0.62f, size.height * 0.92f)
+                        lineTo(size.width * 0.38f, size.height * 0.8f)
+                        lineTo(size.width * 0.1f, size.height * 0.92f)
+                        close()
+                    }
                 drawPath(path, ink, style = Stroke(width = 2.2f))
             }
             ChronicleIcon.DIALOG -> {
@@ -434,13 +464,55 @@ private fun ChronicleGlyph(
                 drawCircle(ink, radius = 1.8f, center = Offset(size.width * 0.66f, size.height * 0.5f))
             }
             ChronicleIcon.FIST -> {
-                drawRoundRect(ink, topLeft = Offset(size.width * 0.16f, size.height * 0.34f), size = androidx.compose.ui.geometry.Size(size.width * 0.68f, size.height * 0.34f), cornerRadius = CornerRadius(5f, 5f))
-                drawLine(DeepInk.copy(alpha = 0.28f), Offset(size.width * 0.32f, size.height * 0.34f), Offset(size.width * 0.32f, size.height * 0.68f), strokeWidth = 1.3f)
-                drawLine(DeepInk.copy(alpha = 0.28f), Offset(size.width * 0.5f, size.height * 0.34f), Offset(size.width * 0.5f, size.height * 0.68f), strokeWidth = 1.3f)
+                drawRoundRect(
+                    ink,
+                    topLeft = Offset(size.width * 0.16f, size.height * 0.34f),
+                    size =
+                        androidx.compose.ui.geometry.Size(
+                            size.width * 0.68f,
+                            size.height * 0.34f,
+                        ),
+                    cornerRadius = CornerRadius(5f, 5f),
+                )
+                drawLine(
+                    DeepInk.copy(alpha = 0.28f),
+                    Offset(size.width * 0.32f, size.height * 0.34f),
+                    Offset(
+                        size.width * 0.32f,
+                        size.height * 0.68f,
+                    ),
+                    strokeWidth = 1.3f,
+                )
+                drawLine(
+                    DeepInk.copy(alpha = 0.28f),
+                    Offset(size.width * 0.5f, size.height * 0.34f),
+                    Offset(
+                        size.width * 0.5f,
+                        size.height * 0.68f,
+                    ),
+                    strokeWidth = 1.3f,
+                )
             }
             ChronicleIcon.CIGAR -> {
-                drawRoundRect(ink, topLeft = Offset(size.width * 0.12f, size.height * 0.44f), size = androidx.compose.ui.geometry.Size(size.width * 0.68f, size.height * 0.18f), cornerRadius = CornerRadius(6f, 6f))
-                drawLine(ink, Offset(size.width * 0.84f, size.height * 0.38f), Offset(size.width * 0.92f, size.height * 0.24f), strokeWidth = 1.7f)
+                drawRoundRect(
+                    ink,
+                    topLeft = Offset(size.width * 0.12f, size.height * 0.44f),
+                    size =
+                        androidx.compose.ui.geometry.Size(
+                            size.width * 0.68f,
+                            size.height * 0.18f,
+                        ),
+                    cornerRadius = CornerRadius(6f, 6f),
+                )
+                drawLine(
+                    ink,
+                    Offset(size.width * 0.84f, size.height * 0.38f),
+                    Offset(
+                        size.width * 0.92f,
+                        size.height * 0.24f,
+                    ),
+                    strokeWidth = 1.7f,
+                )
             }
         }
     }
@@ -473,9 +545,10 @@ private fun CompanionNote(
     modifier: Modifier = Modifier,
 ) {
     Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .border(1.dp, ParchmentEdge.copy(alpha = 0.72f), RoundedCornerShape(5.dp)),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .border(1.dp, ParchmentEdge.copy(alpha = 0.72f), RoundedCornerShape(5.dp)),
         shape = RoundedCornerShape(5.dp),
         color = NotePaper.copy(alpha = 0.72f),
         contentColor = DeepInk,
@@ -488,10 +561,11 @@ private fun CompanionNote(
             )
             Text(
                 text = note,
-                style = MaterialTheme.typography.bodySmall.copy(
-                    fontFamily = FontFamily.Serif,
-                    fontStyle = FontStyle.Italic,
-                ),
+                style =
+                    MaterialTheme.typography.bodySmall.copy(
+                        fontFamily = FontFamily.Serif,
+                        fontStyle = FontStyle.Italic,
+                    ),
                 modifier = Modifier.padding(top = 3.dp),
             )
         }
@@ -506,9 +580,10 @@ private fun EmptyChronicleState(modifier: Modifier = Modifier) {
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Canvas(
-                modifier = Modifier
-                    .padding(bottom = 14.dp)
-                    .size(width = 180.dp, height = 126.dp),
+                modifier =
+                    Modifier
+                        .padding(bottom = 14.dp)
+                        .size(width = 180.dp, height = 126.dp),
             ) {
                 val ink = DeepInk.copy(alpha = 0.34f)
                 drawCircle(
@@ -532,18 +607,20 @@ private fun EmptyChronicleState(modifier: Modifier = Modifier) {
             }
             Text(
                 text = "No journey notes yet",
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontFamily = FontFamily.Serif,
-                    fontWeight = FontWeight.Bold,
-                    color = DeepInk,
-                ),
+                style =
+                    MaterialTheme.typography.titleMedium.copy(
+                        fontFamily = FontFamily.Serif,
+                        fontWeight = FontWeight.Bold,
+                        color = DeepInk,
+                    ),
             )
             Text(
                 text = "The first road will write itself here.",
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontFamily = FontFamily.Serif,
-                    color = DeepInk.copy(alpha = 0.62f),
-                ),
+                style =
+                    MaterialTheme.typography.bodyMedium.copy(
+                        fontFamily = FontFamily.Serif,
+                        color = DeepInk.copy(alpha = 0.62f),
+                    ),
                 modifier = Modifier.padding(top = 6.dp),
             )
         }
@@ -554,11 +631,12 @@ private fun EmptyChronicleState(modifier: Modifier = Modifier) {
 private fun EntryCardTexture(type: EntryType) {
     Canvas(Modifier.fillMaxSize()) {
         drawRect(
-            brush = Brush.radialGradient(
-                colors = listOf(type.entryColor().copy(alpha = 0.08f), Color.Transparent),
-                center = Offset(size.width * 0.12f, size.height * 0.18f),
-                radius = size.maxDimension * 0.7f,
-            ),
+            brush =
+                Brush.radialGradient(
+                    colors = listOf(type.entryColor().copy(alpha = 0.08f), Color.Transparent),
+                    center = Offset(size.width * 0.12f, size.height * 0.18f),
+                    radius = size.maxDimension * 0.7f,
+                ),
         )
         drawLine(
             color = DeepInk.copy(alpha = 0.05f),
@@ -570,16 +648,20 @@ private fun EntryCardTexture(type: EntryType) {
 }
 
 @Composable
-private fun ChronicleRibbon(entryCount: Int, modifier: Modifier = Modifier) {
+private fun ChronicleRibbon(
+    entryCount: Int,
+    modifier: Modifier = Modifier,
+) {
     Box(
-        modifier = modifier
-            .padding(end = 28.dp)
-            .width(28.dp)
-            .height(92.dp)
-            .background(
-                color = if (entryCount > 0) RoadBlue else MutedInk.copy(alpha = 0.55f),
-                shape = RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp),
-            ),
+        modifier =
+            modifier
+                .padding(end = 28.dp)
+                .width(28.dp)
+                .height(92.dp)
+                .background(
+                    color = if (entryCount > 0) RoadBlue else MutedInk.copy(alpha = 0.55f),
+                    shape = RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp),
+                ),
     )
 }
 
@@ -603,11 +685,12 @@ private fun ChronicleDeskTexture() {
 private fun ChroniclePageTexture() {
     Canvas(Modifier.fillMaxSize()) {
         drawRect(
-            brush = Brush.radialGradient(
-                colors = listOf(Color.Transparent, ParchmentEdge.copy(alpha = 0.34f)),
-                center = Offset(size.width * 0.86f, size.height * 0.12f),
-                radius = size.maxDimension * 0.86f,
-            ),
+            brush =
+                Brush.radialGradient(
+                    colors = listOf(Color.Transparent, ParchmentEdge.copy(alpha = 0.34f)),
+                    center = Offset(size.width * 0.86f, size.height * 0.12f),
+                    radius = size.maxDimension * 0.86f,
+                ),
         )
         val ruleColor = DeepInk.copy(alpha = 0.045f)
         var y = 108f
@@ -632,15 +715,21 @@ private fun EntryType.entryColor(): Color =
         EntryType.RUMOR -> Color(0xFF7D5D8C)
     }
 
-class ChronicleScreenView(context: Context) : FrameLayout(context) {
-    private val composeView = ComposeView(context).also { view ->
-        addView(
-            view,
-            LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT),
-        )
-    }
+class ChronicleScreenView(
+    context: Context,
+) : FrameLayout(context) {
+    private val composeView =
+        ComposeView(context).also { view ->
+            addView(
+                view,
+                LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT),
+            )
+        }
 
-    fun render(state: ChronicleUiState, actions: ChronicleActions) {
+    fun render(
+        state: ChronicleUiState,
+        actions: ChronicleActions,
+    ) {
         composeView.setContent {
             WanderingLedgerTheme {
                 ChronicleScreen(state, actions)

@@ -38,16 +38,17 @@ fun buildInventoryScreenState(summary: InventorySummary): InventoryScreenState =
         playerGold = summary.gold,
         totalItemsCarried = summary.totalItemsCarried,
         inventoryCapacity = summary.inventoryCapacity,
-        rows = summary.rows.map { row ->
-            InventoryItemRowState(
-                goodId = row.good.goodId,
-                goodName = row.good.name,
-                quantity = row.item.quantity,
-                baseValue = row.good.baseValue,
-                isContraband = row.good.isContraband,
-                isSealed = row.item.isSealed,
-            )
-        },
+        rows =
+            summary.rows.map { row ->
+                InventoryItemRowState(
+                    goodId = row.good.goodId,
+                    goodName = row.good.name,
+                    quantity = row.item.quantity,
+                    baseValue = row.good.baseValue,
+                    isContraband = row.good.isContraband,
+                    isSealed = row.item.isSealed,
+                )
+            },
     )
 
 // ── Actions ───────────────────────────────────────────────────────────────────
@@ -74,31 +75,37 @@ data class InventoryActions(
  * contraband/sealed indicators. Shows total inventory used / capacity and
  * player gold. Each row has a Sell button that delegates to [InventoryActions].
  */
-class InventoryScreenView(context: Context) : LinearLayout(context) {
-
-    private val headerText = TextView(context).apply {
-        textSize = 20f
-        setPadding(0, 0, 0, 4)
-    }
-    private val playerStatusText = TextView(context).apply {
-        textSize = 15f
-        setPadding(0, 0, 0, 16)
-    }
-    private val backButton = Button(context).apply {
-        text = "Back to Town"
-    }
-    private val itemsContainer = LinearLayout(context).apply {
-        orientation = VERTICAL
-    }
-    private val scrollView = ScrollView(context).apply {
-        addView(
-            itemsContainer,
-            LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-            ),
-        )
-    }
+class InventoryScreenView(
+    context: Context,
+) : LinearLayout(context) {
+    private val headerText =
+        TextView(context).apply {
+            textSize = 20f
+            setPadding(0, 0, 0, 4)
+        }
+    private val playerStatusText =
+        TextView(context).apply {
+            textSize = 15f
+            setPadding(0, 0, 0, 16)
+        }
+    private val backButton =
+        Button(context).apply {
+            text = "Back to Town"
+        }
+    private val itemsContainer =
+        LinearLayout(context).apply {
+            orientation = VERTICAL
+        }
+    private val scrollView =
+        ScrollView(context).apply {
+            addView(
+                itemsContainer,
+                LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                ),
+            )
+        }
 
     init {
         orientation = VERTICAL
@@ -128,7 +135,10 @@ class InventoryScreenView(context: Context) : LinearLayout(context) {
         )
     }
 
-    fun render(state: InventoryScreenState, actions: InventoryActions) {
+    fun render(
+        state: InventoryScreenState,
+        actions: InventoryActions,
+    ) {
         headerText.text = "Inventory"
         playerStatusText.text = state.toPlayerStatusText()
         backButton.setOnClickListener { actions.onNavigateBackToTown.onNavigateBackToTown() }
@@ -153,38 +163,46 @@ class InventoryScreenView(context: Context) : LinearLayout(context) {
 
     // ── Private helpers ───────────────────────────────────────────────────────
 
-    private fun buildItemRow(row: InventoryItemRowState, actions: InventoryActions): LinearLayout {
-        val container = LinearLayout(context).apply {
-            orientation = VERTICAL
-            setPadding(0, 16, 0, 16)
-        }
+    private fun buildItemRow(
+        row: InventoryItemRowState,
+        actions: InventoryActions,
+    ): LinearLayout {
+        val container =
+            LinearLayout(context).apply {
+                orientation = VERTICAL
+                setPadding(0, 16, 0, 16)
+            }
 
         // Good name + indicators
-        val nameText = TextView(context).apply {
-            text = row.toNameLine()
-            textSize = 16f
-        }
+        val nameText =
+            TextView(context).apply {
+                text = row.toNameLine()
+                textSize = 16f
+            }
 
         // Quantity and base value
-        val detailText = TextView(context).apply {
-            text = row.toDetailLine()
-            textSize = 14f
-            setPadding(0, 4, 0, 8)
-        }
+        val detailText =
+            TextView(context).apply {
+                text = row.toDetailLine()
+                textSize = 14f
+                setPadding(0, 4, 0, 8)
+            }
 
         // Sell button — disabled for sealed items
-        val sellButton = Button(context).apply {
-            text = "Sell (${row.baseValue}g base)"
-            isEnabled = !row.isSealed
-            setOnClickListener { actions.onSellItem.onSellItem(row.goodId) }
-        }
+        val sellButton =
+            Button(context).apply {
+                text = "Sell (${row.baseValue}g base)"
+                isEnabled = !row.isSealed
+                setOnClickListener { actions.onSellItem.onSellItem(row.goodId) }
+            }
 
         // Divider
-        val divider = TextView(context).apply {
-            text = "─────────────────────────────"
-            textSize = 10f
-            setPadding(0, 8, 0, 0)
-        }
+        val divider =
+            TextView(context).apply {
+                text = "─────────────────────────────"
+                textSize = 10f
+                setPadding(0, 8, 0, 0)
+            }
 
         container.addView(nameText)
         container.addView(detailText)
@@ -194,18 +212,19 @@ class InventoryScreenView(context: Context) : LinearLayout(context) {
         return container
     }
 
-    private fun InventoryScreenState.toPlayerStatusText(): String = buildString {
-        append("Gold: ${playerGold}g")
-        append("  |  ")
-        append("Inventory: $totalItemsCarried / $inventoryCapacity")
-    }
+    private fun InventoryScreenState.toPlayerStatusText(): String =
+        buildString {
+            append("Gold: ${playerGold}g")
+            append("  |  ")
+            append("Inventory: $totalItemsCarried / $inventoryCapacity")
+        }
 
-    private fun InventoryItemRowState.toNameLine(): String = buildString {
-        append(goodName)
-        if (isContraband) append("  ⚠ Contraband")
-        if (isSealed) append("  🔒 Sealed")
-    }
+    private fun InventoryItemRowState.toNameLine(): String =
+        buildString {
+            append(goodName)
+            if (isContraband) append("  ⚠ Contraband")
+            if (isSealed) append("  🔒 Sealed")
+        }
 
-    private fun InventoryItemRowState.toDetailLine(): String =
-        "Qty: $quantity  •  Base value: ${baseValue}g each"
+    private fun InventoryItemRowState.toDetailLine(): String = "Qty: $quantity  •  Base value: ${baseValue}g each"
 }

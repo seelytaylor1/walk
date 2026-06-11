@@ -13,8 +13,11 @@ const val MAX_BOND_LEVEL = 5
 
 sealed class RecruitmentResult {
     data object Success : RecruitmentResult()
+
     data object AlreadyActive : RecruitmentResult()
+
     data object PartyFull : RecruitmentResult()
+
     data object NotFound : RecruitmentResult()
 }
 
@@ -32,38 +35,58 @@ class CompanionRepository(
         }
 
     suspend fun recruitCompanion(companionId: Long): RecruitmentResult {
-        val recruitable = database.companionDao().listRecruitableCompanions().map { entities ->
-            entities.find { it.companionId == companionId }
-        }.firstOrNull() ?: return RecruitmentResult.NotFound
+        val recruitable =
+            database
+                .companionDao()
+                .listRecruitableCompanions()
+                .map { entities ->
+                    entities.find { it.companionId == companionId }
+                }.firstOrNull() ?: return RecruitmentResult.NotFound
 
-        val activeCount = database.companionDao().listActiveCompanions().firstOrNull()?.size ?: 0
+        val activeCount =
+            database
+                .companionDao()
+                .listActiveCompanions()
+                .firstOrNull()
+                ?.size ?: 0
         if (activeCount >= MAX_ACTIVE_COMPANIONS) {
             return RecruitmentResult.PartyFull
         }
 
         database.companionDao().upsertCompanion(
-            recruitable.copy(isActive = true, questState = "recruited", bondLevel = 0)
+            recruitable.copy(isActive = true, questState = "recruited", bondLevel = 0),
         )
         return RecruitmentResult.Success
     }
 
-    suspend fun updateBond(companionId: Long, delta: Int) {
-        val active = database.companionDao().listActiveCompanions().map { entities ->
-            entities.find { it.companionId == companionId }
-        }.firstOrNull() ?: return
+    suspend fun updateBond(
+        companionId: Long,
+        delta: Int,
+    ) {
+        val active =
+            database
+                .companionDao()
+                .listActiveCompanions()
+                .map { entities ->
+                    entities.find { it.companionId == companionId }
+                }.firstOrNull() ?: return
 
         database.companionDao().upsertCompanion(
-            active.copy(bondLevel = (active.bondLevel + delta).coerceIn(0, MAX_BOND_LEVEL))
+            active.copy(bondLevel = (active.bondLevel + delta).coerceIn(0, MAX_BOND_LEVEL)),
         )
     }
 
     suspend fun dismissCompanion(companionId: Long) {
-        val active = database.companionDao().listActiveCompanions().map { entities ->
-            entities.find { it.companionId == companionId }
-        }.firstOrNull() ?: return
+        val active =
+            database
+                .companionDao()
+                .listActiveCompanions()
+                .map { entities ->
+                    entities.find { it.companionId == companionId }
+                }.firstOrNull() ?: return
 
         database.companionDao().upsertCompanion(
-            active.copy(isActive = false, questState = "dismissed")
+            active.copy(isActive = false, questState = "dismissed"),
         )
     }
 }

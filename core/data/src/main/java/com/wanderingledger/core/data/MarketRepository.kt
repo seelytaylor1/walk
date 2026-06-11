@@ -3,10 +3,8 @@ package com.wanderingledger.core.data
 import androidx.room.withTransaction
 import com.wanderingledger.core.database.InventoryItemEntity
 import com.wanderingledger.core.database.PriceHistoryEntity
-import com.wanderingledger.core.database.TownPriceEntity
 import com.wanderingledger.core.database.WanderingLedgerDatabase
 import com.wanderingledger.core.model.Good
-import com.wanderingledger.core.model.InventoryItem
 import com.wanderingledger.core.model.PriceHistory
 import com.wanderingledger.core.model.SupplyLevel
 import com.wanderingledger.core.model.TownPrice
@@ -31,7 +29,10 @@ sealed interface BuyResult {
     ) : BuyResult
 
     /** Player does not have enough gold. */
-    data class NotEnoughGold(val required: Long, val available: Long) : BuyResult
+    data class NotEnoughGold(
+        val required: Long,
+        val available: Long,
+    ) : BuyResult
 
     /** Player's inventory is full. */
     data object InventoryFull : BuyResult
@@ -53,7 +54,10 @@ sealed interface SellResult {
     ) : SellResult
 
     /** Player does not own enough of this good. */
-    data class NotEnoughInventory(val required: Int, val available: Int) : SellResult
+    data class NotEnoughInventory(
+        val required: Int,
+        val available: Int,
+    ) : SellResult
 
     /** No price record exists for this good at this town. */
     data object GoodNotAvailable : SellResult
@@ -104,7 +108,6 @@ data class MarketState(
 class MarketRepository(
     private val database: WanderingLedgerDatabase,
 ) {
-
     // ── Observation ──────────────────────────────────────────────────────────
 
     /**
@@ -120,35 +123,40 @@ class MarketRepository(
             database.goodDao().listGoods(),
         ) { town, prices, player, inventory, goods ->
             val goodsById = goods.associateBy { it.goodId }
-            val inventoryByGoodId = inventory.groupBy { it.goodId }
-                .mapValues { (_, items) -> items.sumOf { it.quantity } }
+            val inventoryByGoodId =
+                inventory
+                    .groupBy { it.goodId }
+                    .mapValues { (_, items) -> items.sumOf { it.quantity } }
 
-            val rows = prices.mapNotNull { priceEntity ->
-                val good = goodsById[priceEntity.goodId] ?: return@mapNotNull null
-                val supplyLevel = SupplyLevel.valueOf(priceEntity.supplyLevel)
-                val playerQty = inventoryByGoodId[priceEntity.goodId] ?: 0
-                val inventoryUsed = inventory.sumOf { it.quantity }
-                MarketRow(
-                    good = Good(
-                        goodId = good.goodId,
-                        name = good.name,
-                        baseValue = good.baseValue,
-                        isContraband = good.isContraband,
-                    ),
-                    townPrice = TownPrice(
-                        id = priceEntity.id,
-                        townId = priceEntity.townId,
-                        goodId = priceEntity.goodId,
-                        buyPrice = priceEntity.buyPrice,
-                        sellPrice = priceEntity.sellPrice,
-                        supplyLevel = supplyLevel,
-                        lastUpdatedAt = priceEntity.lastUpdatedAt,
-                    ),
-                    playerQuantity = playerQty,
-                    canAfford = player.gold >= priceEntity.sellPrice,
-                    canSell = playerQty > 0,
-                )
-            }
+            val rows =
+                prices.mapNotNull { priceEntity ->
+                    val good = goodsById[priceEntity.goodId] ?: return@mapNotNull null
+                    val supplyLevel = SupplyLevel.valueOf(priceEntity.supplyLevel)
+                    val playerQty = inventoryByGoodId[priceEntity.goodId] ?: 0
+                    val inventoryUsed = inventory.sumOf { it.quantity }
+                    MarketRow(
+                        good =
+                            Good(
+                                goodId = good.goodId,
+                                name = good.name,
+                                baseValue = good.baseValue,
+                                isContraband = good.isContraband,
+                            ),
+                        townPrice =
+                            TownPrice(
+                                id = priceEntity.id,
+                                townId = priceEntity.townId,
+                                goodId = priceEntity.goodId,
+                                buyPrice = priceEntity.buyPrice,
+                                sellPrice = priceEntity.sellPrice,
+                                supplyLevel = supplyLevel,
+                                lastUpdatedAt = priceEntity.lastUpdatedAt,
+                            ),
+                        playerQuantity = playerQty,
+                        canAfford = player.gold >= priceEntity.sellPrice,
+                        canSell = playerQty > 0,
+                    )
+                }
 
             MarketState(
                 townId = town.townId,
@@ -163,8 +171,12 @@ class MarketRepository(
     /**
      * Stream price history for a specific good at a town, newest first.
      */
-    fun observePriceHistory(townId: Long, goodId: Long): Flow<List<PriceHistory>> =
-        database.priceHistoryDao()
+    fun observePriceHistory(
+        townId: Long,
+        goodId: Long,
+    ): Flow<List<PriceHistory>> =
+        database
+            .priceHistoryDao()
             .listHistory(townId, goodId)
             .map { entities -> entities.map { it.toModel() } }
 
@@ -182,16 +194,23 @@ class MarketRepository(
      * 6. Records a price history snapshot.
      * 7. Trims price history to [PriceHistoryEntity.MAX_HISTORY_PER_GOOD_TOWN].
      */
-    suspend fun buyGood(townId: Long, goodId: Long, quantity: Int): BuyResult {
+    suspend fun buyGood(
+        townId: Long,
+        goodId: Long,
+        quantity: Int,
+    ): BuyResult {
         if (quantity <= 0) return BuyResult.InvalidQuantity
 
         return database.withTransaction {
-            val player = database.playerDao().getPlayerSnapshot()
-                ?: error("Seed world before trading.")
-            val priceEntity = database.townPriceDao().getPrice(townId, goodId).first()
-                ?: return@withTransaction BuyResult.GoodNotAvailable
-            val good = database.goodDao().getGood(goodId).first()
-                ?: return@withTransaction BuyResult.GoodNotAvailable
+            val player =
+                database.playerDao().getPlayerSnapshot()
+                    ?: error("Seed world before trading.")
+            val priceEntity =
+                database.townPriceDao().getPrice(townId, goodId).first()
+                    ?: return@withTransaction BuyResult.GoodNotAvailable
+            val good =
+                database.goodDao().getGood(goodId).first()
+                    ?: return@withTransaction BuyResult.GoodNotAvailable
 
             val totalCost = priceEntity.sellPrice * quantity
             if (player.gold < totalCost) {
@@ -259,7 +278,15 @@ class MarketRepository(
             )
 
             // Telemetry: detect market anomalies
-            detectMarketAnomalies(townId, goodId, good.baseValue, priceEntity.sellPrice, newSellPrice, currentSupply, newSupply)
+            detectMarketAnomalies(
+                townId,
+                goodId,
+                good.baseValue,
+                priceEntity.sellPrice,
+                newSellPrice,
+                currentSupply,
+                newSupply,
+            )
 
             BuyResult.Success(
                 goodId = goodId,
@@ -282,16 +309,23 @@ class MarketRepository(
      * 6. Records a price history snapshot.
      * 7. Trims price history to [PriceHistoryEntity.MAX_HISTORY_PER_GOOD_TOWN].
      */
-    suspend fun sellGood(townId: Long, goodId: Long, quantity: Int): SellResult {
+    suspend fun sellGood(
+        townId: Long,
+        goodId: Long,
+        quantity: Int,
+    ): SellResult {
         if (quantity <= 0) return SellResult.InvalidQuantity
 
         return database.withTransaction {
-            val player = database.playerDao().getPlayerSnapshot()
-                ?: error("Seed world before trading.")
-            val priceEntity = database.townPriceDao().getPrice(townId, goodId).first()
-                ?: return@withTransaction SellResult.GoodNotAvailable
-            val good = database.goodDao().getGood(goodId).first()
-                ?: return@withTransaction SellResult.GoodNotAvailable
+            val player =
+                database.playerDao().getPlayerSnapshot()
+                    ?: error("Seed world before trading.")
+            val priceEntity =
+                database.townPriceDao().getPrice(townId, goodId).first()
+                    ?: return@withTransaction SellResult.GoodNotAvailable
+            val good =
+                database.goodDao().getGood(goodId).first()
+                    ?: return@withTransaction SellResult.GoodNotAvailable
 
             val currentInventory = database.inventoryDao().listInventory(player.playerId).first()
             val existingItem = currentInventory.firstOrNull { it.goodId == goodId }
@@ -352,7 +386,15 @@ class MarketRepository(
             )
 
             // Telemetry: detect market anomalies
-            detectMarketAnomalies(townId, goodId, good.baseValue, priceEntity.sellPrice, newSellPrice, currentSupply, newSupply)
+            detectMarketAnomalies(
+                townId,
+                goodId,
+                good.baseValue,
+                priceEntity.sellPrice,
+                newSellPrice,
+                currentSupply,
+                newSupply,
+            )
 
             SellResult.Success(
                 goodId = goodId,
@@ -405,9 +447,12 @@ class MarketRepository(
         newSupply: SupplyLevel,
     ) {
         val now = System.currentTimeMillis()
-        val priceChangePercent = if (oldPrice > 0) {
-            ((newPrice - oldPrice).toDouble() / oldPrice * 100).toLong()
-        } else 0L
+        val priceChangePercent =
+            if (oldPrice > 0) {
+                ((newPrice - oldPrice).toDouble() / oldPrice * 100).toLong()
+            } else {
+                0L
+            }
 
         // Price spike: >50% increase
         if (priceChangePercent > 50) {
@@ -452,9 +497,12 @@ class MarketRepository(
         }
 
         // Unusual volume: check if price deviates significantly from base value (>100%)
-        val deviationPercent = if (baseValue > 0) {
-            ((newPrice - baseValue).toDouble() / baseValue * 100).toLong()
-        } else 0L
+        val deviationPercent =
+            if (baseValue > 0) {
+                ((newPrice - baseValue).toDouble() / baseValue * 100).toLong()
+            } else {
+                0L
+            }
         if (deviationPercent > 100) {
             TelemetryService.tryRecord(
                 TelemetryEvent.MarketAnomaly(

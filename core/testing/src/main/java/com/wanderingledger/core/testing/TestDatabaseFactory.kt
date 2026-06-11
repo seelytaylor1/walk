@@ -7,7 +7,8 @@ import com.wanderingledger.core.database.WanderingLedgerDatabase
 
 object TestDatabaseFactory {
     fun createInMemoryDatabase(context: Context): WanderingLedgerDatabase =
-        Room.inMemoryDatabaseBuilder(context, WanderingLedgerDatabase::class.java)
+        Room
+            .inMemoryDatabaseBuilder(context, WanderingLedgerDatabase::class.java)
             .allowMainThreadQueries()
             .build()
 

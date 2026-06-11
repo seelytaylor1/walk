@@ -14,12 +14,12 @@ private val MEMBER_SPACING = 48.dp
 fun LineFormation(
     companions: List<Companion>,
     modifier: Modifier = Modifier,
-    content: @Composable RowScope.() -> Unit
+    content: @Composable RowScope.() -> Unit,
 ) {
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(MEMBER_SPACING),
-        content = content
+        content = content,
     )
 }
 
@@ -27,14 +27,15 @@ fun LineFormation(
 fun PartyFormation(
     companions: List<Companion>,
     modifier: Modifier = Modifier,
-    showPlayer: Boolean = true
+    showPlayer: Boolean = true,
 ) {
-    val allMembers = buildList {
-        if (showPlayer) add(0 to null)
-        companions.forEachIndexed { index, companion ->
-            add((index + 1) to companion)
+    val allMembers =
+        buildList {
+            if (showPlayer) add(0 to null)
+            companions.forEachIndexed { index, companion ->
+                add((index + 1) to companion)
+            }
         }
-    }
 
     if (allMembers.isEmpty()) return
 
@@ -42,7 +43,7 @@ fun PartyFormation(
 
     Row(
         modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(MEMBER_SPACING)
+        horizontalArrangement = Arrangement.spacedBy(MEMBER_SPACING),
     ) {
         allMembers.forEachIndexed { index, member ->
             when {
@@ -50,7 +51,7 @@ fun PartyFormation(
                     if (member.second != null) {
                         PartyMember(
                             companion = member.second!!,
-                            isLeader = true
+                            isLeader = true,
                         )
                     } else {
                         PartyPlayer()

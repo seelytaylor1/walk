@@ -7,7 +7,7 @@ enum class GoodRarity {
     Common,
     Uncommon,
     Rare,
-    Legendary
+    Legendary,
 }
 
 /**
@@ -16,7 +16,7 @@ enum class GoodRarity {
 enum class ProfitPotential {
     Low,
     Medium,
-    High
+    High,
 }
 
 /**
@@ -36,7 +36,7 @@ data class MarketGoodItemState(
     val description: String = "",
     val profitPotential: ProfitPotential = ProfitPotential.Low,
     val hasRumorIndicator: Boolean = false,
-    val recommendationReason: String? = null
+    val recommendationReason: String? = null,
 )
 
 /**
@@ -47,5 +47,5 @@ data class MarketPresentationState(
     val playerGold: Long,
     val inventoryUsed: Int,
     val inventoryCapacity: Int,
-    val goods: List<MarketGoodItemState> = emptyList()
+    val goods: List<MarketGoodItemState> = emptyList(),
 )

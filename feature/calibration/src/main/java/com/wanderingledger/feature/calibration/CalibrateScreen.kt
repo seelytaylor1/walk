@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.CircularProgressIndicator
@@ -47,12 +46,17 @@ data class CalibrationScreenState(
 
 interface CalibrationActions {
     fun startAuto()
+
     fun stopAuto()
+
     fun adjustSensitivity(value: Float)
+
     fun saveCalibration()
+
     fun skipCalibration()
 }
 
+@Suppress("ktlint:standard:function-naming")
 @Composable
 fun CalibrateScreen(
     state: CalibrationScreenState,
@@ -76,9 +80,10 @@ fun CalibrateScreen(
     }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(Spacing.large),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .padding(Spacing.large),
         verticalArrangement = Arrangement.spacedBy(Spacing.medium),
     ) {
         Text(
@@ -98,8 +103,9 @@ fun CalibrateScreen(
         if (!state.stepCounterAvailable) {
             WLCard {
                 Text(
-                    text = "Hardware step counter not available. " +
-                        "Using motion fallback. Adjust sensitivity to match your gait.",
+                    text =
+                        "Hardware step counter not available. " +
+                            "Using motion fallback. Adjust sensitivity to match your gait.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                 )

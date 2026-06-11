@@ -1,8 +1,6 @@
 package com.wanderingledger.core.steptracker
 
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -13,20 +11,20 @@ import java.util.concurrent.atomic.AtomicLong
 import kotlin.system.measureNanoTime
 
 class StepTrackerServiceBenchmark {
-
     @Test
     fun benchmarkSingleStepRecordingLatency() {
         val repository = BenchmarkStepBankRepository()
         val service = StepTrackerService(repository)
 
         val iterations = 1000
-        val totalNs = measureNanoTime {
-            runBlocking {
-                repeat(iterations) {
-                    service.recordSensorDelta(10, StepSource.Hardware)
+        val totalNs =
+            measureNanoTime {
+                runBlocking {
+                    repeat(iterations) {
+                        service.recordSensorDelta(10, StepSource.Hardware)
+                    }
                 }
             }
-        }
 
         val avgLatencyUs = (totalNs / iterations) / 1000.0
         println("Average single-step recording latency: ${"%.2f".format(avgLatencyUs)} μs")
@@ -41,13 +39,14 @@ class StepTrackerServiceBenchmark {
         val burstSize = 500
         val iterations = 100
 
-        val totalNs = measureNanoTime {
-            runBlocking {
-                repeat(iterations) {
-                    service.recordSensorDelta(burstSize, StepSource.Hardware)
+        val totalNs =
+            measureNanoTime {
+                runBlocking {
+                    repeat(iterations) {
+                        service.recordSensorDelta(burstSize, StepSource.Hardware)
+                    }
                 }
             }
-        }
 
         val avgLatencyUs = (totalNs / iterations) / 1000.0
         println("Average burst ($burstSize steps) recording latency: ${"%.2f".format(avgLatencyUs)} μs")
@@ -83,15 +82,16 @@ class StepTrackerServiceBenchmark {
         val sources = listOf(StepSource.Hardware, StepSource.Simulation, StepSource.MotionFallback)
         val totalSteps = 3000
 
-        val totalNs = measureNanoTime {
-            runBlocking {
-                sources.forEach { source ->
-                    repeat(totalSteps / sources.size) {
-                        service.recordSensorDelta(1, source)
+        val totalNs =
+            measureNanoTime {
+                runBlocking {
+                    sources.forEach { source ->
+                        repeat(totalSteps / sources.size) {
+                            service.recordSensorDelta(1, source)
+                        }
                     }
                 }
             }
-        }
 
         val avgLatencyNs = totalNs / totalSteps
         println("Sequential multi-source recording avg latency: ${avgLatencyNs / 1000.0} μs")
@@ -126,13 +126,14 @@ class StepTrackerServiceBenchmark {
         val service = StepTrackerService(repository)
 
         val negativeCount = 1000
-        val totalNs = measureNanoTime {
-            runBlocking {
-                repeat(negativeCount) {
-                    service.recordSensorDelta(-1, StepSource.Hardware)
+        val totalNs =
+            measureNanoTime {
+                runBlocking {
+                    repeat(negativeCount) {
+                        service.recordSensorDelta(-1, StepSource.Hardware)
+                    }
                 }
             }
-        }
 
         val avgLatencyUs = (totalNs / negativeCount) / 1000.0
         println("Anomaly detection latency: ${"%.2f".format(avgLatencyUs)} μs")
@@ -151,13 +152,14 @@ class StepTrackerServiceBenchmark {
         }
 
         val observeIterations = 10000
-        val totalNs = measureNanoTime {
-            runBlocking {
-                repeat(observeIterations) {
-                    repository.observeStepBank().first()
+        val totalNs =
+            measureNanoTime {
+                runBlocking {
+                    repeat(observeIterations) {
+                        repository.observeStepBank().first()
+                    }
                 }
             }
-        }
 
         val avgLatencyUs = (totalNs / observeIterations) / 1000.0
         println("Flow observation avg latency: ${"%.2f".format(avgLatencyUs)} μs")
@@ -170,14 +172,21 @@ private class BenchmarkStepBankRepository : StepBankRepository {
 
     override fun observeStepBank() = bankedSteps
 
-    override suspend fun recordDetectedSteps(count: Int, source: StepSource, recordedAt: Long) {
+    override suspend fun recordDetectedSteps(
+        count: Int,
+        source: StepSource,
+        recordedAt: Long,
+    ) {
         withContext(Dispatchers.IO) {
             stepCount.incrementAndGet()
             bankedSteps.value += count
         }
     }
 
-    override suspend fun spendSteps(amount: Long, reason: String): StepSpendResult {
+    override suspend fun spendSteps(
+        amount: Long,
+        reason: String,
+    ): StepSpendResult {
         val current = bankedSteps.value
         if (current < amount) {
             return StepSpendResult(spent = false, requested = amount, remaining = current)

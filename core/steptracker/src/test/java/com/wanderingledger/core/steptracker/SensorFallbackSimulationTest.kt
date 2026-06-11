@@ -1,7 +1,6 @@
 package com.wanderingledger.core.steptracker
 
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.wanderingledger.core.testing.FakeStepBankRepository
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -10,77 +9,81 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class SensorFallbackSimulationTest {
-
     private val repository = FakeStepBankRepository()
 
     @Test
-    fun motionFallback_records_steps_with_correct_source() = runTest {
-        val service = StepTrackerService(repository)
+    fun motionFallback_records_steps_with_correct_source() =
+        runTest {
+            val service = StepTrackerService(repository)
 
-        service.recordSensorDelta(count = 50, source = StepSource.MotionFallback)
+            service.recordSensorDelta(count = 50, source = StepSource.MotionFallback)
 
-        assertEquals(50L, repository.observeStepBank().first())
-    }
+            assertEquals(50L, repository.observeStepBank().first())
+        }
 
     @Test
     fun hardware_preferred_when_available() {
-        val manager = FakeStepSensorManager(hardwareAvailable = true)
+        val manager = FakeStepSensorManager(isHardwareStepCounterAvailable = true)
         assertEquals(StepSource.Hardware, manager.preferredSource())
         assertTrue(manager.isHardwareStepCounterAvailable)
     }
 
     @Test
     fun motion_fallback_selected_when_hardware_unavailable() {
-        val manager = FakeStepSensorManager(hardwareAvailable = false)
+        val manager = FakeStepSensorManager(isHardwareStepCounterAvailable = false)
         assertEquals(StepSource.MotionFallback, manager.preferredSource())
         assertFalse(manager.isHardwareStepCounterAvailable)
     }
 
     @Test
-    fun service_accepts_both_hardware_and_fallback_sources() = runTest {
-        val service = StepTrackerService(repository)
+    fun service_accepts_both_hardware_and_fallback_sources() =
+        runTest {
+            val service = StepTrackerService(repository)
 
-        service.recordSensorDelta(count = 10, source = StepSource.Hardware)
-        assertEquals(10L, repository.observeStepBank().first())
+            service.recordSensorDelta(count = 10, source = StepSource.Hardware)
+            assertEquals(10L, repository.observeStepBank().first())
 
-        service.recordSensorDelta(count = 5, source = StepSource.MotionFallback)
-        assertEquals(15L, repository.observeStepBank().first())
+            service.recordSensorDelta(count = 5, source = StepSource.MotionFallback)
+            assertEquals(15L, repository.observeStepBank().first())
 
-        service.recordSensorDelta(count = 3, source = StepSource.Simulation)
-        assertEquals(18L, repository.observeStepBank().first())
-    }
-
-    @Test
-    fun mixed_source_recording_increases_bank_correctly() = runTest {
-        val service = StepTrackerService(repository)
-
-        repeat(10) { service.recordSensorDelta(count = 1, source = StepSource.Hardware) }
-        repeat(5) { service.recordSensorDelta(count = 1, source = StepSource.MotionFallback) }
-
-        assertEquals(15L, repository.observeStepBank().first())
-    }
+            service.recordSensorDelta(count = 3, source = StepSource.Simulation)
+            assertEquals(18L, repository.observeStepBank().first())
+        }
 
     @Test
-    fun zero_count_rejected_for_all_sources() = runTest {
-        val service = StepTrackerService(repository)
+    fun mixed_source_recording_increases_bank_correctly() =
+        runTest {
+            val service = StepTrackerService(repository)
 
-        service.recordSensorDelta(count = 0, source = StepSource.Hardware)
-        service.recordSensorDelta(count = 0, source = StepSource.MotionFallback)
-        service.recordSensorDelta(count = 0, source = StepSource.Simulation)
+            repeat(10) { service.recordSensorDelta(count = 1, source = StepSource.Hardware) }
+            repeat(5) { service.recordSensorDelta(count = 1, source = StepSource.MotionFallback) }
 
-        assertEquals(0L, repository.observeStepBank().first())
-    }
+            assertEquals(15L, repository.observeStepBank().first())
+        }
 
     @Test
-    fun negative_count_rejected_for_all_sources() = runTest {
-        val service = StepTrackerService(repository)
+    fun zero_count_rejected_for_all_sources() =
+        runTest {
+            val service = StepTrackerService(repository)
 
-        service.recordSensorDelta(count = -5, source = StepSource.Hardware)
-        service.recordSensorDelta(count = -10, source = StepSource.MotionFallback)
-        service.recordSensorDelta(count = -1, source = StepSource.Simulation)
+            service.recordSensorDelta(count = 0, source = StepSource.Hardware)
+            service.recordSensorDelta(count = 0, source = StepSource.MotionFallback)
+            service.recordSensorDelta(count = 0, source = StepSource.Simulation)
 
-        assertEquals(0L, repository.observeStepBank().first())
-    }
+            assertEquals(0L, repository.observeStepBank().first())
+        }
+
+    @Test
+    fun negative_count_rejected_for_all_sources() =
+        runTest {
+            val service = StepTrackerService(repository)
+
+            service.recordSensorDelta(count = -5, source = StepSource.Hardware)
+            service.recordSensorDelta(count = -10, source = StepSource.MotionFallback)
+            service.recordSensorDelta(count = -1, source = StepSource.Simulation)
+
+            assertEquals(0L, repository.observeStepBank().first())
+        }
 
     @Test
     fun accel_detector_registers_steps_from_synthetic_motion() {
@@ -103,17 +106,17 @@ class SensorFallbackSimulationTest {
         val detector = PeakDetectionStepDetector(sensitivity = 1.0f)
 
         repeat(5) {
-            detector.processSample(
-                it * 800_000_000L,
-                ax = 0f, ay = 0f, az = 13f,
-            )
+            detector.processSample(it * 800_000_000L, ax = 0f, ay = 0f, az = 13f)
+            detector.processSample(it * 800_000_000L + 400_000_000L, ax = 0f, ay = 0f, az = 9.81f)
         }
 
-        val before = detector.processSample(4_000_000_000L, ax = 0f, ay = 0f, az = 9.81f)
+        val before = detector.processSample(4_000_000_000L, ax = 0f, ay = 0f, az = 13f)
+        assertTrue("Should have detected steps before reset", before > 0)
         detector.reset()
         val after = detector.processSample(4_800_000_000L, ax = 0f, ay = 0f, az = 13f)
 
-        assertTrue("Reset should clear step count", after < before)
+        assertEquals("After reset and one sample, should have 1 step", 1, after)
+        assertTrue("Reset should clear step count history", after < before)
     }
 
     @Test
@@ -171,11 +174,15 @@ class SensorFallbackSimulationTest {
                 val noise = (Math.random() * 0.5).toFloat()
                 detector.processSample(
                     tNs,
-                    ax = noise, ay = noise, az = 9.81f + noise,
+                    ax = noise,
+                    ay = noise,
+                    az = 9.81f + noise,
                 )
                 detector.processSample(
                     tNs + 400_000_000L,
-                    ax = noise, ay = noise, az = 12.5f + noise,
+                    ax = noise,
+                    ay = noise,
+                    az = 12.5f + noise,
                 )
                 tNs += 800_000_000L
             }
@@ -196,7 +203,9 @@ class SensorFallbackSimulationTest {
             val noise = (Math.random() * 0.2).toFloat()
             detector.processSample(
                 i * 20_000_000L,
-                ax = noise, ay = noise, az = 9.81f + noise,
+                ax = noise,
+                ay = noise,
+                az = 9.81f + noise,
             )
         }
 
@@ -208,12 +217,13 @@ class SensorFallbackSimulationTest {
     }
 
     @Test
-    fun burst_threshold_anomaly_logged_for_large_deltas() = runTest {
-        val service = StepTrackerService(repository)
+    fun burst_threshold_anomaly_logged_for_large_deltas() =
+        runTest {
+            val service = StepTrackerService(repository)
 
-        service.recordSensorDelta(count = 1000, source = StepSource.Hardware)
-        assertEquals(1000L, repository.observeStepBank().first())
-    }
+            service.recordSensorDelta(count = 1000, source = StepSource.Hardware)
+            assertEquals(1000L, repository.observeStepBank().first())
+        }
 }
 
 private class FakeStepSensorManager(

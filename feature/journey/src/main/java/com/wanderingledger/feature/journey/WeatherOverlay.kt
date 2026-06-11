@@ -33,8 +33,9 @@ fun FogOverlay(
     val alpha = if (reducedMotion) 0.16f else 0.28f
 
     Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(Color(0xFFB0BEC5).copy(alpha = alpha)),
+        modifier =
+            modifier
+                .fillMaxSize()
+                .background(Color(0xFFB0BEC5).copy(alpha = alpha)),
     )
 }

@@ -22,10 +22,8 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.wanderingledger.core.designsystem.theme.WLTheme
 import com.wanderingledger.core.model.Biome
 import kotlin.math.PI
 import kotlin.math.atan2
@@ -91,11 +89,13 @@ private fun getPositionOnSpline(
 ): Offset {
     val invT = 1f - t
     val (cp1, cp2) = calculateSplineControlPoints(start, end, controlOffset)
-    val x = invT * invT * invT * start.x +
+    val x =
+        invT * invT * invT * start.x +
             3f * invT * invT * t * cp1.x +
             3f * invT * t * t * cp2.x +
             t * t * t * end.x
-    val y = invT * invT * invT * start.y +
+    val y =
+        invT * invT * invT * start.y +
             3f * invT * invT * t * cp1.y +
             3f * invT * t * t * cp2.y +
             t * t * t * end.y
@@ -109,33 +109,37 @@ private fun getTangentOnSpline(
     t: Float,
 ): Float {
     val (cp1, cp2) = calculateSplineControlPoints(start, end, controlOffset)
-    val dx = 3f * (1f - t) * (1f - t) * (cp1.x - start.x) +
+    val dx =
+        3f * (1f - t) * (1f - t) * (cp1.x - start.x) +
             6f * (1f - t) * t * (cp2.x - cp1.x) +
             3f * t * t * (end.x - cp2.x)
-    val dy = 3f * (1f - t) * (1f - t) * (cp1.y - start.y) +
+    val dy =
+        3f * (1f - t) * (1f - t) * (cp1.y - start.y) +
             6f * (1f - t) * t * (cp2.y - cp1.y) +
             3f * t * t * (end.y - cp2.y)
     return atan2(dy, dx) * 180f / PI.toFloat()
 }
 
-private fun getEncounterEmoji(encounterType: String): String = when (encounterType) {
-    "merchant-cart" -> "\uD83D\uDE9A"
-    "fog-bank" -> "\uD83C\uDF2B\uFE0F"
-    "old-road" -> "\uD83D\uDE97"
-    "bandit-ambush" -> "\uD83D\uDEB0"
-    else -> "\u26D3\uFE0F"
-}
+private fun getEncounterEmoji(encounterType: String): String =
+    when (encounterType) {
+        "merchant-cart" -> "\uD83D\uDE9A"
+        "fog-bank" -> "\uD83C\uDF2B\uFE0F"
+        "old-road" -> "\uD83D\uDE97"
+        "bandit-ambush" -> "\uD83D\uDEB0"
+        else -> "\u26D3\uFE0F"
+    }
 
 @Composable
 fun RouteSplineOverlay(
     routes: List<RoutePathData>,
     biome: Biome,
     currentTravelingRouteId: Long? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
-    val routeColors = remember(biome) {
-        getBiomeRouteColors(biome)
-    }
+    val routeColors =
+        remember(biome) {
+            getBiomeRouteColors(biome)
+        }
     val maxStepCost = routes.maxOfOrNull { it.stepCost } ?: 1
 
     Box(modifier = modifier.fillMaxSize()) {
@@ -159,29 +163,32 @@ fun RouteSplineOverlay(
                 val start = SplinePoint(startX, startY)
                 val end = SplinePoint(endX, endY)
 
-                val routeColor = if (route.isAffordable) {
-                    routeColors.affordable
-                } else {
-                    routeColors.unaffordable
-                }
+                val routeColor =
+                    if (route.isAffordable) {
+                        routeColors.affordable
+                    } else {
+                        routeColors.unaffordable
+                    }
 
                 val routePath = createRoutePath(start, end, controlOffset)
                 drawPath(
                     path = routePath,
                     color = routeColor,
-                    style = Stroke(
-                        width = 8f,
-                        cap = StrokeCap.Round,
-                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(20f, 10f), 0f)
-                    )
+                    style =
+                        Stroke(
+                            width = 8f,
+                            cap = StrokeCap.Round,
+                            pathEffect = PathEffect.dashPathEffect(floatArrayOf(20f, 10f), 0f),
+                        ),
                 )
                 drawPath(
                     path = routePath,
                     color = routeColor.copy(alpha = 0.6f),
-                    style = Stroke(
-                        width = 16f,
-                        cap = StrokeCap.Round
-                    )
+                    style =
+                        Stroke(
+                            width = 16f,
+                            cap = StrokeCap.Round,
+                        ),
                 )
 
                 if (currentTravelingRouteId == route.segmentId && route.progress > 0f) {
@@ -189,13 +196,14 @@ fun RouteSplineOverlay(
                     val markerAngle = getTangentOnSpline(start, end, controlOffset, route.progress)
 
                     rotate(markerAngle, markerPosition) {
-                        val markerPath = Path().apply {
-                            moveTo(markerPosition.x, markerPosition.y - 24f)
-                            lineTo(markerPosition.x - 16f, markerPosition.y + 12f)
-                            lineTo(markerPosition.x, markerPosition.y + 4f)
-                            lineTo(markerPosition.x + 16f, markerPosition.y + 12f)
-                            close()
-                        }
+                        val markerPath =
+                            Path().apply {
+                                moveTo(markerPosition.x, markerPosition.y - 24f)
+                                lineTo(markerPosition.x - 16f, markerPosition.y + 12f)
+                                lineTo(markerPosition.x, markerPosition.y + 4f)
+                                lineTo(markerPosition.x + 16f, markerPosition.y + 12f)
+                                close()
+                            }
                         drawPath(
                             path = markerPath,
                             color = routeColors.marker,
@@ -206,7 +214,7 @@ fun RouteSplineOverlay(
                     drawCircle(
                         color = routeColors.marker,
                         radius = 16f,
-                        center = progressDotPosition
+                        center = progressDotPosition,
                     )
                 }
             }
@@ -217,20 +225,22 @@ fun RouteSplineOverlay(
                 val encounterPositions = listOf(0.3f, 0.6f, 0.85f)
                 route.eventPool.take(3).forEachIndexed { eventIndex, encounterType ->
                     val encounterT = encounterPositions.getOrElse(eventIndex) { 0.5f }
-                    val (x, y) = calculateSplineScreenPosition(
-                        routeIndex = index,
-                        t = encounterT,
-                        maxStepCost = maxStepCost,
-                        stepCost = route.stepCost
-                    )
+                    val (x, y) =
+                        calculateSplineScreenPosition(
+                            routeIndex = index,
+                            t = encounterT,
+                            maxStepCost = maxStepCost,
+                            stepCost = route.stepCost,
+                        )
                     Text(
                         text = getEncounterEmoji(encounterType),
                         fontSize = 24.sp,
-                        modifier = Modifier
-                            .offset(
-                                x = (x - 12).dp,
-                                y = (y - 12).dp
-                            )
+                        modifier =
+                            Modifier
+                                .offset(
+                                    x = (x - 12).dp,
+                                    y = (y - 12).dp,
+                                ),
                     )
                 }
             }
@@ -271,27 +281,29 @@ fun AnimatedTravelMarker(
     routePathData: RoutePathData,
     progress: Float,
     biome: Biome,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val animatedProgress by animateFloatAsState(
         targetValue = if (isTraveling) progress else 0f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
-        ),
-        label = "travel_progress"
+        animationSpec =
+            spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessLow,
+            ),
+        label = "travel_progress",
     )
 
-    val routeColor = remember(biome) {
-        getBiomeRouteColors(biome).marker
-    }
+    val routeColor =
+        remember(biome) {
+            getBiomeRouteColors(biome).marker
+        }
 
     if (animatedProgress > 0f) {
         Box(modifier = modifier.fillMaxWidth()) {
             Text(
                 text = "\uD83D\uDEB6\u200D\u2642\uFE0F",
                 style = MaterialTheme.typography.displaySmall,
-                modifier = Modifier.align(Alignment.Center)
+                modifier = Modifier.align(Alignment.Center),
             )
         }
     }
@@ -304,29 +316,34 @@ private data class BiomeRouteColors(
     val waypoint: Color,
 )
 
-private fun getBiomeRouteColors(biome: Biome): BiomeRouteColors = when (biome) {
-    Biome.Forest -> BiomeRouteColors(
-        affordable = Color(0xFF2E7D32),
-        unaffordable = Color(0xFF9E9E9E),
-        marker = Color(0xFF1B5E20),
-        waypoint = Color(0xFF795548),
-    )
-    Biome.Mountain -> BiomeRouteColors(
-        affordable = Color(0xFF455A64),
-        unaffordable = Color(0xFF9E9E9E),
-        marker = Color(0xFF263238),
-        waypoint = Color(0xFF5D4037),
-    )
-    Biome.Swamp -> BiomeRouteColors(
-        affordable = Color(0xFF00695C),
-        unaffordable = Color(0xFF9E9E9E),
-        marker = Color(0xFF004D40),
-        waypoint = Color(0xFF3E2723),
-    )
-    Biome.Coast -> BiomeRouteColors(
-        affordable = Color(0xFF0277BD),
-        unaffordable = Color(0xFF9E9E9E),
-        marker = Color(0xFF01579B),
-        waypoint = Color(0xFFFF8F00),
-    )
-}
+private fun getBiomeRouteColors(biome: Biome): BiomeRouteColors =
+    when (biome) {
+        Biome.Forest ->
+            BiomeRouteColors(
+                affordable = Color(0xFF2E7D32),
+                unaffordable = Color(0xFF9E9E9E),
+                marker = Color(0xFF1B5E20),
+                waypoint = Color(0xFF795548),
+            )
+        Biome.Mountain ->
+            BiomeRouteColors(
+                affordable = Color(0xFF455A64),
+                unaffordable = Color(0xFF9E9E9E),
+                marker = Color(0xFF263238),
+                waypoint = Color(0xFF5D4037),
+            )
+        Biome.Swamp ->
+            BiomeRouteColors(
+                affordable = Color(0xFF00695C),
+                unaffordable = Color(0xFF9E9E9E),
+                marker = Color(0xFF004D40),
+                waypoint = Color(0xFF3E2723),
+            )
+        Biome.Coast ->
+            BiomeRouteColors(
+                affordable = Color(0xFF0277BD),
+                unaffordable = Color(0xFF9E9E9E),
+                marker = Color(0xFF01579B),
+                waypoint = Color(0xFFFF8F00),
+            )
+    }

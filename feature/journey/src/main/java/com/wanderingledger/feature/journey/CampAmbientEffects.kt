@@ -32,28 +32,30 @@ fun CampfireEffect(
     intensity: Float = 1f,
     biome: Biome = Biome.Forest,
     reducedMotion: Boolean = false,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "campfire")
 
     val flicker by infiniteTransition.animateFloat(
         initialValue = 0.8f,
         targetValue = 1.2f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 300),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "flicker"
+        animationSpec =
+            infiniteRepeatable(
+                animation = tween(durationMillis = 300),
+                repeatMode = RepeatMode.Reverse,
+            ),
+        label = "flicker",
     )
 
     val glowRadius by infiniteTransition.animateFloat(
         initialValue = 80f,
         targetValue = 120f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 800),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "glow_radius"
+        animationSpec =
+            infiniteRepeatable(
+                animation = tween(durationMillis = 800),
+                repeatMode = RepeatMode.Reverse,
+            ),
+        label = "glow_radius",
     )
 
     Box(modifier = modifier) {
@@ -62,24 +64,26 @@ fun CampfireEffect(
             val centerY = size.height / 2
 
             drawCircle(
-                brush = Brush.radialGradient(
-                    colors = listOf(
-                        Color(0xFFFF6B35).copy(alpha = 0.6f * flicker * intensity),
-                        Color(0xFFFF8C00).copy(alpha = 0.3f * flicker * intensity),
-                        Color.Transparent
+                brush =
+                    Brush.radialGradient(
+                        colors =
+                            listOf(
+                                Color(0xFFFF6B35).copy(alpha = 0.6f * flicker * intensity),
+                                Color(0xFFFF8C00).copy(alpha = 0.3f * flicker * intensity),
+                                Color.Transparent,
+                            ),
+                        center = Offset(centerX, centerY),
+                        radius = glowRadius * flicker,
                     ),
-                    center = Offset(centerX, centerY),
-                    radius = glowRadius * flicker
-                ),
                 radius = glowRadius * flicker,
-                center = Offset(centerX, centerY)
+                center = Offset(centerX, centerY),
             )
         }
 
         Text(
             text = "\uD83E\uDDED",
             style = MaterialTheme.typography.displayLarge,
-            modifier = Modifier.offset(y = (-10).dp)
+            modifier = Modifier.offset(y = (-10).dp),
         )
 
         AtmosphericCampfireSparks(
@@ -95,7 +99,7 @@ fun CampfireEffect(
 private fun FireParticle(
     index: Int,
     intensity: Float,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val animationDuration = 1500 + (index * 100)
     val initialOffset = remember(index) { Random.nextFloat() * 30f }
@@ -105,87 +109,92 @@ private fun FireParticle(
     val yOffset by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = -50f - initialOffset,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = animationDuration),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "fire_y"
+        animationSpec =
+            infiniteRepeatable(
+                animation = tween(durationMillis = animationDuration),
+                repeatMode = RepeatMode.Restart,
+            ),
+        label = "fire_y",
     )
 
     val xOffset by infiniteTransition.animateFloat(
         initialValue = -10f,
         targetValue = 10f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = animationDuration / 2),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "fire_x"
+        animationSpec =
+            infiniteRepeatable(
+                animation = tween(durationMillis = animationDuration / 2),
+                repeatMode = RepeatMode.Reverse,
+            ),
+        label = "fire_x",
     )
 
     val alpha by infiniteTransition.animateFloat(
         initialValue = 0.8f,
         targetValue = 0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = animationDuration),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "fire_alpha"
+        animationSpec =
+            infiniteRepeatable(
+                animation = tween(durationMillis = animationDuration),
+                repeatMode = RepeatMode.Restart,
+            ),
+        label = "fire_alpha",
     )
 
     Text(
         text = if (index % 3 == 0) "\u2605" else "\u2022",
         style = MaterialTheme.typography.titleMedium,
         color = Color(0xFFFF6B35).copy(alpha = alpha * intensity),
-        modifier = modifier.offset(x = xOffset.dp, y = yOffset.dp)
+        modifier = modifier.offset(x = xOffset.dp, y = yOffset.dp),
     )
 }
 
 @Composable
 fun CampfireGlowOverlay(
     intensity: Float = 1f,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "campfire_glow")
 
     val glowAlpha by infiniteTransition.animateFloat(
         initialValue = 0.15f,
         targetValue = 0.25f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 500),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "glow_alpha"
+        animationSpec =
+            infiniteRepeatable(
+                animation = tween(durationMillis = 500),
+                repeatMode = RepeatMode.Reverse,
+            ),
+        label = "glow_alpha",
     )
 
     Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(
-                Brush.radialGradient(
-                    colors = listOf(
-                        Color(0x40FF8C00).copy(alpha = glowAlpha * intensity),
-                        Color(0x20FF6B35).copy(alpha = glowAlpha * 0.5f * intensity),
-                        Color.Transparent
-                    )
-                )
-            )
+        modifier =
+            modifier
+                .fillMaxSize()
+                .background(
+                    Brush.radialGradient(
+                        colors =
+                            listOf(
+                                Color(0x40FF8C00).copy(alpha = glowAlpha * intensity),
+                                Color(0x20FF6B35).copy(alpha = glowAlpha * 0.5f * intensity),
+                                Color.Transparent,
+                            ),
+                    ),
+                ),
     )
 }
 
 @Composable
-fun NightStars(
-    modifier: Modifier = Modifier
-) {
+fun NightStars(modifier: Modifier = Modifier) {
     val infiniteTransition = rememberInfiniteTransition(label = "stars")
 
     val twinkle by infiniteTransition.animateFloat(
         initialValue = 0.3f,
         targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 2000),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "star_twinkle"
+        animationSpec =
+            infiniteRepeatable(
+                animation = tween(durationMillis = 2000),
+                repeatMode = RepeatMode.Reverse,
+            ),
+        label = "star_twinkle",
     )
 
     Box(modifier = modifier.fillMaxSize()) {
@@ -196,11 +205,12 @@ fun NightStars(
             Text(
                 text = "\u2B50",
                 style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.offset(
-                    x = xPos.dp,
-                    y = yPos.dp
-                ),
-                color = Color.White.copy(alpha = twinkle * 0.8f)
+                modifier =
+                    Modifier.offset(
+                        x = xPos.dp,
+                        y = yPos.dp,
+                    ),
+                color = Color.White.copy(alpha = twinkle * 0.8f),
             )
         }
     }
@@ -209,7 +219,7 @@ fun NightStars(
 @Composable
 fun FireflyParticles(
     biome: com.wanderingledger.core.model.Biome,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     if (biome != com.wanderingledger.core.model.Biome.Forest) return
 
@@ -218,11 +228,12 @@ fun FireflyParticles(
     val alpha by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 3000),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "firefly_alpha"
+        animationSpec =
+            infiniteRepeatable(
+                animation = tween(durationMillis = 3000),
+                repeatMode = RepeatMode.Reverse,
+            ),
+        label = "firefly_alpha",
     )
 
     Box(modifier = modifier.fillMaxSize()) {
@@ -236,7 +247,7 @@ fun FireflyParticles(
                 startY = yStart,
                 delay = delay,
                 alpha = alpha,
-                modifier = Modifier
+                modifier = Modifier,
             )
         }
     }
@@ -248,35 +259,37 @@ private fun Firefly(
     startY: Float,
     delay: Int,
     alpha: Float,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "firefly_${startX}")
+    val infiniteTransition = rememberInfiniteTransition(label = "firefly_$startX")
 
     val xOffset by infiniteTransition.animateFloat(
         initialValue = startX,
         targetValue = startX + Random.nextFloat() * 100f - 50f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 5000 + delay),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "firefly_x"
+        animationSpec =
+            infiniteRepeatable(
+                animation = tween(durationMillis = 5000 + delay),
+                repeatMode = RepeatMode.Reverse,
+            ),
+        label = "firefly_x",
     )
 
     val yOffset by infiniteTransition.animateFloat(
         initialValue = startY,
         targetValue = startY + Random.nextFloat() * 80f - 40f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 4000 + delay),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "firefly_y"
+        animationSpec =
+            infiniteRepeatable(
+                animation = tween(durationMillis = 4000 + delay),
+                repeatMode = RepeatMode.Reverse,
+            ),
+        label = "firefly_y",
     )
 
     Text(
         text = "\u2728",
         style = MaterialTheme.typography.titleMedium,
         modifier = modifier.offset(x = xOffset.dp, y = yOffset.dp),
-        color = Color(0xFFFFFF00).copy(alpha = alpha * 0.7f)
+        color = Color(0xFFFFFF00).copy(alpha = alpha * 0.7f),
     )
 }
 
@@ -286,19 +299,20 @@ fun CampAmbientOverlay(
     campfireIntensity: Float,
     biome: Biome = Biome.Forest,
     reducedMotion: Boolean = false,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Box(modifier = modifier.fillMaxSize()) {
         AtmosphericFxLayer(
-            config = AtmosphericFxConfig(
-                biome = biome,
-                timeOfDay = timeOfDay,
-                campfireIntensity = campfireIntensity,
-                includeBiomeAmbient = true,
-                includeWeather = false,
-                includeNightSky = timeOfDay == TimeOfDay.Night,
-                reducedMotion = reducedMotion,
-            ),
+            config =
+                AtmosphericFxConfig(
+                    biome = biome,
+                    timeOfDay = timeOfDay,
+                    campfireIntensity = campfireIntensity,
+                    includeBiomeAmbient = true,
+                    includeWeather = false,
+                    includeNightSky = timeOfDay == TimeOfDay.Night,
+                    reducedMotion = reducedMotion,
+                ),
             modifier = Modifier.fillMaxSize(),
         )
 
@@ -310,9 +324,10 @@ fun CampAmbientOverlay(
             }
             TimeOfDay.Dusk -> {
                 Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color(0x20FF7043))
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .background(Color(0x20FF7043)),
                 )
                 if (campfireIntensity > 0.5f) {
                     CampfireGlowOverlay(intensity = campfireIntensity * 0.5f)

@@ -30,13 +30,22 @@ class RoomStepBankRepository(
     private val database: WanderingLedgerDatabase,
 ) : StepBankRepository {
     override fun observeStepBank(): Flow<Long> =
-        database.playerDao().getPlayer().filterNotNull().map { it.bankedSteps }
+        database
+            .playerDao()
+            .getPlayer()
+            .filterNotNull()
+            .map { it.bankedSteps }
 
-    override suspend fun recordDetectedSteps(count: Int, source: StepSource, recordedAt: Long) {
+    override suspend fun recordDetectedSteps(
+        count: Int,
+        source: StepSource,
+        recordedAt: Long,
+    ) {
         if (count <= 0) return
         database.withTransaction {
-            val player = database.playerDao().getPlayerSnapshot()
-                ?: error("Seed world before recording steps.")
+            val player =
+                database.playerDao().getPlayerSnapshot()
+                    ?: error("Seed world before recording steps.")
             database.stepRecordDao().insertRecord(
                 StepRecordEntity(
                     dateEpoch = recordedAt.toEpochDay(),
@@ -54,11 +63,15 @@ class RoomStepBankRepository(
         }
     }
 
-    override suspend fun spendSteps(amount: Long, reason: String): StepSpendResult {
+    override suspend fun spendSteps(
+        amount: Long,
+        reason: String,
+    ): StepSpendResult {
         require(amount >= 0) { "Step spend amount must be non-negative." }
         return database.withTransaction {
-            val player = database.playerDao().getPlayerSnapshot()
-                ?: error("Seed world before spending steps.")
+            val player =
+                database.playerDao().getPlayerSnapshot()
+                    ?: error("Seed world before spending steps.")
             if (player.bankedSteps < amount) {
                 StepSpendResult(spent = false, requested = amount, remaining = player.bankedSteps)
             } else {
@@ -80,7 +93,11 @@ class GameRepository(
     private val encounterRepository: EncounterRepository,
 ) {
     fun observePlayerState(): Flow<PlayerState> =
-        database.playerDao().getPlayer().filterNotNull().map { it.toModel() }
+        database
+            .playerDao()
+            .getPlayer()
+            .filterNotNull()
+            .map { it.toModel() }
 
     fun observeCurrentTown(): Flow<Town> =
         combine(
@@ -90,17 +107,25 @@ class GameRepository(
             towns.first { it.townId == player.currentTownId }.toModel()
         }
 
-    fun observeTown(townId: Long): Flow<Town?> =
-        database.townDao().getTown(townId).map { it?.toModel() }
+    fun observeTown(townId: Long): Flow<Town?> = database.townDao().getTown(townId).map { it?.toModel() }
 
     fun observeRoadsFromCurrentTown(): Flow<List<RoadSegment>> =
         database.playerDao().getPlayer().filterNotNull().map { it.currentTownId }.map { townId ->
-            database.roadSegmentDao().listRoadsFrom(townId).first().map { it.toModel() }
+            database
+                .roadSegmentDao()
+                .listRoadsFrom(townId)
+                .first()
+                .map { it.toModel() }
         }
 
     fun observeTravelRoutesFromCurrentTown(): Flow<List<TravelRoute>> =
         database.playerDao().getPlayer().filterNotNull().map { player ->
-            val towns = database.townDao().listTowns().first().associateBy { it.townId }
+            val towns =
+                database
+                    .townDao()
+                    .listTowns()
+                    .first()
+                    .associateBy { it.townId }
             database.roadSegmentDao().listRoadsFrom(player.currentTownId).first().mapNotNull { road ->
                 towns[road.toTownId]?.let { destination ->
                     TravelRoute(
@@ -113,25 +138,31 @@ class GameRepository(
 
     suspend fun initializeNewGame(seed: Long = 1L) {
         SeedWorld.ensureSeeded(database, now = seed.coerceAtLeast(1L))
+        val existingRumors = database.rumorDao().listActiveRumors().first()
+        if (existingRumors.isEmpty()) {
+            rumorRepository.generateRumorForTownVisit(visitedTownId = 1L)
+        }
     }
 
     suspend fun travel(segmentId: Long): TravelResult {
         val startedAt = System.currentTimeMillis()
         return database.withTransaction {
-            val player = database.playerDao().getPlayerSnapshot()
-                ?: error("Seed world before traveling.")
-            val road = database.roadSegmentDao().getRoadSnapshot(segmentId)
-                ?: run {
-                    TelemetryService.tryRecord(
-                        TelemetryEvent.TravelCompleted(
-                            timestamp = startedAt,
-                            segmentId = segmentId,
-                            latencyMs = System.currentTimeMillis() - startedAt,
-                            success = false,
-                        ),
-                    )
-                    return@withTransaction TravelResult.RoadNotFound
-                }
+            val player =
+                database.playerDao().getPlayerSnapshot()
+                    ?: error("Seed world before traveling.")
+            val road =
+                database.roadSegmentDao().getRoadSnapshot(segmentId)
+                    ?: run {
+                        TelemetryService.tryRecord(
+                            TelemetryEvent.TravelCompleted(
+                                timestamp = startedAt,
+                                segmentId = segmentId,
+                                latencyMs = System.currentTimeMillis() - startedAt,
+                                success = false,
+                            ),
+                        )
+                        return@withTransaction TravelResult.RoadNotFound
+                    }
             if (road.fromTownId != player.currentTownId) {
                 TelemetryService.tryRecord(
                     TelemetryEvent.TravelCompleted(
@@ -186,11 +217,16 @@ class GameRepository(
             rumorRepository.generateRumorForTownVisit(road.toTownId)
 
             // Resolve road encounter if pool exists
-            val eventPool = try {
-                road.eventPool.trim('[', ']').split(',').map { it.trim(' ', '"') }.filter { it.isNotEmpty() }
-            } catch (e: Exception) {
-                emptyList()
-            }
+            val eventPool =
+                try {
+                    road.eventPool
+                        .trim('[', ']')
+                        .split(',')
+                        .map { it.trim(' ', '"') }
+                        .filter { it.isNotEmpty() }
+                } catch (e: Exception) {
+                    emptyList()
+                }
             if (eventPool.isNotEmpty()) {
                 val encounterId = eventPool.random()
                 // Use a seed derived from time and road for determinism within this run
@@ -221,9 +257,18 @@ class GameRepository(
 }
 
 sealed interface TravelResult {
-    data class Arrived(val townId: Long, val remainingSteps: Long) : TravelResult
-    data class NotEnoughSteps(val required: Long, val available: Long) : TravelResult
+    data class Arrived(
+        val townId: Long,
+        val remainingSteps: Long,
+    ) : TravelResult
+
+    data class NotEnoughSteps(
+        val required: Long,
+        val available: Long,
+    ) : TravelResult
+
     data object RoadNotFound : TravelResult
+
     data object NotAtRoadOrigin : TravelResult
 }
 
@@ -267,4 +312,8 @@ private fun RoadSegmentEntity.toModel(): RoadSegment =
     )
 
 private fun Long.toEpochDay(): Long =
-    Instant.ofEpochMilli(this).atZone(ZoneOffset.UTC).toLocalDate().toEpochDay()
+    Instant
+        .ofEpochMilli(this)
+        .atZone(ZoneOffset.UTC)
+        .toLocalDate()
+        .toEpochDay()

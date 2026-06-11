@@ -15,7 +15,6 @@ import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class GameRepositoryTest {
-
     private lateinit var database: WanderingLedgerDatabase
     private lateinit var companionRepository: CompanionRepository
     private lateinit var encounterRepository: EncounterRepository
@@ -38,24 +37,26 @@ class GameRepositoryTest {
     }
 
     @Test
-    fun initializeNewGameSeedsDatabase() = runTest {
-        gameRepository.initializeNewGame()
-        
-        val player = gameRepository.observePlayerState().first()
-        assertEquals("Ledger Keeper", player.name)
-        assertEquals(1L, player.currentTownId)
-    }
+    fun initializeNewGameSeedsDatabase() =
+        runTest {
+            gameRepository.initializeNewGame()
+
+            val player = gameRepository.observePlayerState().first()
+            assertEquals("Ledger Keeper", player.name)
+            assertEquals(1L, player.currentTownId)
+        }
 
     @Test
-    fun travelUpdatesPlayerLocation() = runTest {
-        gameRepository.initializeNewGame()
-        val player = database.playerDao().getPlayerSnapshot()!!
-        database.playerDao().updatePlayer(player.copy(bankedSteps = 200L))
-        
-        // Road 1: Hearthwick(1) -> Stoneford(2)
-        gameRepository.travel(1L)
-        
-        val updatedPlayer = gameRepository.observePlayerState().first()
-        assertEquals(2L, updatedPlayer.currentTownId)
-    }
+    fun travelUpdatesPlayerLocation() =
+        runTest {
+            gameRepository.initializeNewGame()
+            val player = database.playerDao().getPlayerSnapshot()!!
+            database.playerDao().updatePlayer(player.copy(bankedSteps = 200L))
+
+            // Road 1: Hearthwick(1) -> Stoneford(2)
+            gameRepository.travel(1L)
+
+            val updatedPlayer = gameRepository.observePlayerState().first()
+            assertEquals(2L, updatedPlayer.currentTownId)
+        }
 }

@@ -12,7 +12,10 @@ class StepTrackerService(
     private val lastTimestamps = ConcurrentHashMap<String, Long>()
     private val burstThreshold = 500
 
-    suspend fun recordSensorDelta(count: Int, source: StepSource = StepSource.Hardware) {
+    suspend fun recordSensorDelta(
+        count: Int,
+        source: StepSource = StepSource.Hardware,
+    ) {
         val now = System.currentTimeMillis()
 
         when {

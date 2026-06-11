@@ -16,14 +16,13 @@ data class EncounterOutcome(
  * Pure logic for resolving road encounters deterministically based on a seed.
  */
 object EncounterEngine {
-    
     fun resolve(
         seed: Long,
         encounterId: String,
-        party: List<Companion>
+        party: List<Companion>,
     ): EncounterOutcome {
         val random = Random(seed)
-        
+
         return when (encounterId) {
             "merchant-cart" -> resolveMerchantCart(random, party)
             "fog-bank" -> resolveFogBank(random, party)
@@ -33,25 +32,31 @@ object EncounterEngine {
         }
     }
 
-    private fun resolveMerchantCart(random: Random, party: List<Companion>): EncounterOutcome {
+    private fun resolveMerchantCart(
+        random: Random,
+        party: List<Companion>,
+    ): EncounterOutcome {
         val bonus = if (party.any { it.role == CompanionRole.Rogue }) 20 else 0
         val roll = random.nextInt(100) + bonus
-        
+
         return if (roll > 50) {
             EncounterOutcome(
                 "merchant-cart",
                 "You helped a merchant fix their wheel. They gave you some gold as thanks.",
-                goldChange = 15
+                goldChange = 15,
             )
         } else {
             EncounterOutcome("merchant-cart", "You passed a merchant cart, but they were too busy to talk.")
         }
     }
 
-    private fun resolveFogBank(random: Random, party: List<Companion>): EncounterOutcome {
+    private fun resolveFogBank(
+        random: Random,
+        party: List<Companion>,
+    ): EncounterOutcome {
         val hasScout = party.any { it.role == CompanionRole.Scout }
         val roll = random.nextInt(100)
-        
+
         return if (hasScout || roll > 40) {
             EncounterOutcome("fog-bank", "Your party navigated the fog safely.")
         } else {
@@ -59,33 +64,39 @@ object EncounterEngine {
                 "fog-bank",
                 "The fog was disorienting. You lost some time and some gold dropped from your pack.",
                 goldChange = -10,
-                success = false
+                success = false,
             )
         }
     }
 
-    private fun resolveOldRoad(random: Random, party: List<Companion>): EncounterOutcome {
+    private fun resolveOldRoad(
+        random: Random,
+        party: List<Companion>,
+    ): EncounterOutcome {
         val roll = random.nextInt(100)
         return if (roll > 70) {
             EncounterOutcome(
                 "old-road",
                 "You found an old cache of coins hidden in a hollow tree!",
-                goldChange = 50
+                goldChange = 50,
             )
         } else {
             EncounterOutcome("old-road", "The old road was quiet and peaceful.")
         }
     }
 
-    private fun resolveBanditAmbush(random: Random, party: List<Companion>): EncounterOutcome {
+    private fun resolveBanditAmbush(
+        random: Random,
+        party: List<Companion>,
+    ): EncounterOutcome {
         val totalPower = party.sumOf { it.combatPower }
         val roll = random.nextInt(100) + totalPower * 10
-        
+
         return if (roll > 60) {
             EncounterOutcome(
                 "bandit-ambush",
                 "Bandits tried to ambush you, but your party drove them off!",
-                bondChange = 5
+                bondChange = 5,
             )
         } else {
             EncounterOutcome(
@@ -93,7 +104,7 @@ object EncounterEngine {
                 "You were ambushed by bandits! You managed to escape, but they stole some of your gold.",
                 goldChange = -30,
                 success = false,
-                bondChange = -2
+                bondChange = -2,
             )
         }
     }

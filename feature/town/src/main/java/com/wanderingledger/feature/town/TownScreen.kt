@@ -71,40 +71,52 @@ fun buildTownScreenState(
         message = message,
     )
 
-class TownScreenView(context: Context) : LinearLayout(context) {
-    private val headerText = TextView(context).apply {
-        textSize = 22f
-        setPadding(0, 0, 0, 8)
-    }
-    private val detailsText = TextView(context).apply {
-        textSize = 16f
-        setPadding(0, 0, 0, 24)
-    }
-    private val messageText = TextView(context).apply {
-        textSize = 15f
-        setPadding(0, 0, 0, 24)
-    }
-    private val worldMapButton = Button(context).apply {
-        text = "View World Map"
-    }
-    private val marketButton = Button(context).apply {
-        text = "Visit Market"
-    }
-    private val inventoryButton = Button(context).apply {
-        text = "View Inventory"
-    }
-    private val ledgerButton = Button(context).apply {
-        text = "Open Ledger"
-    }
-    private val chronicleButton = Button(context).apply {
-        text = "Open Chronicle"
-    }
-    private val companionsButton = Button(context).apply {
-        text = "Companions"
-    }
-    private val settingsButton = Button(context).apply {
-        text = "Settings"
-    }
+class TownScreenView(
+    context: Context,
+) : LinearLayout(context) {
+    private val headerText =
+        TextView(context).apply {
+            textSize = 22f
+            setPadding(0, 0, 0, 8)
+        }
+    private val detailsText =
+        TextView(context).apply {
+            textSize = 16f
+            setPadding(0, 0, 0, 24)
+        }
+    private val messageText =
+        TextView(context).apply {
+            textSize = 15f
+            setPadding(0, 0, 0, 24)
+        }
+    private val worldMapButton =
+        Button(context).apply {
+            text = "View World Map"
+        }
+    private val marketButton =
+        Button(context).apply {
+            text = "Visit Market"
+        }
+    private val inventoryButton =
+        Button(context).apply {
+            text = "View Inventory"
+        }
+    private val ledgerButton =
+        Button(context).apply {
+            text = "Open Ledger"
+        }
+    private val chronicleButton =
+        Button(context).apply {
+            text = "Open Chronicle"
+        }
+    private val companionsButton =
+        Button(context).apply {
+            text = "Companions"
+        }
+    private val settingsButton =
+        Button(context).apply {
+            text = "Settings"
+        }
 
     init {
         orientation = VERTICAL
@@ -187,7 +199,10 @@ class TownScreenView(context: Context) : LinearLayout(context) {
         )
     }
 
-    fun render(state: TownScreenState, actions: TownActions) {
+    fun render(
+        state: TownScreenState,
+        actions: TownActions,
+    ) {
         headerText.text = state.toHeaderText()
         detailsText.text = state.toDetailsText()
         messageText.text = state.message ?: ""
@@ -201,15 +216,15 @@ class TownScreenView(context: Context) : LinearLayout(context) {
         settingsButton.setOnClickListener { actions.onOpenSettings.onOpenSettings() }
     }
 
-    private fun TownScreenState.toHeaderText(): String =
-        "You have arrived in $townName"
+    private fun TownScreenState.toHeaderText(): String = "You have arrived in $townName"
 
-    private fun TownScreenState.toDetailsText(): String = buildString {
-        appendLine("Region: $townRegion")
-        appendLine("Reputation: $reputation / 100")
-        appendLine("Status: $storyState")
-        appendLine()
-        appendLine("Banked steps: $bankedSteps")
-        appendLine("Gold: $gold")
-    }
+    private fun TownScreenState.toDetailsText(): String =
+        buildString {
+            appendLine("Region: $townRegion")
+            appendLine("Reputation: $reputation / 100")
+            appendLine("Status: $storyState")
+            appendLine()
+            appendLine("Banked steps: $bankedSteps")
+            appendLine("Gold: $gold")
+        }
 }

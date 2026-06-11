@@ -7,7 +7,7 @@ data class MapLocation(
     val name: String,
     val offset: Offset,
     val isDiscovered: Boolean = false,
-    val isCurrentLocation: Boolean = false
+    val isCurrentLocation: Boolean = false,
 )
 
 data class MapRoute(
@@ -15,5 +15,5 @@ data class MapRoute(
     val toId: Long,
     val fromOffset: Offset,
     val toOffset: Offset,
-    val isDiscovered: Boolean = false
+    val isDiscovered: Boolean = false,
 )

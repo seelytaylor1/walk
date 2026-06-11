@@ -113,16 +113,18 @@ enum class CompanionRole {
     Scout,
     Healer,
     Rogue,
-    Mage;
+    Mage,
+    ;
 
     val emoji: String
-        get() = when (this) {
-            Fighter -> "⚔️"
-            Scout -> "🔍"
-            Healer -> "💚"
-            Rogue -> "🗡️"
-            Mage -> "✨"
-        }
+        get() =
+            when (this) {
+                Fighter -> "⚔️"
+                Scout -> "🔍"
+                Healer -> "💚"
+                Rogue -> "🗡️"
+                Mage -> "✨"
+            }
 }
 
 enum class StepSource {

@@ -12,7 +12,6 @@ class BottomNavBar(
     context: Context,
     private val onNavigate: (Destination) -> Unit,
 ) : LinearLayout(context) {
-
     enum class Destination {
         WORLD_MAP,
         TOWN,
@@ -47,11 +46,12 @@ class BottomNavBar(
             button.gravity = Gravity.CENTER
             button.setPadding(32, 16, 32, 16)
 
-            val textColor = if (dest == activeDestination) {
-                ContextCompat.getColor(context, R.color.primary_light)
-            } else {
-                ContextCompat.getColor(context, R.color.on_surface_light)
-            }
+            val textColor =
+                if (dest == activeDestination) {
+                    ContextCompat.getColor(context, R.color.primary_light)
+                } else {
+                    ContextCompat.getColor(context, R.color.on_surface_light)
+                }
             button.setTextColor(textColor)
 
             if (dest == activeDestination) {

@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun rememberStepAnimationState(
     bankedSteps: Long,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ): Animatable<Float, *> {
     val scope = rememberCoroutineScope()
 
@@ -31,17 +31,19 @@ fun rememberStepAnimationState(
             scope.launch {
                 scale.animateTo(
                     targetValue = 1.03f,
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                        stiffness = Spring.StiffnessLow
-                    )
+                    animationSpec =
+                        spring(
+                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                            stiffness = Spring.StiffnessLow,
+                        ),
                 )
                 scale.animateTo(
                     targetValue = 1f,
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                        stiffness = Spring.StiffnessLow
-                    )
+                    animationSpec =
+                        spring(
+                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                            stiffness = Spring.StiffnessLow,
+                        ),
                 )
             }
         }
@@ -51,21 +53,22 @@ fun rememberStepAnimationState(
     return scale
 }
 
-fun stepSpringAnimationSpec(reducedMotion: Boolean) = if (reducedMotion) {
-    tween<Float>(durationMillis = 300)
-} else {
-    spring(
-        dampingRatio = Spring.DampingRatioMediumBouncy,
-        stiffness = Spring.StiffnessLow
-    )
-}
+fun stepSpringAnimationSpec(reducedMotion: Boolean) =
+    if (reducedMotion) {
+        tween<Float>(durationMillis = 300)
+    } else {
+        spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow,
+        )
+    }
 
 @Composable
 fun StepPulseWrapper(
     bankedSteps: Long,
     modifier: Modifier = Modifier,
     reducedMotion: Boolean = false,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     if (reducedMotion) {
         // Skip the scale animation entirely — just render content at 1:1
@@ -75,10 +78,13 @@ fun StepPulseWrapper(
 
     val scale = rememberStepAnimationState(bankedSteps)
 
-    Box(modifier = modifier.graphicsLayer {
-        scaleX = scale.value
-        scaleY = scale.value
-    }) {
+    Box(
+        modifier =
+            modifier.graphicsLayer {
+                scaleX = scale.value
+                scaleY = scale.value
+            },
+    ) {
         content()
     }
 }

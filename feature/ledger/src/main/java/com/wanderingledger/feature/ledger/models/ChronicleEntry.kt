@@ -8,12 +8,14 @@ enum class EntryType {
     RUMOR,
 }
 
-enum class ChronicleIcon(val vectorName: String) {
+enum class ChronicleIcon(
+    val vectorName: String,
+) {
     COMPASS("tablercompass"),
     MAP("tablermap"),
     DIALOG("tablerchatcircle"),
     FIST("tablerhandshake"),
-    CIGAR("tablercigar");
+    CIGAR("tablercigar"),
 }
 
 data class ChronicleEntry(

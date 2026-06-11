@@ -11,7 +11,7 @@ enum class DistrictType {
     Archives,
     Gates,
     Treasury,
-    Shrine
+    Shrine,
 }
 
 /**
@@ -23,7 +23,7 @@ data class District(
     val description: String,
     val icon: ImageVector? = null,
     val isAvailable: Boolean = true,
-    val unlockRequirement: String? = null
+    val unlockRequirement: String? = null,
 )
 
 /**
@@ -31,5 +31,5 @@ data class District(
  */
 data class TownNavigationState(
     val townName: String,
-    val districts: List<District> = emptyList()
+    val districts: List<District> = emptyList(),
 )

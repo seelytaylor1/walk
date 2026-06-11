@@ -10,8 +10,9 @@ import androidx.datastore.preferences.preferencesDataStore
 
 private val Context.calibrationDataStore: DataStore<Preferences> by preferencesDataStore(name = "calibration")
 
-class CalibrationRepository(private val context: Context) {
-
+class CalibrationRepository(
+    private val context: Context,
+) {
     private object Keys {
         val SENSITIVITY = floatPreferencesKey("sensitivity")
         val LAST_CALIBRATED_AT = longPreferencesKey("last_calibrated_at")

@@ -9,12 +9,15 @@ import com.wanderingledger.core.telemetry.TelemetryService
 
 interface StepSensorManager {
     val isHardwareStepCounterAvailable: Boolean
+
     fun preferredSource(): StepSource
+
     fun recordSteps(count: Int)
 }
 
-class AndroidStepSensorManager(context: Context) : StepSensorManager {
-
+class AndroidStepSensorManager(
+    context: Context,
+) : StepSensorManager {
     private val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
 
     override val isHardwareStepCounterAvailable: Boolean
@@ -28,8 +31,13 @@ class AndroidStepSensorManager(context: Context) : StepSensorManager {
 
 sealed class StepSensorState {
     data object HardwareAvailable : StepSensorState()
+
     data object MotionFallback : StepSensorState()
-    data class Anomaly(val type: StepAnomalyType, val details: String) : StepSensorState()
+
+    data class Anomaly(
+        val type: StepAnomalyType,
+        val details: String,
+    ) : StepSensorState()
 }
 
 class FallbackStepSensorManager(

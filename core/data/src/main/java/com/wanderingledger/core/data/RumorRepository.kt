@@ -48,13 +48,21 @@ class RumorRepository(
     /**
      * Generate a rumor when visiting a town.
      * The rumor usually concerns prices in another town.
+     *
+     * @param seed seeds the [Random] used for every random choice, so the
+     *   generated rumor is reproducible. Defaults to [System.nanoTime] for the
+     *   non-deterministic behaviour callers relied on previously.
      */
-    suspend fun generateRumorForTownVisit(visitedTownId: Long) {
+    suspend fun generateRumorForTownVisit(
+        visitedTownId: Long,
+        seed: Long = System.nanoTime(),
+    ) {
+        val random = Random(seed)
         val allTowns = database.townDao().listTowns().first()
         val otherTowns = allTowns.filter { it.townId != visitedTownId }
         if (otherTowns.isEmpty()) return
 
-        val sourceTown = otherTowns.random()
+        val sourceTown = otherTowns.random(random)
         val prices = database.townPriceDao().listPricesForTown(sourceTown.townId).first()
         if (prices.isEmpty()) return
 
@@ -65,20 +73,20 @@ class RumorRepository(
             }
 
         val targetPrice =
-            if (interestingPrices.isNotEmpty() && Random.nextFloat() < 0.8f) {
-                interestingPrices.random()
+            if (interestingPrices.isNotEmpty() && random.nextFloat() < 0.8f) {
+                interestingPrices.random(random)
             } else {
-                prices.random()
+                prices.random(random)
             }
 
         val good = database.goodDao().getGood(targetPrice.goodId).first() ?: return
 
-        val isFalse = Random.nextFloat() < 0.15f // 15% chance of a lie
+        val isFalse = random.nextFloat() < 0.15f // 15% chance of a lie
         val supplyLevel =
             if (isFalse) {
                 // Flip it or pick random
                 val levels = SupplyLevel.entries.filter { it.name != targetPrice.supplyLevel }
-                if (levels.isNotEmpty()) levels.random() else SupplyLevel.valueOf(targetPrice.supplyLevel)
+                if (levels.isNotEmpty()) levels.random(random) else SupplyLevel.valueOf(targetPrice.supplyLevel)
             } else {
                 SupplyLevel.valueOf(targetPrice.supplyLevel)
             }
@@ -101,8 +109,15 @@ class RumorRepository(
 
     /**
      * Generate a rumor from a road event.
+     *
+     * @param seed seeds the [Random] used to pick which road event the rumor
+     *   describes, so the result is reproducible. Defaults to [System.nanoTime].
      */
-    suspend fun generateRumorFromRoadEvent(segmentId: Long) {
+    suspend fun generateRumorFromRoadEvent(
+        segmentId: Long,
+        seed: Long = System.nanoTime(),
+    ) {
+        val random = Random(seed)
         val road = database.roadSegmentDao().getRoadSnapshot(segmentId) ?: return
         val eventPool =
             try {
@@ -116,7 +131,7 @@ class RumorRepository(
             }
 
         if (eventPool.isEmpty()) return
-        val event = eventPool.random()
+        val event = eventPool.random(random)
 
         val text =
             when (event) {

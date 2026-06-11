@@ -4,6 +4,10 @@
 **Blocked by:** `06-viewmodel-architecture-decision.md`  
 **Label:** enhancement
 
+> **Per issue 06: Jetpack ViewModel (Option A).** `TownViewModel` extends
+> `androidx.lifecycle.ViewModel` and exposes its state via `stateIn(viewModelScope, …)`,
+> obtained in `MainActivity` via the `viewModel { }` factory (lifecycle 2.7.0).
+
 ## What to build
 
 Extract all town/market/inventory state management from `MainActivity` into a `TownViewModel`:

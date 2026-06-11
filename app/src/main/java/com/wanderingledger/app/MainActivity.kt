@@ -7,6 +7,9 @@ import android.hardware.SensorManager
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -21,7 +24,6 @@ import com.wanderingledger.core.data.CompanionCommentaryContext
 import com.wanderingledger.core.data.CompanionCommentaryEngine
 import com.wanderingledger.core.data.CompanionCommentaryResult
 import com.wanderingledger.core.data.CompanionRepository
-import com.wanderingledger.core.data.EncounterRepository
 import com.wanderingledger.core.data.GameRepository
 import com.wanderingledger.core.data.InventoryRepository
 import com.wanderingledger.core.data.MarketRepository
@@ -108,7 +110,6 @@ class MainActivity : ComponentActivity() {
     private lateinit var rumorRepository: RumorRepository
     private lateinit var companionRepository: CompanionRepository
     private lateinit var companionCommentaryEngine: CompanionCommentaryEngine
-    private lateinit var encounterRepository: EncounterRepository
     private lateinit var marketRepository: MarketRepository
     private lateinit var inventoryRepository: InventoryRepository
     private lateinit var stepTrackerService: StepTrackerService
@@ -170,22 +171,9 @@ class MainActivity : ComponentActivity() {
 
     private var currentScreenType: NavigationShell.ScreenType = NavigationShell.ScreenType.WORLD_MAP
     private var currentTownId: Long = 1L
-    private var lastTravelTime: Long = System.currentTimeMillis()
-    private var currentCampState: com.wanderingledger.feature.journey.CampState? = null
     private var latestCompanionCommentary: CompanionCommentaryUi? = null
 
-    private val journeyScreenState =
-        MutableStateFlow(
-            com.wanderingledger.feature.journey.JourneyScreenState(
-                currentTownName = "",
-                currentTownRegion = "",
-                currentBiome = com.wanderingledger.core.model.Biome.Forest,
-                bankedSteps = 0,
-                lifetimeSteps = 0,
-                routes = emptyList(),
-                message = null,
-            ),
-        )
+    private lateinit var journeyViewModel: JourneyViewModel
 
     private val worldMapScreenState =
         MutableStateFlow(
@@ -216,20 +204,38 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        database = WanderingLedgerDatabase.create(this)
-        rumorRepository = RumorRepository(database)
-        companionRepository = CompanionRepository(database)
-        companionCommentaryEngine = CompanionCommentaryEngine()
-        encounterRepository = EncounterRepository(database, companionRepository)
-        gameRepository = GameRepository(database, rumorRepository, encounterRepository)
-        marketRepository = MarketRepository(database)
-        inventoryRepository = InventoryRepository(database)
-        stepTrackerService = StepTrackerService(RoomStepBankRepository(database))
+        val container = (application as WanderingLedgerApp).container
+        database = container.database
+        rumorRepository = container.rumorRepository
+        companionRepository = container.companionRepository
+        companionCommentaryEngine = container.companionCommentaryEngine
+        gameRepository = container.gameRepository
+        marketRepository = container.marketRepository
+        inventoryRepository = container.inventoryRepository
+        stepTrackerService = container.stepTrackerService
 
-        audioPreferences = AudioPreferences(this)
+        audioPreferences = container.audioPreferences
         audioManager = AudioManager(this, audioPreferences, scope)
         hapticManager = HapticManager(this, audioPreferences, scope)
-        accessibilityPreferences = AccessibilityPreferences(this)
+        accessibilityPreferences = container.accessibilityPreferences
+
+        val journeyViewModelFactory =
+            viewModelFactory {
+                initializer {
+                    JourneyViewModel(
+                        gameRepository = gameRepository,
+                        companionRepository = companionRepository,
+                        companionCommentaryEngine = companionCommentaryEngine,
+                        stepTrackerService = stepTrackerService,
+                        accessibilityPreferences = accessibilityPreferences,
+                    )
+                }
+            }
+        journeyViewModel = ViewModelProvider(this, journeyViewModelFactory)[JourneyViewModel::class.java]
+
+        scope.launch {
+            journeyViewModel.effects.collect { effect -> handleJourneyEffect(effect) }
+        }
 
         // Initialize Sensors
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
@@ -241,92 +247,18 @@ class MainActivity : ComponentActivity() {
         journeyView =
             ComposeView(this).apply {
                 setContent {
-                    val reduceMotion by accessibilityPreferences.reduceMotion.collectAsState(initial = false)
-                    val state = journeyScreenState.collectAsState()
+                    val state = journeyViewModel.state.collectAsState()
                     val actions =
                         remember {
                             com.wanderingledger.feature.journey.JourneyActions(
-                                onTravel = { segmentId ->
-                                    scope.launch {
-                                        audioManager.play(AudioEvent.TravelBegin)
-                                        hapticManager.perform(HapticEffect.SOFT_TAP)
-                                        val result =
-                                            withContext(Dispatchers.IO) {
-                                                gameRepository.travel(segmentId)
-                                            }
-                                        when (result) {
-                                            is TravelResult.Arrived -> {
-                                                lastTravelTime = System.currentTimeMillis()
-                                                audioManager.play(AudioEvent.TownArrival)
-                                                hapticManager.perform(HapticEffect.REWARD)
-                                                showTownArrival(result.townId, result.remainingSteps)
-                                            }
-                                            else -> {
-                                                if (result is TravelResult.NotEnoughSteps) {
-                                                    hapticManager.perform(HapticEffect.ERROR)
-                                                }
-                                                val commentaryMessage =
-                                                    if (result is TravelResult.NotEnoughSteps) {
-                                                        firstCompanionCommentaryMessage(
-                                                            context = CompanionCommentaryContext.LowSteps,
-                                                            biome = null,
-                                                            bankedSteps = result.available,
-                                                        )
-                                                    } else {
-                                                        null
-                                                    }
-                                                refreshJourneyScreen(commentaryMessage ?: result.toMessage())
-                                            }
-                                        }
-                                    }
-                                },
-                                onSimulateSteps = {
-                                    scope.launch {
-                                        withContext(Dispatchers.IO) {
-                                            stepTrackerService.recordSensorDelta(75, StepSource.Simulation)
-                                        }
-                                        currentCampState =
-                                            currentCampState?.let {
-                                                it.copy(stepsEarnedWhileCamping = it.stepsEarnedWhileCamping + 75)
-                                            }
-                                        refreshJourneyScreen("Banked 75 simulated steps.")
-                                    }
-                                },
-                                onMakeCamp = {
-                                    scope.launch {
-                                        val companions =
-                                            withContext(Dispatchers.IO) {
-                                                companionRepository.observeActiveCompanions().first()
-                                            }
-                                        val town =
-                                            withContext(Dispatchers.IO) {
-                                                gameRepository.observeCurrentTown().first()
-                                            }
-                                        currentCampState =
-                                            com.wanderingledger.feature.journey.CampState.camping(
-                                                biome = town.biome,
-                                                companions = companions,
-                                            )
-                                        val commentaryMessage =
-                                            firstCompanionCommentaryMessage(
-                                                context = CompanionCommentaryContext.Camp,
-                                                biome = town.biome,
-                                                bankedSteps = null,
-                                            )
-                                        refreshJourneyScreen(commentaryMessage ?: "Setting up camp...")
-                                    }
-                                },
-                                onWakeFromCamp = {
-                                    scope.launch {
-                                        currentCampState = null
-                                        lastTravelTime = System.currentTimeMillis()
-                                        refreshJourneyScreen("Breaking camp...")
-                                    }
-                                },
+                                onTravel = { segmentId -> journeyViewModel.onTravel(segmentId) },
+                                onSimulateSteps = { journeyViewModel.onSimulateSteps() },
+                                onMakeCamp = { journeyViewModel.onMakeCamp() },
+                                onWakeFromCamp = { journeyViewModel.onWakeFromCamp() },
                             )
                         }
                     com.wanderingledger.feature.journey.JourneyScreen(
-                        state = state.value.copy(reducedMotion = reduceMotion),
+                        state = state.value,
                         actions = actions,
                         modifier =
                             androidx.compose.ui.Modifier
@@ -352,7 +284,7 @@ class MainActivity : ComponentActivity() {
                                             }
                                         when (result) {
                                             is TravelResult.Arrived -> {
-                                                lastTravelTime = System.currentTimeMillis()
+                                                journeyViewModel.notifyTraveled()
                                                 audioManager.play(AudioEvent.TownArrival)
                                                 hapticManager.perform(HapticEffect.REWARD)
                                                 showTownArrival(result.townId, result.remainingSteps)
@@ -362,7 +294,7 @@ class MainActivity : ComponentActivity() {
                                                     hapticManager.perform(HapticEffect.ERROR)
                                                 }
                                                 // If we started traveling, switch to Journey screen
-                                                refreshJourneyScreen(result.toMessage())
+                                                showJourney(result.toMessage())
                                             }
                                         }
                                     }
@@ -437,7 +369,7 @@ class MainActivity : ComponentActivity() {
         navigationShell.onRestoreScreen = { screenType ->
             scope.launch {
                 when (screenType) {
-                    NavigationShell.ScreenType.JOURNEY -> refreshJourneyScreen()
+                    NavigationShell.ScreenType.JOURNEY -> showJourney()
                     NavigationShell.ScreenType.WORLD_MAP -> refreshWorldMapScreen()
                     NavigationShell.ScreenType.TOWN -> showTownView(currentTownId)
                     NavigationShell.ScreenType.TOWN_ARRIVAL -> { /* no-op */ }
@@ -481,13 +413,13 @@ class MainActivity : ComponentActivity() {
         super.onDestroy()
         audioManager.release()
         scope.cancel()
-        database.close()
+        // The database is owned by AppContainer (process-scoped); do not close it here.
     }
 
     private suspend fun refreshActiveScreenStepCount() {
         when (currentScreenType) {
             NavigationShell.ScreenType.WORLD_MAP -> refreshWorldMapScreen()
-            NavigationShell.ScreenType.JOURNEY -> refreshJourneyScreen()
+            NavigationShell.ScreenType.JOURNEY -> journeyViewModel.refresh()
             else -> { /* no-op */ }
         }
     }
@@ -529,56 +461,39 @@ class MainActivity : ComponentActivity() {
         navigationShell.navigateTo(NavigationShell.ScreenType.WORLD_MAP, "World Map", null)
     }
 
-    private suspend fun refreshJourneyScreen(message: String? = null) {
+    /**
+     * Show the journey screen. State building lives in [JourneyViewModel.refresh];
+     * the Activity only swaps the view and updates navigation. The ambient bed is
+     * (re)started by the [JourneyEffect.StartAmbient] effect that `refresh` emits.
+     */
+    private fun showJourney(message: String? = null) {
         cancelAllObservers()
         currentScreenType = NavigationShell.ScreenType.JOURNEY
-        val screenState =
-            withContext(Dispatchers.IO) {
-                val player = gameRepository.observePlayerState().first()
-                currentTownId = player.currentTownId
-                val town = gameRepository.observeCurrentTown().first()
-                val activeCompanions = companionRepository.observeActiveCompanions().first()
-
-                if (currentCampState == null &&
-                    com.wanderingledger.feature.journey.CampStateDetector.shouldEnterCamp(
-                        lastTravelTime = lastTravelTime,
-                        currentTime = System.currentTimeMillis(),
-                        bankedSteps = player.bankedSteps,
-                    )
-                ) {
-                    currentCampState =
-                        com.wanderingledger.feature.journey.CampState.camping(
-                            biome = town.biome,
-                            companions = activeCompanions,
-                        )
-                } else {
-                    currentCampState = currentCampState?.withUpdatedDuration(System.currentTimeMillis())
-                }
-
-                buildJourneyScreenState(
-                    currentTownName = town.name,
-                    currentTownRegion = town.region,
-                    currentBiome = town.biome,
-                    bankedSteps = player.bankedSteps,
-                    lifetimeSteps = player.lifetimeSteps,
-                    routeDestinations =
-                        gameRepository.observeTravelRoutesFromCurrentTown().first().map { route ->
-                            Triple(
-                                route.segment.segmentId,
-                                route.destination.name,
-                                Pair(route.segment.stepCost, route.segment.narrativeDistance),
-                            )
-                        },
-                    message = message,
-                    campState = currentCampState,
-                    activeCompanions = activeCompanions,
-                )
-            }
-
-        audioManager.startAmbient(screenState.currentBiome)
-        journeyScreenState.value = screenState
+        scope.launch {
+            currentTownId = gameRepository.observePlayerState().first().currentTownId
+        }
+        journeyViewModel.refresh(message)
         navigationShell.replaceContent(journeyView)
         navigationShell.navigateTo(NavigationShell.ScreenType.JOURNEY, "Journey", null)
+    }
+
+    private fun handleJourneyEffect(effect: JourneyEffect) {
+        when (effect) {
+            JourneyEffect.TravelBegin -> {
+                audioManager.play(AudioEvent.TravelBegin)
+                hapticManager.perform(HapticEffect.SOFT_TAP)
+            }
+            JourneyEffect.TravelBlocked -> hapticManager.perform(HapticEffect.ERROR)
+            is JourneyEffect.Arrived -> {
+                audioManager.play(AudioEvent.TownArrival)
+                hapticManager.perform(HapticEffect.REWARD)
+                scope.launch { showTownArrival(effect.townId, effect.remainingSteps) }
+            }
+            is JourneyEffect.StartAmbient -> audioManager.startAmbient(effect.biome)
+            is JourneyEffect.CommentaryGenerated -> {
+                latestCompanionCommentary = effect.commentary
+            }
+        }
     }
 
     private suspend fun showTownArrival(
@@ -808,36 +723,6 @@ class MainActivity : ComponentActivity() {
             ),
             buildCompanionsActions(townId),
         )
-    }
-
-    private suspend fun firstCompanionCommentaryMessage(
-        context: CompanionCommentaryContext,
-        biome: Biome?,
-        bankedSteps: Long?,
-    ): String? {
-        val companion =
-            withContext(Dispatchers.IO) {
-                companionRepository.observeActiveCompanions().first().firstOrNull()
-            } ?: return null
-        val result =
-            withContext(Dispatchers.IO) {
-                companionRepository.requestCommentary(
-                    companionId = companion.companionId,
-                    context = context,
-                    engine = companionCommentaryEngine,
-                    biome = biome,
-                    bankedSteps = bankedSteps,
-                )
-            }
-        return when (result) {
-            is CompanionCommentaryResult.Spoken -> {
-                latestCompanionCommentary = result.commentary.toUi()
-                "${result.commentary.companionName}: ${result.commentary.line}"
-            }
-            is CompanionCommentaryResult.OnCooldown,
-            CompanionCommentaryResult.NotActive,
-            -> null
-        }
     }
 
     private suspend fun showLedgerView(townId: Long) {
@@ -1275,11 +1160,3 @@ class MainActivity : ComponentActivity() {
             eventPool = eventPool,
         )
 }
-
-private fun com.wanderingledger.core.data.CompanionCommentary.toUi(): CompanionCommentaryUi =
-    CompanionCommentaryUi(
-        companionId = companionId,
-        companionName = companionName,
-        line = line,
-        tone = tone,
-    )

@@ -49,7 +49,7 @@ class GameRepositoryTest {
         runTest {
             gameRepository.initializeNewGame()
             val player = database.playerDao().getPlayerSnapshot()!!
-            database.playerDao().updatePlayer(player.copy(bankedSteps = 200L))
+            database.playerDao().updatePlayer(player.copy(bankedSteps = 2000L))
 
             // Road 1: Hearthwick(1) -> Stoneford(2)
             gameRepository.travel(1L)

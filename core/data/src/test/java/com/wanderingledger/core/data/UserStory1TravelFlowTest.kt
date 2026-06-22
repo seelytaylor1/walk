@@ -53,20 +53,20 @@ class UserStory1TravelFlowTest {
     @Test
     fun simulatedStepsEnableTravelAndArrivalUpdatesPlayerState() =
         runTest {
-            // Seed world: Hearthwick (id=1) → Stoneford (id=2) costs 120 steps
+            // Seed world: Hearthwick (id=1) → Stoneford (id=2) costs 1000 steps
             gameRepository.initializeNewGame(seed = 1L)
 
             // Simulate step input via StepTrackerService (as a sensor would)
-            stepTrackerService.recordSensorDelta(count = 150, source = StepSource.Simulation)
+            stepTrackerService.recordSensorDelta(count = 1200, source = StepSource.Simulation)
 
             // Verify step bank increased before travel
             val stepsBefore = stepBankRepository.observeStepBank().first()
-            assertEquals(150L, stepsBefore)
+            assertEquals(1200L, stepsBefore)
 
             // Retrieve the road segment from Hearthwick to Stoneford
             val roads = gameRepository.observeRoadsFromCurrentTown().first()
             val roadToStoneford = roads.first { it.toTownId == 2L }
-            assertEquals(120, roadToStoneford.stepCost)
+            assertEquals(1000, roadToStoneford.stepCost)
 
             // Travel along the road
             val result = gameRepository.travel(roadToStoneford.segmentId)
@@ -75,18 +75,18 @@ class UserStory1TravelFlowTest {
             assertTrue("Expected TravelResult.Arrived but got $result", result is TravelResult.Arrived)
             val arrived = result as TravelResult.Arrived
             assertEquals(2L, arrived.townId)
-            assertEquals(30L, arrived.remainingSteps)
+            assertEquals(200L, arrived.remainingSteps)
 
             // Verify PlayerState.currentTownId updated to destination
             val player = gameRepository.observePlayerState().first()
             assertEquals(2L, player.currentTownId)
 
-            // Verify step bank decreased by road cost (150 - 120 = 30)
+            // Verify step bank decreased by road cost (1200 - 1000 = 200)
             val stepsAfter = stepBankRepository.observeStepBank().first()
-            assertEquals(30L, stepsAfter)
+            assertEquals(200L, stepsAfter)
 
             // Verify lifetime steps unchanged by travel (only banked steps are spent)
-            assertEquals(150L, player.lifetimeSteps)
+            assertEquals(1200L, player.lifetimeSteps)
         }
 
     /**
@@ -95,11 +95,11 @@ class UserStory1TravelFlowTest {
     @Test
     fun insufficientSimulatedStepsBlockTravelAndPreservePlayerState() =
         runTest {
-            // Seed world: Hearthwick (id=1) → Stoneford (id=2) costs 120 steps
+            // Seed world: Hearthwick (id=1) → Stoneford (id=2) costs 1000 steps
             gameRepository.initializeNewGame(seed = 1L)
 
             // Simulate fewer steps than the road cost
-            stepTrackerService.recordSensorDelta(count = 100, source = StepSource.Simulation)
+            stepTrackerService.recordSensorDelta(count = 800, source = StepSource.Simulation)
 
             val roads = gameRepository.observeRoadsFromCurrentTown().first()
             val roadToStoneford = roads.first { it.toTownId == 2L }
@@ -113,8 +113,8 @@ class UserStory1TravelFlowTest {
                 result is TravelResult.NotEnoughSteps,
             )
             val notEnough = result as TravelResult.NotEnoughSteps
-            assertEquals(120L, notEnough.required)
-            assertEquals(100L, notEnough.available)
+            assertEquals(1000L, notEnough.required)
+            assertEquals(800L, notEnough.available)
 
             // Verify player location unchanged
             val player = gameRepository.observePlayerState().first()
@@ -122,7 +122,7 @@ class UserStory1TravelFlowTest {
 
             // Verify step bank unchanged
             val stepsAfter = stepBankRepository.observeStepBank().first()
-            assertEquals(100L, stepsAfter)
+            assertEquals(800L, stepsAfter)
         }
 
     /**
@@ -132,11 +132,11 @@ class UserStory1TravelFlowTest {
     @Test
     fun multiHopTravelFlowUpdatesLocationAndStepBankCorrectly() =
         runTest {
-            // Seed world: Hearthwick(1) → Stoneford(2) costs 120, Stoneford(2) → Mistfall(3) costs 180
+            // Seed world: Hearthwick(1) → Stoneford(2) costs 1000, Stoneford(2) → Mistfall(3) costs 2500
             gameRepository.initializeNewGame(seed = 1L)
 
-            // First leg: Hearthwick → Stoneford (cost 120)
-            stepTrackerService.recordSensorDelta(count = 120, source = StepSource.Simulation)
+            // First leg: Hearthwick → Stoneford (cost 1000)
+            stepTrackerService.recordSensorDelta(count = 1000, source = StepSource.Simulation)
             val firstResult = gameRepository.travel(segmentId = 1L) // segment 1: Hearthwick→Stoneford
             assertTrue(firstResult is TravelResult.Arrived)
             assertEquals(2L, (firstResult as TravelResult.Arrived).townId)
@@ -147,8 +147,8 @@ class UserStory1TravelFlowTest {
             assertEquals(2L, playerAtStoneford.currentTownId)
             assertEquals(0L, playerAtStoneford.bankedSteps)
 
-            // Second leg: Stoneford → Mistfall (cost 180)
-            stepTrackerService.recordSensorDelta(count = 200, source = StepSource.Simulation)
+            // Second leg: Stoneford → Mistfall (cost 2500)
+            stepTrackerService.recordSensorDelta(count = 2700, source = StepSource.Simulation)
 
             val roadsFromStoneford = gameRepository.observeRoadsFromCurrentTown().first()
             val roadToMistfall = roadsFromStoneford.first { it.toTownId == 3L }
@@ -156,12 +156,12 @@ class UserStory1TravelFlowTest {
             val secondResult = gameRepository.travel(roadToMistfall.segmentId)
             assertTrue(secondResult is TravelResult.Arrived)
             assertEquals(3L, (secondResult as TravelResult.Arrived).townId)
-            assertEquals(20L, secondResult.remainingSteps)
+            assertEquals(200L, secondResult.remainingSteps)
 
             // Verify final player state
             val playerAtMistfall = gameRepository.observePlayerState().first()
             assertEquals(3L, playerAtMistfall.currentTownId)
-            assertEquals(20L, playerAtMistfall.bankedSteps)
-            assertEquals(320L, playerAtMistfall.lifetimeSteps) // 120 + 200
+            assertEquals(200L, playerAtMistfall.bankedSteps)
+            assertEquals(3700L, playerAtMistfall.lifetimeSteps) // 1000 + 2700
         }
 }

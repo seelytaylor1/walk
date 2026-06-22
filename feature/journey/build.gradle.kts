@@ -20,6 +20,10 @@ android {
     buildFeatures {
         compose = true
     }
+
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+    }
 }
 
 dependencies {
@@ -34,4 +38,7 @@ dependencies {
     implementation(projects.core.model)
     implementation(projects.core.data)
     implementation(projects.core.ui)
+
+    testImplementation(libs.junit)
+    testImplementation(libs.robolectric)
 }

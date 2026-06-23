@@ -21,6 +21,7 @@ val MIGRATION_2_3 = object : Migration(2, 3) {
                 ELSE stepCost
             END
         """.trimIndent())
+        db.execSQL("UPDATE road_segments SET narrativeDistance = 'medium' WHERE segmentId IN (3, 4)")
     }
 }
 

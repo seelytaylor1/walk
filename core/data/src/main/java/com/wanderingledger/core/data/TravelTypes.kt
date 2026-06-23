@@ -6,6 +6,15 @@ import com.wanderingledger.core.model.PlayerState
 import com.wanderingledger.core.model.RoadSegment
 import com.wanderingledger.core.model.Rumor
 import com.wanderingledger.core.model.Town
+import org.json.JSONArray
+
+fun String.parseEventPool(): List<String> =
+    try {
+        val arr = JSONArray(this)
+        (0 until arr.length()).map { arr.getString(it) }
+    } catch (e: Exception) {
+        emptyList()
+    }
 
 /** 10% step cost reduction applied when a Scout companion is active. */
 const val SCOUT_STEP_DISCOUNT = 0.10

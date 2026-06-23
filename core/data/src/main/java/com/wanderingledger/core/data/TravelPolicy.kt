@@ -47,7 +47,7 @@ object TravelPolicy {
 
         // Rule: a road with a non-empty event pool resolves one encounter,
         // seeded deterministically from the travel seed and the segment.
-        val eventPool = parseEventPool(road.eventPool)
+        val eventPool = road.eventPool.parseEventPool()
         val encounter: EncounterOutcome? =
             if (eventPool.isNotEmpty()) {
                 val encounterSeed = seed + road.segmentId
@@ -105,14 +105,4 @@ object TravelPolicy {
         )
     }
 
-    private fun parseEventPool(raw: String): List<String> =
-        try {
-            raw
-                .trim('[', ']')
-                .split(',')
-                .map { it.trim(' ', '"') }
-                .filter { it.isNotEmpty() }
-        } catch (e: Exception) {
-            emptyList()
-        }
 }

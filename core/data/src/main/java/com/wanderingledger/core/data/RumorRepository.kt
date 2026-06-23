@@ -120,16 +120,7 @@ class RumorRepository(
     ) {
         val random = Random(seed)
         val road = database.roadSegmentDao().getRoadSnapshot(segmentId) ?: return
-        val eventPool =
-            try {
-                // Simple JSON array parsing or just pick from the string if it's simple
-                road.eventPool
-                    .trim('[', ']')
-                    .split(',')
-                    .map { it.trim(' ', '"') }
-            } catch (e: Exception) {
-                emptyList()
-            }
+        val eventPool = road.eventPool.parseEventPool()
 
         if (eventPool.isEmpty()) return
         val event = eventPool.random(random)

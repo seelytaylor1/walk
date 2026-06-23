@@ -2,6 +2,7 @@ package com.wanderingledger.feature.journey
 
 import com.wanderingledger.core.model.Biome
 import com.wanderingledger.core.model.Companion as CoreCompanion
+import com.wanderingledger.core.model.CompanionRole
 
 enum class JourneyMode {
     ActiveTravel,
@@ -45,12 +46,7 @@ data class CampState(
         ): CampState {
             val activities =
                 companions.associate { companion: CoreCompanion ->
-                    companion.companionId to
-                        when {
-                            companion.role.name == "Scout" -> CampActivity.KeepingWatch
-                            companion.role.name == "Healer" -> CampActivity.Cooking
-                            else -> CampActivity.Sitting
-                        }
+                    companion.companionId to CampStateDetector.determineCampActivity(companion)
                 }
             return CampState(
                 journeyMode = JourneyMode.Camping,
@@ -79,8 +75,8 @@ object CampStateDetector {
 
     fun determineCampActivity(companion: CoreCompanion): CampActivity =
         when {
-            companion.role.name == "Scout" -> CampActivity.KeepingWatch
-            companion.role.name == "Healer" -> CampActivity.Cooking
+            companion.role == CompanionRole.Scout -> CampActivity.KeepingWatch
+            companion.role == CompanionRole.Healer -> CampActivity.Cooking
             companion.bondLevel >= 5 -> CampActivity.Chatting
             else -> CampActivity.Sitting
         }

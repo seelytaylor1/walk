@@ -121,6 +121,7 @@ class CompanionsViewModel(
                         companionRepository.updateBond(companionId, 1)
                     }
                     _effects.emit(CompanionsEffect.InteractSuccess)
+                    _state.value = _state.value?.copy(message = null)
                 }
                 is CompanionCommentaryResult.OnCooldown -> {
                     _state.value = _state.value?.copy(

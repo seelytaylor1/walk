@@ -1017,7 +1017,6 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun cancelAllObservers() {
-        // marketObserveJob and companionsObserveJob removed; ViewModels manage their own lifecycles
         inventoryObserveJob?.cancel()
         ledgerObserveJob?.cancel()
         chronicleObserveJob?.cancel()

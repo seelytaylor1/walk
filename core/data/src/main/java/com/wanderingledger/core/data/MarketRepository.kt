@@ -10,7 +10,6 @@ import com.wanderingledger.core.model.Good
 import com.wanderingledger.core.model.PriceHistory
 import com.wanderingledger.core.model.SupplyLevel
 import com.wanderingledger.core.model.TownPrice
-import com.wanderingledger.core.telemetry.MarketAnomalyType
 import com.wanderingledger.core.telemetry.TelemetryEvent
 import com.wanderingledger.core.telemetry.TelemetryService
 import kotlinx.coroutines.flow.Flow
@@ -374,7 +373,11 @@ class MarketRepository(
             ),
         )
 
-        detectMarketAnomalies(townId, goodId, good.baseValue, priceEntity.sellPrice, newSellPrice, currentSupply, newSupply)
+        val before = PriceSnapshot(sellPrice = priceEntity.sellPrice, supplyLevel = currentSupply)
+        val after = PriceSnapshot(sellPrice = newSellPrice, supplyLevel = newSupply)
+        MarketAnomalyDetector.detect(townId, goodId, good.baseValue, before, after, now).forEach {
+            TelemetryService.tryRecord(it)
+        }
 
         val updatedPlayer = database.playerDao().getPlayerSnapshot()!!
         database.playerDao().updatePlayer(
@@ -412,85 +415,6 @@ class MarketRepository(
         }
     }
 
-    private fun detectMarketAnomalies(
-        townId: Long,
-        goodId: Long,
-        baseValue: Long,
-        oldPrice: Long,
-        newPrice: Long,
-        oldSupply: SupplyLevel,
-        newSupply: SupplyLevel,
-    ) {
-        val now = System.currentTimeMillis()
-        val priceChangePercent =
-            if (oldPrice > 0) {
-                ((newPrice - oldPrice).toDouble() / oldPrice * 100).toLong()
-            } else {
-                0L
-            }
-
-        // Price spike: >50% increase
-        if (priceChangePercent > 50) {
-            TelemetryService.tryRecord(
-                TelemetryEvent.MarketAnomaly(
-                    timestamp = now,
-                    anomalyType = MarketAnomalyType.PriceSpike,
-                    townId = townId,
-                    goodId = goodId.toString(),
-                    value = newPrice,
-                    threshold = (oldPrice * 1.5).toLong(),
-                ),
-            )
-        }
-
-        // Price crash: >30% decrease
-        if (priceChangePercent < -30) {
-            TelemetryService.tryRecord(
-                TelemetryEvent.MarketAnomaly(
-                    timestamp = now,
-                    anomalyType = MarketAnomalyType.PriceCrash,
-                    townId = townId,
-                    goodId = goodId.toString(),
-                    value = newPrice,
-                    threshold = (oldPrice * 0.7).toLong(),
-                ),
-            )
-        }
-
-        // Supply depleted: moved to Scarce
-        if (oldSupply != SupplyLevel.Scarce && newSupply == SupplyLevel.Scarce) {
-            TelemetryService.tryRecord(
-                TelemetryEvent.MarketAnomaly(
-                    timestamp = now,
-                    anomalyType = MarketAnomalyType.SupplyDepleted,
-                    townId = townId,
-                    goodId = goodId.toString(),
-                    value = newSupply.ordinal.toLong(),
-                    threshold = SupplyLevel.Scarce.ordinal.toLong(),
-                ),
-            )
-        }
-
-        // Unusual volume: check if price deviates significantly from base value (>100%)
-        val deviationPercent =
-            if (baseValue > 0) {
-                ((newPrice - baseValue).toDouble() / baseValue * 100).toLong()
-            } else {
-                0L
-            }
-        if (deviationPercent > 100) {
-            TelemetryService.tryRecord(
-                TelemetryEvent.MarketAnomaly(
-                    timestamp = now,
-                    anomalyType = MarketAnomalyType.UnusualVolume,
-                    townId = townId,
-                    goodId = goodId.toString(),
-                    value = newPrice,
-                    threshold = baseValue * 2,
-                ),
-            )
-        }
-    }
 }
 
 // ── Entity → model mappers ───────────────────────────────────────────────────

@@ -3,7 +3,6 @@ package com.wanderingledger.core.data
 import com.wanderingledger.core.model.Biome
 import com.wanderingledger.core.model.Companion
 import com.wanderingledger.core.model.CompanionRole
-import kotlinx.coroutines.flow.firstOrNull
 
 const val COMPANION_COMMENTARY_COOLDOWN_MS = 45_000L
 
@@ -73,29 +72,6 @@ class CompanionCommentaryEngine(
     fun clearCooldown(companionId: Long) {
         lastSpokenAtByCompanion.remove(companionId)
     }
-}
-
-suspend fun CompanionRepository.requestCommentary(
-    companionId: Long,
-    context: CompanionCommentaryContext,
-    engine: CompanionCommentaryEngine,
-    biome: Biome? = null,
-    bankedSteps: Long? = null,
-    nowMs: Long = System.currentTimeMillis(),
-): CompanionCommentaryResult {
-    val companion =
-        observeActiveCompanions()
-            .firstOrNull()
-            ?.firstOrNull { it.companionId == companionId }
-            ?: return CompanionCommentaryResult.NotActive
-
-    return engine.selectLine(
-        companion = companion,
-        context = context,
-        biome = biome,
-        bankedSteps = bankedSteps,
-        nowMs = nowMs,
-    )
 }
 
 private fun Companion.lineFor(

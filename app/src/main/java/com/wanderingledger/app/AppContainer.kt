@@ -31,7 +31,7 @@ class AppContainer(
 
     val rumorRepository = RumorRepository(database)
     val companionRepository = CompanionRepository(database)
-    val companionCommentaryEngine = CompanionCommentaryEngine()
+    val companionNarrator = CompanionNarrator(companionRepository, CompanionCommentaryEngine())
     val gameRepository = GameRepository(database, rumorRepository, companionRepository)
     val marketRepository = MarketRepository(database)
     val inventoryRepository = InventoryRepository(database)

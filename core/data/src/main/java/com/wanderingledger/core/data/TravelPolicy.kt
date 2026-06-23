@@ -33,16 +33,11 @@ object TravelPolicy {
         // Rule: travel is blocked when the player cannot afford the road's cost.
         // A blocked travel mutates nothing.
         if (player.bankedSteps < stepCost) {
-            return TravelOutcome(
-                result =
-                    TravelResult.NotEnoughSteps(
-                        required = stepCost,
-                        available = player.bankedSteps,
-                    ),
+            return TravelOutcome.Failed(
+                TravelResult.NotEnoughSteps(required = stepCost, available = player.bankedSteps),
             )
         }
 
-        val remainingSteps = player.bankedSteps - stepCost
         val arrivedAt = snapshot.arrivedAt
 
         // Rule: a road with a non-empty event pool resolves one encounter,
@@ -83,23 +78,20 @@ object TravelPolicy {
                 )
             }
 
-        return TravelOutcome(
-            result = TravelResult.Arrived(townId = road.toTownId, remainingSteps = remainingSteps),
-            playerDelta =
-                PlayerDelta(
-                    newTownId = road.toTownId,
-                    stepsSpent = stepCost,
-                    arrivedAt = arrivedAt,
-                ),
+        return TravelOutcome.Arrived(
+            playerDelta = PlayerDelta(
+                newTownId = road.toTownId,
+                stepsSpent = stepCost,
+                arrivedAt = arrivedAt,
+            ),
             markDestinationVisited = true,
             decrementActiveRumors = true,
             // Road event first, then town visit — the order the inline
             // transaction generated them in.
-            rumorRequests =
-                listOf(
-                    RumorRequest.RoadEvent(segmentId = road.segmentId, seed = seed + road.segmentId),
-                    RumorRequest.TownVisit(townId = road.toTownId, seed = seed),
-                ),
+            rumorRequests = listOf(
+                RumorRequest.RoadEvent(segmentId = road.segmentId, seed = seed + road.segmentId),
+                RumorRequest.TownVisit(townId = road.toTownId, seed = seed),
+            ),
             encounterOutcome = encounter,
             eventLogs = eventLogs,
         )

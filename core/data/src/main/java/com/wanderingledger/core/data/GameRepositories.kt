@@ -196,67 +196,73 @@ class GameRepository(
             // --- Decide: all travel rules live in TravelPolicy ---
             val outcome = TravelPolicy.compute(snapshot, seed)
 
-            val delta =
-                outcome.playerDelta
-                    ?: run {
-                        // Failure outcome (e.g. NotEnoughSteps): mutate nothing.
-                        recordTravelCompleted(startedAt, segmentId, success = false)
-                        return@withTransaction outcome.result
+            when (outcome) {
+                is TravelOutcome.Failed -> {
+                    recordTravelCompleted(startedAt, segmentId, success = false)
+                    return@withTransaction outcome.result
+                }
+                is TravelOutcome.Arrived -> {
+                    val delta = outcome.playerDelta
+
+                    // --- Write: apply the outcome's mutations ---
+                    val goldChange = outcome.encounterOutcome?.goldChange ?: 0L
+                    database.playerDao().updatePlayer(
+                        player.copy(
+                            currentTownId = delta.newTownId,
+                            bankedSteps = player.bankedSteps - delta.stepsSpent,
+                            gold = (player.gold + goldChange).coerceAtLeast(0),
+                            lastSyncAt = delta.arrivedAt,
+                        ),
+                    )
+
+                    if (outcome.markDestinationVisited) {
+                        database.townDao().getTownSnapshot(delta.newTownId)?.let { dest ->
+                            database.townDao().updateTown(
+                                dest.copy(storyState = "visited", lastVisitedAt = delta.arrivedAt),
+                            )
+                        }
                     }
 
-            // --- Write: apply the outcome's mutations ---
-            val goldChange = outcome.encounterOutcome?.goldChange ?: 0L
-            database.playerDao().updatePlayer(
-                player.copy(
-                    currentTownId = delta.newTownId,
-                    bankedSteps = player.bankedSteps - delta.stepsSpent,
-                    gold = (player.gold + goldChange).coerceAtLeast(0),
-                    lastSyncAt = delta.arrivedAt,
-                ),
-            )
+                    if (outcome.decrementActiveRumors) {
+                        database.rumorDao().decrementAllActive()
+                    }
 
-            if (outcome.markDestinationVisited) {
-                database.townDao().getTownSnapshot(delta.newTownId)?.let { dest ->
-                    database.townDao().updateTown(
-                        dest.copy(storyState = "visited", lastVisitedAt = delta.arrivedAt),
+                    outcome.rumorRequests.forEach { request ->
+                        when (request) {
+                            is RumorRequest.RoadEvent ->
+                                rumorRepository.generateRumorFromRoadEvent(request.segmentId, request.seed)
+                            is RumorRequest.TownVisit ->
+                                rumorRepository.generateRumorForTownVisit(request.townId, request.seed)
+                        }
+                    }
+
+                    outcome.encounterOutcome?.let { encounter ->
+                        if (encounter.bondChange != 0) {
+                            snapshot.activeCompanions.forEach { companion ->
+                                companionRepository.updateBond(companion.companionId, encounter.bondChange)
+                            }
+                        }
+                    }
+
+                    outcome.eventLogs.forEach { log ->
+                        database.eventLogDao().insertEvent(
+                            EventLogEntity(
+                                type = log.type,
+                                meta = log.meta,
+                                result = log.result,
+                                createdAt = log.createdAt,
+                            ),
+                        )
+                    }
+
+                    val remainingSteps = player.bankedSteps - delta.stepsSpent
+                    recordTravelCompleted(startedAt, segmentId, success = true)
+                    return@withTransaction TravelResult.Arrived(
+                        townId = delta.newTownId,
+                        remainingSteps = remainingSteps,
                     )
                 }
             }
-
-            if (outcome.decrementActiveRumors) {
-                database.rumorDao().decrementAllActive()
-            }
-
-            outcome.rumorRequests.forEach { request ->
-                when (request) {
-                    is RumorRequest.RoadEvent ->
-                        rumorRepository.generateRumorFromRoadEvent(request.segmentId, request.seed)
-                    is RumorRequest.TownVisit ->
-                        rumorRepository.generateRumorForTownVisit(request.townId, request.seed)
-                }
-            }
-
-            outcome.encounterOutcome?.let { encounter ->
-                if (encounter.bondChange != 0) {
-                    snapshot.activeCompanions.forEach { companion ->
-                        companionRepository.updateBond(companion.companionId, encounter.bondChange)
-                    }
-                }
-            }
-
-            outcome.eventLogs.forEach { log ->
-                database.eventLogDao().insertEvent(
-                    EventLogEntity(
-                        type = log.type,
-                        meta = log.meta,
-                        result = log.result,
-                        createdAt = log.createdAt,
-                    ),
-                )
-            }
-
-            recordTravelCompleted(startedAt, segmentId, success = true)
-            outcome.result
         }
     }
 

@@ -82,22 +82,22 @@ data class EventLogDraft(
 )
 
 /**
- * The complete set of mutations a travel produces.
+ * The result of [TravelPolicy.compute].
  *
- * Plain data — no DAO calls. The repository's write phase applies each field:
- * the [playerDelta], whether to mark the destination [markDestinationVisited],
- * whether to [decrementActiveRumors], the [rumorRequests] to fulfil, the
- * [encounterOutcome] (gold/bond deltas) to apply, and the [eventLogs] to insert.
+ * [Arrived] guarantees every mutation field is valid and non-null.
+ * [Failed] carries the failure reason; no mutations apply.
  *
- * For a failed travel (e.g. not enough steps) [result] carries the failure and
- * every mutation field is empty/null.
+ * Callers pattern-match once with Kotlin's exhaustive `when` — no null-checks needed.
  */
-data class TravelOutcome(
-    val result: TravelResult,
-    val playerDelta: PlayerDelta? = null,
-    val markDestinationVisited: Boolean = false,
-    val decrementActiveRumors: Boolean = false,
-    val rumorRequests: List<RumorRequest> = emptyList(),
-    val encounterOutcome: EncounterOutcome? = null,
-    val eventLogs: List<EventLogDraft> = emptyList(),
-)
+sealed interface TravelOutcome {
+    data class Arrived(
+        val playerDelta: PlayerDelta,
+        val markDestinationVisited: Boolean = false,
+        val decrementActiveRumors: Boolean = false,
+        val rumorRequests: List<RumorRequest> = emptyList(),
+        val encounterOutcome: EncounterOutcome? = null,
+        val eventLogs: List<EventLogDraft> = emptyList(),
+    ) : TravelOutcome
+
+    data class Failed(val result: TravelResult) : TravelOutcome
+}

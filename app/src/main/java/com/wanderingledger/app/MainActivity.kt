@@ -649,6 +649,7 @@ class MainActivity : ComponentActivity() {
                                 RecruitmentResult.AlreadyActive -> "They are already traveling with you."
                                 RecruitmentResult.PartyFull -> "The party is full."
                                 RecruitmentResult.NotFound -> "That companion is not available here."
+                                RecruitmentResult.NotEnoughTrades -> "Complete a few more trades first."
                             }
                         renderCompanionsView(townId, message)
                     }

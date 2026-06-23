@@ -8,7 +8,9 @@ import com.wanderingledger.core.data.CompanionCommentaryResult
 import com.wanderingledger.core.data.CompanionRepository
 import com.wanderingledger.core.data.GameRepository
 import com.wanderingledger.core.data.TravelResult
+import com.wanderingledger.core.data.applyScoutDiscount
 import com.wanderingledger.core.data.requestCommentary
+import com.wanderingledger.core.model.CompanionRole
 import com.wanderingledger.core.designsystem.accessibility.AccessibilityPreferences
 import com.wanderingledger.core.model.Biome
 import com.wanderingledger.core.steptracker.StepSource
@@ -196,14 +198,21 @@ class JourneyViewModel(
             currentBiome = town.biome,
             bankedSteps = player.bankedSteps,
             lifetimeSteps = player.lifetimeSteps,
-            routeDestinations =
+            routeDestinations = run {
+                val hasActiveScout = activeCompanions.any {
+                    it.role == CompanionRole.Scout && it.isActive
+                }
                 gameRepository.observeTravelRoutesFromCurrentTown().first().map { route ->
                     Triple(
                         route.segment.segmentId,
                         route.destination.name,
-                        Pair(route.segment.stepCost, route.segment.narrativeDistance),
+                        Pair(
+                            applyScoutDiscount(route.segment.stepCost, hasActiveScout),
+                            route.segment.narrativeDistance,
+                        ),
                     )
-                },
+                }
+            },
             message = message,
             campState = campState,
             activeCompanions = activeCompanions,

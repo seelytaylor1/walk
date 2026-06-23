@@ -19,6 +19,8 @@ sealed class RecruitmentResult {
     data object PartyFull : RecruitmentResult()
 
     data object NotFound : RecruitmentResult()
+
+    data object NotEnoughTrades : RecruitmentResult()
 }
 
 class CompanionRepository(
@@ -42,6 +44,13 @@ class CompanionRepository(
                 .map { entities ->
                     entities.find { it.companionId == companionId }
                 }.firstOrNull() ?: return RecruitmentResult.NotFound
+
+        // Gate: require 3 completed trades
+        val player = database.playerDao().getPlayerSnapshot()
+            ?: return RecruitmentResult.NotFound
+        if (player.completedTradesCount < 3) {
+            return RecruitmentResult.NotEnoughTrades
+        }
 
         val activeCount =
             database

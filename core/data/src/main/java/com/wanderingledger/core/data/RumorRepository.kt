@@ -81,7 +81,7 @@ class RumorRepository(
 
         val good = database.goodDao().getGood(targetPrice.goodId).first() ?: return
 
-        val isFalse = random.nextFloat() < 0.15f // 15% chance of a lie
+        val isFalse = random.nextFloat() < 0.50f // 50% chance of a lie
         val supplyLevel =
             if (isFalse) {
                 // Flip it or pick random
@@ -103,6 +103,7 @@ class RumorRepository(
             text = text,
             targetGoodId = good.goodId,
             sourceTownId = sourceTown.townId,
+            expiryVisits = 2,
             isFalse = isFalse,
         )
     }

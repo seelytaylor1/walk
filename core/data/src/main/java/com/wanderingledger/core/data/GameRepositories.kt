@@ -308,6 +308,7 @@ private fun PlayerStateEntity.toModel(): PlayerState =
         bankedSteps = bankedSteps,
         lifetimeSteps = lifetimeSteps,
         lastSyncAt = lastSyncAt,
+        completedTradesCount = completedTradesCount,
     )
 
 private fun TownEntity.toModel(): Town =

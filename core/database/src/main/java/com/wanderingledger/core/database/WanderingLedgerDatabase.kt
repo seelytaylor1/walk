@@ -8,6 +8,14 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
+val MIGRATION_3_4 = object : Migration(3, 4) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "ALTER TABLE player_states ADD COLUMN completedTradesCount INTEGER NOT NULL DEFAULT 0"
+        )
+    }
+}
+
 val MIGRATION_2_3 = object : Migration(2, 3) {
     override fun migrate(db: SupportSQLiteDatabase) {
         db.execSQL("""
@@ -41,7 +49,7 @@ val MIGRATION_2_3 = object : Migration(2, 3) {
         EventLogEntity::class,
         PriceHistoryEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -77,7 +85,7 @@ abstract class WanderingLedgerDatabase : RoomDatabase() {
                     context.applicationContext,
                     WanderingLedgerDatabase::class.java,
                     "wandering-ledger.db",
-                ).addMigrations(MIGRATION_2_3)
+                ).addMigrations(MIGRATION_2_3, MIGRATION_3_4)
                 .build()
     }
 }

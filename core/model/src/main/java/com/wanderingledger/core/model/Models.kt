@@ -49,6 +49,7 @@ data class PlayerState(
     val bankedSteps: Long = 0,
     val lifetimeSteps: Long,
     val lastSyncAt: Long = 0,
+    val completedTradesCount: Int = 0,
 )
 
 data class InventoryItem(

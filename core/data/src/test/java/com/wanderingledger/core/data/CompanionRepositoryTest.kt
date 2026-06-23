@@ -36,6 +36,12 @@ class CompanionRepositoryTest {
         database.close()
     }
 
+    /** Set completedTradesCount to 3 so the recruitment gate is satisfied. */
+    private suspend fun satisfyTradeGate() {
+        val player = database.playerDao().getPlayerSnapshot() ?: return
+        database.playerDao().updatePlayer(player.copy(completedTradesCount = 3))
+    }
+
     @Test
     fun observeRecruitableCompanions() =
         runTest {
@@ -50,6 +56,7 @@ class CompanionRepositoryTest {
     fun recruitCompanionUpdatesState() =
         runTest {
             gameRepository.initializeNewGame(seed = 1L)
+            satisfyTradeGate()
 
             val result = companionRepository.recruitCompanion(1L)
             assertEquals(RecruitmentResult.Success, result)
@@ -67,6 +74,7 @@ class CompanionRepositoryTest {
     fun recruitCompanionInitializesBondToZero() =
         runTest {
             gameRepository.initializeNewGame(seed = 1L)
+            satisfyTradeGate()
 
             companionRepository.recruitCompanion(1L)
 
@@ -78,6 +86,7 @@ class CompanionRepositoryTest {
     fun updateBondClampsAtMaxLevel() =
         runTest {
             gameRepository.initializeNewGame(seed = 1L)
+            satisfyTradeGate()
             companionRepository.recruitCompanion(1L)
 
             companionRepository.updateBond(1L, 10)
@@ -90,6 +99,7 @@ class CompanionRepositoryTest {
     fun partyFullPreventsRecruitment() =
         runTest {
             gameRepository.initializeNewGame(seed = 1L)
+            satisfyTradeGate()
 
             companionRepository.recruitCompanion(1L) // Mira
             companionRepository.recruitCompanion(2L) // Bram
@@ -113,6 +123,7 @@ class CompanionRepositoryTest {
     fun dismissCompanionMakesAvailableAgain() =
         runTest {
             gameRepository.initializeNewGame(seed = 1L)
+            satisfyTradeGate()
 
             companionRepository.recruitCompanion(1L)
             companionRepository.dismissCompanion(1L)

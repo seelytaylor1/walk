@@ -90,6 +90,8 @@ data class PlayerStateEntity(
     val bankedSteps: Long,
     val lifetimeSteps: Long,
     val lastSyncAt: Long,
+    @ColumnInfo(defaultValue = "0")
+    val completedTradesCount: Int = 0,
 )
 
 @Entity(

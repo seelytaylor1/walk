@@ -12,21 +12,23 @@ class StepTrackerServiceTest {
     private val service = StepTrackerService(repository)
 
     @Test
-    fun simulatedStepsIncreaseBank() = runTest {
-        service.recordSensorDelta(75, StepSource.Simulation)
+    fun simulatedStepsIncreaseBank() =
+        runTest {
+            service.recordSensorDelta(75, StepSource.Simulation)
 
-        assertEquals(75L, repository.observeStepBank().first())
-        assertEquals(StepSource.Simulation, repository.lastSource)
-    }
+            assertEquals(75L, repository.observeStepBank().first())
+            assertEquals(StepSource.Simulation, repository.lastSource)
+        }
 
     @Test
-    fun nonPositiveStepDeltaIsIgnored() = runTest {
-        service.recordSensorDelta(0, StepSource.Simulation)
-        service.recordSensorDelta(-5, StepSource.Simulation)
+    fun nonPositiveStepDeltaIsIgnored() =
+        runTest {
+            service.recordSensorDelta(0, StepSource.Simulation)
+            service.recordSensorDelta(-5, StepSource.Simulation)
 
-        assertEquals(0L, repository.observeStepBank().first())
-        assertEquals(0, repository.recordCallCount)
-    }
+            assertEquals(0L, repository.observeStepBank().first())
+            assertEquals(0, repository.recordCallCount)
+        }
 }
 
 private class RecordingStepBankRepository : StepBankRepository {
@@ -39,13 +41,20 @@ private class RecordingStepBankRepository : StepBankRepository {
 
     override fun observeStepBank(): Flow<Long> = bankedSteps
 
-    override suspend fun recordDetectedSteps(count: Int, source: StepSource, recordedAt: Long) {
+    override suspend fun recordDetectedSteps(
+        count: Int,
+        source: StepSource,
+        recordedAt: Long,
+    ) {
         recordCallCount += 1
         lastSource = source
         bankedSteps.value += count
     }
 
-    override suspend fun spendSteps(amount: Long, reason: String): StepSpendResult {
+    override suspend fun spendSteps(
+        amount: Long,
+        reason: String,
+    ): StepSpendResult {
         val current = bankedSteps.value
         if (current < amount) {
             return StepSpendResult(spent = false, requested = amount, remaining = current)

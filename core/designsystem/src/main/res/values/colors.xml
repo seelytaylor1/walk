@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary_light">#FFB8860B</color>
+    <color name="on_primary_light">#FFFFFFFF</color>
+    <color name="primary_container_light">#FFFFE082</color>
+    <color name="on_primary_container_light">#FF3E2723</color>
+
+    <color name="secondary_light">#FF6D4C41</color>
+    <color name="on_secondary_light">#FFFFFFFF</color>
+    <color name="secondary_container_light">#FFD7CCC8</color>
+    <color name="on_secondary_container_light">#FF3E2723</color>
+
+    <color name="tertiary_light">#FF558B2F</color>
+    <color name="on_tertiary_light">#FFFFFFFF</color>
+    <color name="tertiary_container_light">#FFC5E1A5</color>
+    <color name="on_tertiary_container_light">#FF1B5E20</color>
+
+    <color name="error_light">#FFB00020</color>
+    <color name="on_error_light">#FFFFFFFF</color>
+    <color name="error_container_light">#FFFDEDED</color>
+    <color name="on_error_container_light">#FF410002</color>
+
+    <color name="background_light">#FFFFFBF5</color>
+    <color name="on_background_light">#FF1C1B1F</color>
+    <color name="surface_light">#FFFFFBF5</color>
+    <color name="on_surface_light">#FF1C1B1F</color>
+    <color name="surface_variant_light">#FFE7E0EC</color>
+    <color name="on_surface_variant_light">#FF49454F</color>
+
+    <color name="outline_light">#FF79747E</color>
+
+    <color name="success_light">#FF2E7D32</color>
+    <color name="warning_light">#FFF57C00</color>
+    <color name="info_light">#FF1976D2</color>
+
+    <color name="step_bank_color">#FF558B2F</color>
+    <color name="gold_color">#FFFFD700</color>
+    <color name="gold_color_dark">#FF8B6914</color>
+    <color name="contraband_color">#FFD32F2F</color>
+    <color name="reputation_color">#FF1976D2</color>
+</resources>

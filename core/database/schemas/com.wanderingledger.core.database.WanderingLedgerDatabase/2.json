@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 2,
-    "identityHash": "ed42c898f27c4a7bfb5c6b36a9002660",
+    "identityHash": "ee5c33c06a8461bbfec379804063dc36",
     "entities": [
       {
         "tableName": "towns",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`townId` INTEGER NOT NULL, `name` TEXT NOT NULL, `region` TEXT NOT NULL, `reputation` INTEGER NOT NULL, `storyState` TEXT NOT NULL, `lastVisitedAt` INTEGER NOT NULL, PRIMARY KEY(`townId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`townId` INTEGER NOT NULL, `name` TEXT NOT NULL, `region` TEXT NOT NULL, `biome` TEXT NOT NULL DEFAULT 'Forest', `reputation` INTEGER NOT NULL, `storyState` TEXT NOT NULL, `lastVisitedAt` INTEGER NOT NULL, PRIMARY KEY(`townId`))",
         "fields": [
           {
             "fieldPath": "townId",
@@ -25,6 +25,13 @@
             "columnName": "region",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "biome",
+            "columnName": "biome",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'Forest'"
           },
           {
             "fieldPath": "reputation",
@@ -79,8 +86,7 @@
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_towns_lastVisitedAt` ON `${TABLE_NAME}` (`lastVisitedAt`)"
           }
-        ],
-        "foreignKeys": []
+        ]
       },
       {
         "tableName": "goods",
@@ -116,9 +122,7 @@
           "columnNames": [
             "goodId"
           ]
-        },
-        "indices": [],
-        "foreignKeys": []
+        }
       },
       {
         "tableName": "town_produces",
@@ -728,14 +732,12 @@
           {
             "fieldPath": "targetGoodId",
             "columnName": "targetGoodId",
-            "affinity": "INTEGER",
-            "notNull": false
+            "affinity": "INTEGER"
           },
           {
             "fieldPath": "sourceTownId",
             "columnName": "sourceTownId",
-            "affinity": "INTEGER",
-            "notNull": false
+            "affinity": "INTEGER"
           },
           {
             "fieldPath": "createdAt",
@@ -862,8 +864,7 @@
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_step_records_dateEpoch_source` ON `${TABLE_NAME}` (`dateEpoch`, `source`)"
           }
-        ],
-        "foreignKeys": []
+        ]
       },
       {
         "tableName": "event_logs",
@@ -916,8 +917,7 @@
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_event_logs_createdAt` ON `${TABLE_NAME}` (`createdAt`)"
           }
-        ],
-        "foreignKeys": []
+        ]
       },
       {
         "tableName": "price_history",
@@ -1029,10 +1029,9 @@
         ]
       }
     ],
-    "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ed42c898f27c4a7bfb5c6b36a9002660')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ee5c33c06a8461bbfec379804063dc36')"
     ]
   }
 }

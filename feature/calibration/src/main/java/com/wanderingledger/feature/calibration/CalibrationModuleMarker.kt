@@ -1,0 +1,3 @@
+package com.wanderingledger.feature.calibration
+
+object CalibrationModuleMarker

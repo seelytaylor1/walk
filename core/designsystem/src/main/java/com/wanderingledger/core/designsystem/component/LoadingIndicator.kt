@@ -22,27 +22,28 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun WLLoadingIndicator(
     modifier: Modifier = Modifier,
-    message: String? = null
+    message: String? = null,
 ) {
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(32.dp),
+        modifier =
+            modifier
+                .fillMaxSize()
+                .padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center,
     ) {
         CircularProgressIndicator(
             modifier = Modifier.size(48.dp),
-            color = MaterialTheme.colorScheme.primary
+            color = MaterialTheme.colorScheme.primary,
         )
-        
+
         if (message != null) {
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = message,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
             )
         }
     }
@@ -52,12 +53,10 @@ fun WLLoadingIndicator(
  * Inline loading indicator for smaller spaces.
  */
 @Composable
-fun WLInlineLoadingIndicator(
-    modifier: Modifier = Modifier
-) {
+fun WLInlineLoadingIndicator(modifier: Modifier = Modifier) {
     CircularProgressIndicator(
         modifier = modifier.size(24.dp),
         color = MaterialTheme.colorScheme.primary,
-        strokeWidth = 2.dp
+        strokeWidth = 2.dp,
     )
 }

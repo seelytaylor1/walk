@@ -9,7 +9,6 @@ import com.wanderingledger.core.model.SupplyLevel
  * making them easy to unit-test without any Android or Room dependencies.
  */
 object MarketEngine {
-
     // ── Price multipliers ────────────────────────────────────────────────────
 
     /** Multiplier applied to a good's base value when supply is scarce. */
@@ -40,12 +39,16 @@ object MarketEngine {
      * @param supplyLevel Current supply state at this town.
      * @return Sell price in gold, always at least 1.
      */
-    fun computeSellPrice(baseValue: Long, supplyLevel: SupplyLevel): Long {
-        val multiplier = when (supplyLevel) {
-            SupplyLevel.Scarce -> SCARCE_MULTIPLIER
-            SupplyLevel.Normal -> NORMAL_MULTIPLIER
-            SupplyLevel.Abundant -> ABUNDANT_MULTIPLIER
-        }
+    fun computeSellPrice(
+        baseValue: Long,
+        supplyLevel: SupplyLevel,
+    ): Long {
+        val multiplier =
+            when (supplyLevel) {
+                SupplyLevel.Scarce -> SCARCE_MULTIPLIER
+                SupplyLevel.Normal -> NORMAL_MULTIPLIER
+                SupplyLevel.Abundant -> ABUNDANT_MULTIPLIER
+            }
         return (baseValue * multiplier).toLong().coerceAtLeast(1L)
     }
 
@@ -64,7 +67,10 @@ object MarketEngine {
      *
      * @return Pair of (sellPrice, buyPrice).
      */
-    fun computePrices(baseValue: Long, supplyLevel: SupplyLevel): Pair<Long, Long> {
+    fun computePrices(
+        baseValue: Long,
+        supplyLevel: SupplyLevel,
+    ): Pair<Long, Long> {
         val sell = computeSellPrice(baseValue, supplyLevel)
         val buy = computeBuyPrice(sell)
         return sell to buy
@@ -78,11 +84,12 @@ object MarketEngine {
      *
      * Abundant → Normal → Scarce
      */
-    fun decreaseSupply(current: SupplyLevel): SupplyLevel = when (current) {
-        SupplyLevel.Abundant -> SupplyLevel.Normal
-        SupplyLevel.Normal -> SupplyLevel.Scarce
-        SupplyLevel.Scarce -> SupplyLevel.Scarce // already at minimum
-    }
+    fun decreaseSupply(current: SupplyLevel): SupplyLevel =
+        when (current) {
+            SupplyLevel.Abundant -> SupplyLevel.Normal
+            SupplyLevel.Normal -> SupplyLevel.Scarce
+            SupplyLevel.Scarce -> SupplyLevel.Scarce // already at minimum
+        }
 
     /**
      * Increase supply by one step when the player sells goods to a town.
@@ -90,19 +97,21 @@ object MarketEngine {
      *
      * Scarce → Normal → Abundant
      */
-    fun increaseSupply(current: SupplyLevel): SupplyLevel = when (current) {
-        SupplyLevel.Scarce -> SupplyLevel.Normal
-        SupplyLevel.Normal -> SupplyLevel.Abundant
-        SupplyLevel.Abundant -> SupplyLevel.Abundant // already at maximum
-    }
+    fun increaseSupply(current: SupplyLevel): SupplyLevel =
+        when (current) {
+            SupplyLevel.Scarce -> SupplyLevel.Normal
+            SupplyLevel.Normal -> SupplyLevel.Abundant
+            SupplyLevel.Abundant -> SupplyLevel.Abundant // already at maximum
+        }
 
     /**
      * Clamp a raw integer supply ordinal to a valid [SupplyLevel].
      * 0 = Scarce, 1 = Normal, 2 = Abundant; values outside this range are clamped.
      */
-    fun clampSupplyLevel(ordinal: Int): SupplyLevel = when {
-        ordinal <= 0 -> SupplyLevel.Scarce
-        ordinal >= 2 -> SupplyLevel.Abundant
-        else -> SupplyLevel.Normal
-    }
+    fun clampSupplyLevel(ordinal: Int): SupplyLevel =
+        when {
+            ordinal <= 0 -> SupplyLevel.Scarce
+            ordinal >= 2 -> SupplyLevel.Abundant
+            else -> SupplyLevel.Normal
+        }
 }

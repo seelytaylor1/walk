@@ -1,5 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+
     <application
+        android:name=".WanderingLedgerApp"
         android:allowBackup="true"
         android:label="Wandering Ledger"
         android:supportsRtl="true"

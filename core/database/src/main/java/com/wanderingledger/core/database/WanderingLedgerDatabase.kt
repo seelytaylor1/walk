@@ -5,6 +5,25 @@ import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
+
+val MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("""
+            UPDATE road_segments SET stepCost = CASE segmentId
+                WHEN 1 THEN 1000
+                WHEN 2 THEN 1000
+                WHEN 3 THEN 2500
+                WHEN 4 THEN 2500
+                WHEN 5 THEN 5000
+                WHEN 6 THEN 5000
+                ELSE stepCost
+            END
+        """.trimIndent())
+        db.execSQL("UPDATE road_segments SET narrativeDistance = 'medium' WHERE segmentId IN (3, 4)")
+    }
+}
 
 @Database(
     entities = [
@@ -22,7 +41,7 @@ import androidx.room.RoomDatabase
         EventLogEntity::class,
         PriceHistoryEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -30,23 +49,35 @@ import androidx.room.RoomDatabase
 )
 abstract class WanderingLedgerDatabase : RoomDatabase() {
     abstract fun townDao(): TownDao
+
     abstract fun goodDao(): GoodDao
+
     abstract fun townPriceDao(): TownPriceDao
+
     abstract fun playerDao(): PlayerDao
+
     abstract fun inventoryDao(): InventoryDao
+
     abstract fun companionDao(): CompanionDao
+
     abstract fun roadSegmentDao(): RoadSegmentDao
+
     abstract fun rumorDao(): RumorDao
+
     abstract fun stepRecordDao(): StepRecordDao
+
     abstract fun eventLogDao(): EventLogDao
+
     abstract fun priceHistoryDao(): PriceHistoryDao
 
     companion object {
         fun create(context: Context): WanderingLedgerDatabase =
-            Room.databaseBuilder(
-                context.applicationContext,
-                WanderingLedgerDatabase::class.java,
-                "wandering-ledger.db",
-            ).build()
+            Room
+                .databaseBuilder(
+                    context.applicationContext,
+                    WanderingLedgerDatabase::class.java,
+                    "wandering-ledger.db",
+                ).addMigrations(MIGRATION_2_3)
+                .build()
     }
 }

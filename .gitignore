@@ -16,6 +16,7 @@ Thumbs.db
 /out/
 gradle-app.setting
 /.gradle/
+gradle-daemon-jvm.properties
 
 # Android
 local.properties

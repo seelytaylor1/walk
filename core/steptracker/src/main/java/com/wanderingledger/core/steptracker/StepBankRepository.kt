@@ -11,7 +11,10 @@ interface StepBankRepository {
         recordedAt: Long = System.currentTimeMillis(),
     )
 
-    suspend fun spendSteps(amount: Long, reason: String): StepSpendResult
+    suspend fun spendSteps(
+        amount: Long,
+        reason: String,
+    ): StepSpendResult
 }
 
 data class StepSpendResult(

@@ -1,14 +1,19 @@
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
 }
 
 android {
     namespace = "com.wanderingledger.core.data"
-    compileSdk = libs.versions.compileSdk.get().toInt()
+    compileSdk =
+        libs.versions.compileSdk
+            .get()
+            .toInt()
 
     defaultConfig {
-        minSdk = libs.versions.minSdk.get().toInt()
+        minSdk =
+            libs.versions.minSdk
+                .get()
+                .toInt()
     }
 
     testOptions {
@@ -20,6 +25,7 @@ dependencies {
     implementation(projects.core.model)
     implementation(projects.core.database)
     implementation(projects.core.steptracker)
+    implementation(projects.core.telemetry)
     implementation(libs.room.ktx)
     implementation(libs.kotlinx.coroutines.core)
 

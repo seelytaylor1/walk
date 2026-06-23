@@ -27,23 +27,25 @@ fun WLCard(
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
     tonalElevation: Dp = 1.dp,
     shadowElevation: Dp = 1.dp,
-    content: @Composable ColumnScope.() -> Unit
+    content: @Composable ColumnScope.() -> Unit,
 ) {
     Card(
         modifier = modifier,
         shape = shape,
-        colors = CardDefaults.cardColors(
-            containerColor = containerColor,
-            contentColor = contentColor
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = tonalElevation,
-            pressedElevation = shadowElevation
-        )
+        colors =
+            CardDefaults.cardColors(
+                containerColor = containerColor,
+                contentColor = contentColor,
+            ),
+        elevation =
+            CardDefaults.cardElevation(
+                defaultElevation = tonalElevation,
+                pressedElevation = shadowElevation,
+            ),
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
-            content = content
+            content = content,
         )
     }
 }
@@ -58,20 +60,21 @@ fun WLOutlinedCard(
     containerColor: Color = MaterialTheme.colorScheme.surface,
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
     border: BorderStroke = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-    content: @Composable ColumnScope.() -> Unit
+    content: @Composable ColumnScope.() -> Unit,
 ) {
     OutlinedCard(
         modifier = modifier,
         shape = shape,
-        colors = CardDefaults.outlinedCardColors(
-            containerColor = containerColor,
-            contentColor = contentColor
-        ),
-        border = border
+        colors =
+            CardDefaults.outlinedCardColors(
+                containerColor = containerColor,
+                contentColor = contentColor,
+            ),
+        border = border,
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
-            content = content
+            content = content,
         )
     }
 }
@@ -90,28 +93,30 @@ fun WLClickableCard(
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
     tonalElevation: Dp = 1.dp,
     shadowElevation: Dp = 2.dp,
-    content: @Composable ColumnScope.() -> Unit
+    content: @Composable ColumnScope.() -> Unit,
 ) {
     Card(
         onClick = onClick,
         modifier = modifier,
         enabled = enabled,
         shape = shape,
-        colors = CardDefaults.cardColors(
-            containerColor = containerColor,
-            contentColor = contentColor,
-            disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-            disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = tonalElevation,
-            pressedElevation = shadowElevation,
-            disabledElevation = 0.dp
-        )
+        colors =
+            CardDefaults.cardColors(
+                containerColor = containerColor,
+                contentColor = contentColor,
+                disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            ),
+        elevation =
+            CardDefaults.cardElevation(
+                defaultElevation = tonalElevation,
+                pressedElevation = shadowElevation,
+                disabledElevation = 0.dp,
+            ),
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
-            content = content
+            content = content,
         )
     }
 }

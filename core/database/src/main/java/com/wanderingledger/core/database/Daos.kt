@@ -56,7 +56,10 @@ interface GoodDao {
 @Dao
 interface TownPriceDao {
     @Query("SELECT * FROM town_prices WHERE townId = :townId AND goodId = :goodId")
-    fun getPrice(townId: Long, goodId: Long): Flow<TownPriceEntity?>
+    fun getPrice(
+        townId: Long,
+        goodId: Long,
+    ): Flow<TownPriceEntity?>
 
     @Query("SELECT * FROM town_prices WHERE townId = :townId ORDER BY goodId")
     fun listPricesForTown(townId: Long): Flow<List<TownPriceEntity>>
@@ -106,15 +109,18 @@ interface CompanionDao {
     @Query("SELECT * FROM companions WHERE isActive = 0 ORDER BY companionId")
     fun listRecruitableCompanions(): Flow<List<CompanionEntity>>
 
-    @Upsert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertCompanion(companion: CompanionEntity)
 
-    @Upsert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertCompanions(companions: List<CompanionEntity>)
 }
 
 @Dao
 interface RoadSegmentDao {
+    @Query("SELECT * FROM road_segments ORDER BY segmentId")
+    fun listRoads(): Flow<List<RoadSegmentEntity>>
+
     @Query("SELECT * FROM road_segments WHERE fromTownId = :townId ORDER BY segmentId")
     fun listRoadsFrom(townId: Long): Flow<List<RoadSegmentEntity>>
 
@@ -176,7 +182,11 @@ interface PriceHistoryDao {
         "SELECT * FROM price_history WHERE townId = :townId AND goodId = :goodId " +
             "ORDER BY recordedAt DESC LIMIT :limit",
     )
-    fun listHistory(townId: Long, goodId: Long, limit: Int = PriceHistoryEntity.MAX_HISTORY_PER_GOOD_TOWN): Flow<List<PriceHistoryEntity>>
+    fun listHistory(
+        townId: Long,
+        goodId: Long,
+        limit: Int = PriceHistoryEntity.MAX_HISTORY_PER_GOOD_TOWN,
+    ): Flow<List<PriceHistoryEntity>>
 
     /**
      * Snapshot version for use inside transactions.
@@ -185,13 +195,20 @@ interface PriceHistoryDao {
         "SELECT * FROM price_history WHERE townId = :townId AND goodId = :goodId " +
             "ORDER BY recordedAt DESC LIMIT :limit",
     )
-    suspend fun listHistorySnapshot(townId: Long, goodId: Long, limit: Int = PriceHistoryEntity.MAX_HISTORY_PER_GOOD_TOWN): List<PriceHistoryEntity>
+    suspend fun listHistorySnapshot(
+        townId: Long,
+        goodId: Long,
+        limit: Int = PriceHistoryEntity.MAX_HISTORY_PER_GOOD_TOWN,
+    ): List<PriceHistoryEntity>
 
     /**
      * Count of snapshots for a (townId, goodId) pair — used for trimming.
      */
     @Query("SELECT COUNT(*) FROM price_history WHERE townId = :townId AND goodId = :goodId")
-    suspend fun countHistory(townId: Long, goodId: Long): Int
+    suspend fun countHistory(
+        townId: Long,
+        goodId: Long,
+    ): Int
 
     /**
      * Delete the oldest snapshot(s) beyond the keep limit.
@@ -202,5 +219,9 @@ interface PriceHistoryDao {
             "ORDER BY recordedAt ASC LIMIT :deleteCount" +
             ")",
     )
-    suspend fun trimOldest(townId: Long, goodId: Long, deleteCount: Int)
+    suspend fun trimOldest(
+        townId: Long,
+        goodId: Long,
+        deleteCount: Int,
+    )
 }

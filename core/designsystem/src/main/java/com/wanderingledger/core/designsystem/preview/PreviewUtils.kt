@@ -9,12 +9,12 @@ import androidx.compose.ui.tooling.preview.Preview
 @Preview(
     name = "Light",
     showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_NO
+    uiMode = Configuration.UI_MODE_NIGHT_NO,
 )
 @Preview(
     name = "Dark",
     showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
 )
 annotation class ThemePreviews
 
@@ -23,11 +23,11 @@ annotation class ThemePreviews
  */
 @Preview(
     name = "Phone",
-    device = "spec:width=411dp,height=891dp"
+    device = "spec:width=411dp,height=891dp",
 )
 @Preview(
     name = "Tablet",
-    device = "spec:width=1280dp,height=800dp,dpi=240"
+    device = "spec:width=1280dp,height=800dp,dpi=240",
 )
 annotation class DevicePreviews
 

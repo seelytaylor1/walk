@@ -1,22 +1,24 @@
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
 }
 
 android {
     namespace = "com.wanderingledger.core.designsystem"
-    compileSdk = libs.versions.compileSdk.get().toInt()
+    compileSdk =
+        libs.versions.compileSdk
+            .get()
+            .toInt()
 
     defaultConfig {
-        minSdk = libs.versions.minSdk.get().toInt()
+        minSdk =
+            libs.versions.minSdk
+                .get()
+                .toInt()
     }
 
     buildFeatures {
         compose = true
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.composeCompiler.get()
     }
 }
 
@@ -29,6 +31,10 @@ dependencies {
     api(libs.compose.foundation)
     api(libs.compose.runtime)
     api(libs.androidx.core.ktx)
+
+    api(project(":core:model"))
+
+    implementation(libs.androidx.datastore.preferences)
 
     debugApi(libs.compose.ui.tooling)
 }

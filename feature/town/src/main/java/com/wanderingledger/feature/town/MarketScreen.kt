@@ -50,19 +50,20 @@ fun buildMarketScreenState(
         playerGold = marketState.playerGold,
         playerInventoryUsed = marketState.playerInventoryUsed,
         playerInventoryCapacity = marketState.playerInventoryCapacity,
-        items = marketState.rows.map { row ->
-            MarketItemState(
-                goodId = row.good.goodId,
-                goodName = row.good.name,
-                buyPrice = row.townPrice.sellPrice,  // "buy price" from player's perspective = town's sell price
-                sellPrice = row.townPrice.buyPrice,  // "sell price" from player's perspective = town's buy price
-                supplyLevel = row.townPrice.supplyLevel,
-                isContraband = row.good.isContraband,
-                playerQuantity = row.playerQuantity,
-                canAfford = row.canAfford,
-                canSell = row.canSell,
-            )
-        },
+        items =
+            marketState.rows.map { row ->
+                MarketItemState(
+                    goodId = row.good.goodId,
+                    goodName = row.good.name,
+                    buyPrice = row.townPrice.sellPrice, // "buy price" from player's perspective = town's sell price
+                    sellPrice = row.townPrice.buyPrice, // "sell price" from player's perspective = town's buy price
+                    supplyLevel = row.townPrice.supplyLevel,
+                    isContraband = row.good.isContraband,
+                    playerQuantity = row.playerQuantity,
+                    canAfford = row.canAfford,
+                    canSell = row.canSell,
+                )
+            },
         message = message,
     )
 
@@ -95,35 +96,42 @@ data class MarketActions(
  * player gold, and inventory usage. Buy and Sell buttons are disabled when
  * the player cannot afford or has no inventory to sell.
  */
-class MarketScreenView(context: Context) : LinearLayout(context) {
-
-    private val headerText = TextView(context).apply {
-        textSize = 20f
-        setPadding(0, 0, 0, 4)
-    }
-    private val playerStatusText = TextView(context).apply {
-        textSize = 15f
-        setPadding(0, 0, 0, 8)
-    }
-    private val messageText = TextView(context).apply {
-        textSize = 14f
-        setPadding(0, 0, 0, 8)
-    }
-    private val backButton = Button(context).apply {
-        text = "Back to Town"
-    }
-    private val itemsContainer = LinearLayout(context).apply {
-        orientation = VERTICAL
-    }
-    private val scrollView = ScrollView(context).apply {
-        addView(
-            itemsContainer,
-            LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-            ),
-        )
-    }
+class MarketScreenView(
+    context: Context,
+) : LinearLayout(context) {
+    private val headerText =
+        TextView(context).apply {
+            textSize = 20f
+            setPadding(0, 0, 0, 4)
+        }
+    private val playerStatusText =
+        TextView(context).apply {
+            textSize = 15f
+            setPadding(0, 0, 0, 8)
+        }
+    private val messageText =
+        TextView(context).apply {
+            textSize = 14f
+            setPadding(0, 0, 0, 8)
+        }
+    private val backButton =
+        Button(context).apply {
+            text = "Back to Town"
+        }
+    private val itemsContainer =
+        LinearLayout(context).apply {
+            orientation = VERTICAL
+        }
+    private val scrollView =
+        ScrollView(context).apply {
+            addView(
+                itemsContainer,
+                LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                ),
+            )
+        }
 
     init {
         orientation = VERTICAL
@@ -160,7 +168,10 @@ class MarketScreenView(context: Context) : LinearLayout(context) {
         )
     }
 
-    fun render(state: MarketScreenState, actions: MarketActions) {
+    fun render(
+        state: MarketScreenState,
+        actions: MarketActions,
+    ) {
         headerText.text = "${state.townName} — Market"
         playerStatusText.text = state.toPlayerStatusText()
         messageText.text = state.message ?: ""
@@ -187,48 +198,58 @@ class MarketScreenView(context: Context) : LinearLayout(context) {
 
     // ── Private helpers ───────────────────────────────────────────────────────
 
-    private fun buildItemRow(item: MarketItemState, actions: MarketActions): LinearLayout {
-        val row = LinearLayout(context).apply {
-            orientation = VERTICAL
-            setPadding(0, 16, 0, 16)
-        }
+    private fun buildItemRow(
+        item: MarketItemState,
+        actions: MarketActions,
+    ): LinearLayout {
+        val row =
+            LinearLayout(context).apply {
+                orientation = VERTICAL
+                setPadding(0, 16, 0, 16)
+            }
 
         // Good name + supply + contraband indicator
-        val nameText = TextView(context).apply {
-            text = item.toNameLine()
-            textSize = 16f
-        }
+        val nameText =
+            TextView(context).apply {
+                text = item.toNameLine()
+                textSize = 16f
+            }
 
         // Price info
-        val priceText = TextView(context).apply {
-            text = item.toPriceLine()
-            textSize = 14f
-            setPadding(0, 4, 0, 4)
-        }
+        val priceText =
+            TextView(context).apply {
+                text = item.toPriceLine()
+                textSize = 14f
+                setPadding(0, 4, 0, 4)
+            }
 
         // Inventory info
-        val inventoryText = TextView(context).apply {
-            text = "You own: ${item.playerQuantity}"
-            textSize = 13f
-            setPadding(0, 0, 0, 8)
-        }
+        val inventoryText =
+            TextView(context).apply {
+                text = "You own: ${item.playerQuantity}"
+                textSize = 13f
+                setPadding(0, 0, 0, 8)
+            }
 
         // Buy / Sell buttons side by side
-        val buttonRow = LinearLayout(context).apply {
-            orientation = HORIZONTAL
-        }
+        val buttonRow =
+            LinearLayout(context).apply {
+                orientation = HORIZONTAL
+            }
 
-        val buyButton = Button(context).apply {
-            text = "Buy (${item.buyPrice}g)"
-            isEnabled = item.canAfford
-            setOnClickListener { actions.onBuy.onBuy(item.goodId) }
-        }
+        val buyButton =
+            Button(context).apply {
+                text = "Buy (${item.buyPrice}g)"
+                isEnabled = item.canAfford
+                setOnClickListener { actions.onBuy.onBuy(item.goodId) }
+            }
 
-        val sellButton = Button(context).apply {
-            text = "Sell (${item.sellPrice}g)"
-            isEnabled = item.canSell
-            setOnClickListener { actions.onSell.onSell(item.goodId) }
-        }
+        val sellButton =
+            Button(context).apply {
+                text = "Sell (${item.sellPrice}g)"
+                isEnabled = item.canSell
+                setOnClickListener { actions.onSell.onSell(item.goodId) }
+            }
 
         buttonRow.addView(
             buyButton,
@@ -242,11 +263,12 @@ class MarketScreenView(context: Context) : LinearLayout(context) {
         )
 
         // Divider
-        val divider = TextView(context).apply {
-            text = "─────────────────────────────"
-            textSize = 10f
-            setPadding(0, 8, 0, 0)
-        }
+        val divider =
+            TextView(context).apply {
+                text = "─────────────────────────────"
+                textSize = 10f
+                setPadding(0, 8, 0, 0)
+            }
 
         row.addView(nameText)
         row.addView(priceText)
@@ -257,24 +279,26 @@ class MarketScreenView(context: Context) : LinearLayout(context) {
         return row
     }
 
-    private fun MarketScreenState.toPlayerStatusText(): String = buildString {
-        append("Gold: ${playerGold}g")
-        append("  |  ")
-        append("Inventory: $playerInventoryUsed / $playerInventoryCapacity")
-    }
+    private fun MarketScreenState.toPlayerStatusText(): String =
+        buildString {
+            append("Gold: ${playerGold}g")
+            append("  |  ")
+            append("Inventory: $playerInventoryUsed / $playerInventoryCapacity")
+        }
 
-    private fun MarketItemState.toNameLine(): String = buildString {
-        append(goodName)
-        append("  [${supplyLevel.toDisplayLabel()}]")
-        if (isContraband) append("  ⚠ Contraband")
-    }
+    private fun MarketItemState.toNameLine(): String =
+        buildString {
+            append(goodName)
+            append("  [${supplyLevel.toDisplayLabel()}]")
+            if (isContraband) append("  ⚠ Contraband")
+        }
 
-    private fun MarketItemState.toPriceLine(): String =
-        "Buy: ${buyPrice}g  •  Sell: ${sellPrice}g"
+    private fun MarketItemState.toPriceLine(): String = "Buy: ${buyPrice}g  •  Sell: ${sellPrice}g"
 
-    private fun SupplyLevel.toDisplayLabel(): String = when (this) {
-        SupplyLevel.Scarce -> "Scarce"
-        SupplyLevel.Normal -> "Normal"
-        SupplyLevel.Abundant -> "Abundant"
-    }
+    private fun SupplyLevel.toDisplayLabel(): String =
+        when (this) {
+            SupplyLevel.Scarce -> "Scarce"
+            SupplyLevel.Normal -> "Normal"
+            SupplyLevel.Abundant -> "Abundant"
+        }
 }

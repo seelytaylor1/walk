@@ -11,7 +11,6 @@ import org.junit.Test
  * No Android or Room dependencies; runs as a plain JVM test.
  */
 class MarketEngineTest {
-
     // ── computeSellPrice ─────────────────────────────────────────────────────
 
     @Test

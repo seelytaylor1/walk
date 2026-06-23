@@ -1,10 +1,21 @@
 package com.wanderingledger.core.data
 
 import com.wanderingledger.core.model.Companion
+import com.wanderingledger.core.model.CompanionRole
 import com.wanderingledger.core.model.PlayerState
 import com.wanderingledger.core.model.RoadSegment
 import com.wanderingledger.core.model.Rumor
 import com.wanderingledger.core.model.Town
+
+/** 10% step cost reduction applied when a Scout companion is active. */
+const val SCOUT_STEP_DISCOUNT = 0.10
+
+/**
+ * Returns the effective step cost for a road segment, applying the Scout
+ * discount when [hasActiveScout] is true.
+ */
+fun applyScoutDiscount(stepCost: Int, hasActiveScout: Boolean): Int =
+    if (hasActiveScout) (stepCost * (1.0 - SCOUT_STEP_DISCOUNT)).toInt() else stepCost
 
 /**
  * A point-in-time read of everything a travel transaction needs to decide its

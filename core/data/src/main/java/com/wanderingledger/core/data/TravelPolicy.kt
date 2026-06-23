@@ -24,7 +24,11 @@ object TravelPolicy {
     ): TravelOutcome {
         val player = snapshot.player
         val road = snapshot.road
-        val stepCost = road.stepCost.toLong()
+        val hasActiveScout = snapshot.activeCompanions.any {
+            it.role == com.wanderingledger.core.model.CompanionRole.Scout && it.isActive
+        }
+        val effectiveStepCost = applyScoutDiscount(road.stepCost, hasActiveScout)
+        val stepCost = effectiveStepCost.toLong()
 
         // Rule: travel is blocked when the player cannot afford the road's cost.
         // A blocked travel mutates nothing.

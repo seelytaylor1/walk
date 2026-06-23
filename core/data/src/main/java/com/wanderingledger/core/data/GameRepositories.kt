@@ -227,14 +227,7 @@ class GameRepository(
                         database.rumorDao().decrementAllActive()
                     }
 
-                    outcome.rumorRequests.forEach { request ->
-                        when (request) {
-                            is RumorRequest.RoadEvent ->
-                                rumorRepository.generateRumorFromRoadEvent(request.segmentId, request.seed)
-                            is RumorRequest.TownVisit ->
-                                rumorRepository.generateRumorForTownVisit(request.townId, request.seed)
-                        }
-                    }
+                    outcome.rumorRequests.forEach { it.fulfill(rumorRepository) }
 
                     outcome.encounterOutcome?.let { encounter ->
                         if (encounter.bondChange != 0) {

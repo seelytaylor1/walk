@@ -55,15 +55,24 @@ sealed interface RumorRequest {
     /** Seed forwarded to [RumorRepository] so generation is reproducible. */
     val seed: Long
 
+    /** Called by the write phase to fulfil this request via the rumor repository. */
+    suspend fun fulfill(repo: RumorRepository)
+
     data class TownVisit(
         val townId: Long,
         override val seed: Long,
-    ) : RumorRequest
+    ) : RumorRequest {
+        override suspend fun fulfill(repo: RumorRepository) =
+            repo.generateRumorForTownVisit(townId, seed)
+    }
 
     data class RoadEvent(
         val segmentId: Long,
         override val seed: Long,
-    ) : RumorRequest
+    ) : RumorRequest {
+        override suspend fun fulfill(repo: RumorRepository) =
+            repo.generateRumorFromRoadEvent(segmentId, seed)
+    }
 }
 
 /** The change to apply to the player as a result of a successful travel. */

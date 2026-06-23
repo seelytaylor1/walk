@@ -77,7 +77,7 @@ object TravelPolicy {
                     EventLogDraft(
                         type = "arrival",
                         meta = "{\"segmentId\":${road.segmentId},\"toTownId\":${road.toTownId}}",
-                        result = "Arrived after spending ${road.stepCost} steps.",
+                        result = "Arrived after spending $stepCost steps.",
                         createdAt = arrivedAt,
                     ),
                 )

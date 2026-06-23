@@ -191,6 +191,8 @@ class MainActivity : ComponentActivity() {
     private var inventoryObserveJob: Job? = null
     private var ledgerObserveJob: Job? = null
     private var chronicleObserveJob: Job? = null
+    private var companionsObserveJob: Job? = null
+    private var marketObserveJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -642,7 +644,7 @@ class MainActivity : ComponentActivity() {
             buildCompanionsActions(townId),
         )
 
-        scope.launch {
+        companionsObserveJob = scope.launch {
             companionsViewModel.state.collect { state ->
                 state ?: return@collect
                 companionsView.render(
@@ -783,7 +785,7 @@ class MainActivity : ComponentActivity() {
             buildMarketActions(townId),
         )
 
-        scope.launch {
+        marketObserveJob = scope.launch {
             kotlinx.coroutines.flow.combine(
                 marketViewModel.state,
                 marketViewModel.message,
@@ -1020,6 +1022,10 @@ class MainActivity : ComponentActivity() {
         inventoryObserveJob?.cancel()
         ledgerObserveJob?.cancel()
         chronicleObserveJob?.cancel()
+        companionsObserveJob?.cancel()
+        companionsViewModel.deactivate()
+        marketObserveJob?.cancel()
+        marketViewModel.deactivate()
     }
 
     private fun TravelResult.toMessage(): String =

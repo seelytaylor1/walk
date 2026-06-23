@@ -10,6 +10,7 @@ import com.wanderingledger.core.data.RecruitmentResult
 import com.wanderingledger.core.designsystem.accessibility.AccessibilityPreferences
 import com.wanderingledger.core.model.Companion
 import com.wanderingledger.feature.companions.CompanionCommentaryUi
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -41,6 +42,7 @@ class CompanionsViewModel(
     private val gameRepository: GameRepository,
     private val narrator: CompanionNarrator,
     private val accessibilityPreferences: AccessibilityPreferences,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModel() {
     private val _state = MutableStateFlow<CompanionsViewState?>(null)
     val state: StateFlow<CompanionsViewState?> = _state.asStateFlow()
@@ -78,62 +80,58 @@ class CompanionsViewModel(
         observeJob = null
     }
 
-    fun recruit(companionId: Long) {
-        viewModelScope.launch {
-            val result = withContext(Dispatchers.IO) {
-                companionRepository.recruitCompanion(companionId)
-            }
-            val message = when (result) {
-                RecruitmentResult.Success -> "A new voice joins the road."
-                RecruitmentResult.AlreadyActive -> "They are already traveling with you."
-                RecruitmentResult.PartyFull -> "The party is full."
-                RecruitmentResult.NotFound -> "That companion is not available here."
-                RecruitmentResult.NotEnoughTrades -> "Complete a few more trades first."
-            }
-            _state.value = _state.value?.copy(message = message)
+    fun recruit(companionId: Long): Job = viewModelScope.launch {
+        val result = withContext(ioDispatcher) {
+            companionRepository.recruitCompanion(companionId)
         }
+        val message = when (result) {
+            RecruitmentResult.Success -> "A new voice joins the road."
+            RecruitmentResult.AlreadyActive -> "They are already traveling with you."
+            RecruitmentResult.PartyFull -> "The party is full."
+            RecruitmentResult.NotFound -> "That companion is not available here."
+            RecruitmentResult.NotEnoughTrades -> "Complete a few more trades first."
+        }
+        _state.value = _state.value?.copy(message = message)
     }
 
-    fun interact(companionId: Long, townId: Long) {
-        viewModelScope.launch {
-            val player = withContext(Dispatchers.IO) {
-                gameRepository.observePlayerState().first()
-            }
-            val town = withContext(Dispatchers.IO) {
-                gameRepository.observeTown(townId).first()
-            }
-            val context = if (player.bankedSteps < 80L)
-                CompanionCommentaryContext.LowSteps
-            else
-                CompanionCommentaryContext.Town
+    fun interact(companionId: Long, townId: Long): Job = viewModelScope.launch {
+        val player = withContext(ioDispatcher) {
+            gameRepository.observePlayerState().first()
+        }
+        val town = withContext(ioDispatcher) {
+            gameRepository.observeTown(townId).first()
+        }
+        val context = if (player.bankedSteps < 80L)
+            CompanionCommentaryContext.LowSteps
+        else
+            CompanionCommentaryContext.Town
 
-            val result = withContext(Dispatchers.IO) {
-                narrator.requestLine(
-                    companionId = companionId,
-                    context = context,
-                    biome = town?.biome,
-                    bankedSteps = player.bankedSteps,
+        val result = withContext(ioDispatcher) {
+            narrator.requestLine(
+                companionId = companionId,
+                context = context,
+                biome = town?.biome,
+                bankedSteps = player.bankedSteps,
+            )
+        }
+        when (result) {
+            is CompanionCommentaryResult.Spoken -> {
+                withContext(ioDispatcher) {
+                    companionRepository.updateBond(companionId, 1)
+                }
+                _effects.emit(CompanionsEffect.InteractSuccess)
+                _state.value = _state.value?.copy(message = null)
+            }
+            is CompanionCommentaryResult.OnCooldown -> {
+                _state.value = _state.value?.copy(
+                    message = "${result.companionName} is still considering the last thing they said.",
                 )
+                _effects.emit(CompanionsEffect.CooldownActive)
             }
-            when (result) {
-                is CompanionCommentaryResult.Spoken -> {
-                    withContext(Dispatchers.IO) {
-                        companionRepository.updateBond(companionId, 1)
-                    }
-                    _effects.emit(CompanionsEffect.InteractSuccess)
-                    _state.value = _state.value?.copy(message = null)
-                }
-                is CompanionCommentaryResult.OnCooldown -> {
-                    _state.value = _state.value?.copy(
-                        message = "${result.companionName} is still considering the last thing they said.",
-                    )
-                    _effects.emit(CompanionsEffect.CooldownActive)
-                }
-                CompanionCommentaryResult.NotActive ->
-                    _state.value = _state.value?.copy(
-                        message = "Only active companions can answer from the road.",
-                    )
-            }
+            CompanionCommentaryResult.NotActive ->
+                _state.value = _state.value?.copy(
+                    message = "Only active companions can answer from the road.",
+                )
         }
     }
 }

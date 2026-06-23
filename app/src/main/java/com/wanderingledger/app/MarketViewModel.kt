@@ -6,6 +6,7 @@ import com.wanderingledger.core.data.BuyResult
 import com.wanderingledger.core.data.MarketRepository
 import com.wanderingledger.core.data.MarketState
 import com.wanderingledger.core.data.SellResult
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -25,6 +26,7 @@ sealed interface MarketEffect {
 
 class MarketViewModel(
     private val marketRepository: MarketRepository,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModel() {
     private val _state = MutableStateFlow<MarketState?>(null)
     val state: StateFlow<MarketState?> = _state.asStateFlow()
@@ -52,31 +54,27 @@ class MarketViewModel(
         observeJob = null
     }
 
-    fun buy(townId: Long, goodId: Long) {
-        viewModelScope.launch {
-            val result = withContext(Dispatchers.IO) {
-                marketRepository.buyGood(townId, goodId, quantity = 1)
-            }
-            _message.value = result.toBuyMessage()
-            when {
-                result is BuyResult.Success -> _effects.emit(MarketEffect.BuySuccess)
-                result is BuyResult.NotEnoughGold || result == BuyResult.InventoryFull ->
-                    _effects.emit(MarketEffect.TransactionError)
-            }
+    fun buy(townId: Long, goodId: Long): Job = viewModelScope.launch {
+        val result = withContext(ioDispatcher) {
+            marketRepository.buyGood(townId, goodId, quantity = 1)
+        }
+        _message.value = result.toBuyMessage()
+        when {
+            result is BuyResult.Success -> _effects.emit(MarketEffect.BuySuccess)
+            result is BuyResult.NotEnoughGold || result == BuyResult.InventoryFull ->
+                _effects.emit(MarketEffect.TransactionError)
         }
     }
 
-    fun sell(townId: Long, goodId: Long) {
-        viewModelScope.launch {
-            val result = withContext(Dispatchers.IO) {
-                marketRepository.sellGood(townId, goodId, quantity = 1)
-            }
-            _message.value = result.toSellMessage()
-            when {
-                result is SellResult.Success -> _effects.emit(MarketEffect.SellSuccess)
-                result is SellResult.NotEnoughInventory ->
-                    _effects.emit(MarketEffect.TransactionError)
-            }
+    fun sell(townId: Long, goodId: Long): Job = viewModelScope.launch {
+        val result = withContext(ioDispatcher) {
+            marketRepository.sellGood(townId, goodId, quantity = 1)
+        }
+        _message.value = result.toSellMessage()
+        when {
+            result is SellResult.Success -> _effects.emit(MarketEffect.SellSuccess)
+            result is SellResult.NotEnoughInventory ->
+                _effects.emit(MarketEffect.TransactionError)
         }
     }
 

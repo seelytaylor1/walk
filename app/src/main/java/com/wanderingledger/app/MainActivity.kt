@@ -21,7 +21,6 @@ import com.wanderingledger.core.audio.AudioManager
 import com.wanderingledger.core.audio.AudioPreferences
 import com.wanderingledger.core.data.BuyResult
 import com.wanderingledger.core.data.CompanionCommentaryContext
-import com.wanderingledger.core.data.CompanionCommentaryEngine
 import com.wanderingledger.core.data.CompanionCommentaryResult
 import com.wanderingledger.core.data.CompanionRepository
 import com.wanderingledger.core.data.GameRepository
@@ -32,7 +31,6 @@ import com.wanderingledger.core.data.RoomStepBankRepository
 import com.wanderingledger.core.data.RumorRepository
 import com.wanderingledger.core.data.SellResult
 import com.wanderingledger.core.data.TravelResult
-import com.wanderingledger.core.data.requestCommentary
 import com.wanderingledger.core.database.RoadSegmentEntity
 import com.wanderingledger.core.database.TownEntity
 import com.wanderingledger.core.database.WanderingLedgerDatabase
@@ -46,7 +44,6 @@ import com.wanderingledger.core.steptracker.StepSource
 import com.wanderingledger.core.steptracker.StepTrackerService
 import com.wanderingledger.core.ui.BottomNavBar
 import com.wanderingledger.core.ui.NavigationShell
-import com.wanderingledger.feature.companions.CompanionCommentaryUi
 import com.wanderingledger.feature.companions.CompanionInteractCallback
 import com.wanderingledger.feature.companions.CompanionNavigationCallback
 import com.wanderingledger.feature.companions.CompanionRecruitCallback
@@ -109,7 +106,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var gameRepository: GameRepository
     private lateinit var rumorRepository: RumorRepository
     private lateinit var companionRepository: CompanionRepository
-    private lateinit var companionCommentaryEngine: CompanionCommentaryEngine
+    private lateinit var companionNarrator: CompanionNarrator
     private lateinit var marketRepository: MarketRepository
     private lateinit var inventoryRepository: InventoryRepository
     private lateinit var stepTrackerService: StepTrackerService
@@ -171,7 +168,6 @@ class MainActivity : ComponentActivity() {
 
     private var currentScreenType: NavigationShell.ScreenType = NavigationShell.ScreenType.WORLD_MAP
     private var currentTownId: Long = 1L
-    private var latestCompanionCommentary: CompanionCommentaryUi? = null
 
     private lateinit var journeyViewModel: JourneyViewModel
 
@@ -208,7 +204,7 @@ class MainActivity : ComponentActivity() {
         database = container.database
         rumorRepository = container.rumorRepository
         companionRepository = container.companionRepository
-        companionCommentaryEngine = container.companionCommentaryEngine
+        companionNarrator = container.companionNarrator
         gameRepository = container.gameRepository
         marketRepository = container.marketRepository
         inventoryRepository = container.inventoryRepository
@@ -225,7 +221,7 @@ class MainActivity : ComponentActivity() {
                     JourneyViewModel(
                         gameRepository = gameRepository,
                         companionRepository = companionRepository,
-                        companionCommentaryEngine = companionCommentaryEngine,
+                        narrator = container.companionNarrator,
                         stepTrackerService = stepTrackerService,
                         accessibilityPreferences = accessibilityPreferences,
                     )
@@ -490,9 +486,6 @@ class MainActivity : ComponentActivity() {
                 scope.launch { showTownArrival(effect.townId, effect.remainingSteps) }
             }
             is JourneyEffect.StartAmbient -> audioManager.startAmbient(effect.biome)
-            is JourneyEffect.CommentaryGenerated -> {
-                latestCompanionCommentary = effect.commentary
-            }
         }
     }
 
@@ -602,7 +595,7 @@ class MainActivity : ComponentActivity() {
                 active = active,
                 recruitable = recruitable,
                 message = message,
-                recentCommentary = latestCompanionCommentary,
+                recentCommentary = journeyViewModel.latestCommentary.value,
                 reducedMotion = reduceMotion,
             ),
             buildCompanionsActions(townId),
@@ -621,7 +614,7 @@ class MainActivity : ComponentActivity() {
                             buildCompanionsScreenState(
                                 a,
                                 r,
-                                recentCommentary = latestCompanionCommentary,
+                                recentCommentary = journeyViewModel.latestCommentary.value,
                                 reducedMotion = rm,
                             ),
                             buildCompanionsActions(townId),
@@ -667,7 +660,7 @@ class MainActivity : ComponentActivity() {
                             }
                         val result =
                             withContext(Dispatchers.IO) {
-                                companionRepository.requestCommentary(
+                                companionNarrator.requestLine(
                                     companionId = companionId,
                                     context =
                                         if (player.bankedSteps < 80L) {
@@ -675,7 +668,6 @@ class MainActivity : ComponentActivity() {
                                         } else {
                                             CompanionCommentaryContext.Town
                                         },
-                                    engine = companionCommentaryEngine,
                                     biome = town?.biome,
                                     bankedSteps = player.bankedSteps,
                                 )
@@ -683,7 +675,7 @@ class MainActivity : ComponentActivity() {
                         val message =
                             when (result) {
                                 is CompanionCommentaryResult.Spoken -> {
-                                    latestCompanionCommentary = result.commentary.toUi()
+                                    // narrator.latestLine already updated — no assignment needed
                                     withContext(Dispatchers.IO) {
                                         companionRepository.updateBond(companionId, 1)
                                     }
@@ -719,7 +711,7 @@ class MainActivity : ComponentActivity() {
                 active = active,
                 recruitable = recruitable,
                 message = message,
-                recentCommentary = latestCompanionCommentary,
+                recentCommentary = journeyViewModel.latestCommentary.value,
                 reducedMotion = reduceMotion,
             ),
             buildCompanionsActions(townId),

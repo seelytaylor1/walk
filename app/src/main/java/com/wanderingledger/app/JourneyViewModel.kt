@@ -3,18 +3,17 @@ package com.wanderingledger.app
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wanderingledger.core.data.CompanionCommentaryContext
-import com.wanderingledger.core.data.CompanionCommentaryEngine
 import com.wanderingledger.core.data.CompanionCommentaryResult
 import com.wanderingledger.core.data.CompanionRepository
 import com.wanderingledger.core.data.GameRepository
 import com.wanderingledger.core.data.TravelResult
 import com.wanderingledger.core.data.applyScoutDiscount
-import com.wanderingledger.core.data.requestCommentary
 import com.wanderingledger.core.model.CompanionRole
 import com.wanderingledger.core.designsystem.accessibility.AccessibilityPreferences
 import com.wanderingledger.core.model.Biome
 import com.wanderingledger.core.steptracker.StepSource
 import com.wanderingledger.core.steptracker.StepTrackerService
+import com.wanderingledger.feature.companions.CompanionCommentaryUi
 import com.wanderingledger.feature.journey.CampState
 import com.wanderingledger.feature.journey.CampStateDetector
 import com.wanderingledger.feature.journey.JourneyScreenState
@@ -53,11 +52,6 @@ sealed interface JourneyEffect {
     data class StartAmbient(
         val biome: Biome,
     ) : JourneyEffect
-
-    /** A companion spoke; remember it so the companions screen can show it. */
-    data class CommentaryGenerated(
-        val commentary: com.wanderingledger.feature.companions.CompanionCommentaryUi,
-    ) : JourneyEffect
 }
 
 /**
@@ -68,7 +62,7 @@ sealed interface JourneyEffect {
 class JourneyViewModel(
     private val gameRepository: GameRepository,
     private val companionRepository: CompanionRepository,
-    private val companionCommentaryEngine: CompanionCommentaryEngine,
+    private val narrator: CompanionNarrator,
     private val stepTrackerService: StepTrackerService,
     private val accessibilityPreferences: AccessibilityPreferences,
 ) : ViewModel() {
@@ -88,6 +82,9 @@ class JourneyViewModel(
 
     private val _effects = MutableSharedFlow<JourneyEffect>(extraBufferCapacity = 16)
     val effects: SharedFlow<JourneyEffect> = _effects.asSharedFlow()
+
+    /** The latest companion line — observed by the companions screen. */
+    val latestCommentary: StateFlow<CompanionCommentaryUi?> = narrator.latestLine
 
     private var campState: CampState? = null
     private var lastTravelTime: Long = System.currentTimeMillis()
@@ -225,28 +222,19 @@ class JourneyViewModel(
         biome: Biome?,
         bankedSteps: Long?,
     ): String? {
-        val companion =
-            withContext(Dispatchers.IO) {
-                companionRepository.observeActiveCompanions().first().firstOrNull()
-            } ?: return null
-        val result =
-            withContext(Dispatchers.IO) {
-                companionRepository.requestCommentary(
-                    companionId = companion.companionId,
-                    context = context,
-                    engine = companionCommentaryEngine,
-                    biome = biome,
-                    bankedSteps = bankedSteps,
-                )
-            }
-        return when (result) {
-            is CompanionCommentaryResult.Spoken -> {
-                _effects.emit(JourneyEffect.CommentaryGenerated(result.commentary.toUi()))
-                "${result.commentary.companionName}: ${result.commentary.line}"
-            }
-            is CompanionCommentaryResult.OnCooldown,
-            CompanionCommentaryResult.NotActive,
-            -> null
+        val companion = withContext(Dispatchers.IO) {
+            companionRepository.observeActiveCompanions().first().firstOrNull()
+        } ?: return null
+        return when (val result = withContext(Dispatchers.IO) {
+            narrator.requestLine(
+                companionId = companion.companionId,
+                context = context,
+                biome = biome,
+                bankedSteps = bankedSteps,
+            )
+        }) {
+            is CompanionCommentaryResult.Spoken -> "${result.commentary.companionName}: ${result.commentary.line}"
+            else -> null
         }
     }
 

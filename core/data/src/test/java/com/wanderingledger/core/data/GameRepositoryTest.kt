@@ -17,7 +17,6 @@ import org.robolectric.RobolectricTestRunner
 class GameRepositoryTest {
     private lateinit var database: WanderingLedgerDatabase
     private lateinit var companionRepository: CompanionRepository
-    private lateinit var encounterRepository: EncounterRepository
     private lateinit var rumorRepository: RumorRepository
     private lateinit var gameRepository: GameRepository
 
@@ -26,9 +25,8 @@ class GameRepositoryTest {
         val context = ApplicationProvider.getApplicationContext<Context>()
         database = TestDatabaseFactory.createInMemoryDatabase(context)
         companionRepository = CompanionRepository(database)
-        encounterRepository = EncounterRepository(database, companionRepository)
         rumorRepository = RumorRepository(database)
-        gameRepository = GameRepository(database, rumorRepository, encounterRepository)
+        gameRepository = GameRepository(database, rumorRepository, companionRepository)
     }
 
     @After
@@ -51,7 +49,7 @@ class GameRepositoryTest {
         runTest {
             gameRepository.initializeNewGame()
             val player = database.playerDao().getPlayerSnapshot()!!
-            database.playerDao().updatePlayer(player.copy(bankedSteps = 200L))
+            database.playerDao().updatePlayer(player.copy(bankedSteps = 2000L))
 
             // Road 1: Hearthwick(1) -> Stoneford(2)
             gameRepository.travel(1L)

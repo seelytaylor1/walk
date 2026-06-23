@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 3,
-    "identityHash": "ee5c33c06a8461bbfec379804063dc36",
+    "version": 4,
+    "identityHash": "38a09c1bd732313fe21338be5dcf96ef",
     "entities": [
       {
         "tableName": "towns",
@@ -354,7 +354,7 @@
       },
       {
         "tableName": "player_states",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`playerId` INTEGER NOT NULL, `name` TEXT NOT NULL, `playerClass` TEXT NOT NULL, `gold` INTEGER NOT NULL, `currentTownId` INTEGER NOT NULL, `inventorySlots` INTEGER NOT NULL, `bankedSteps` INTEGER NOT NULL, `lifetimeSteps` INTEGER NOT NULL, `lastSyncAt` INTEGER NOT NULL, PRIMARY KEY(`playerId`), FOREIGN KEY(`currentTownId`) REFERENCES `towns`(`townId`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`playerId` INTEGER NOT NULL, `name` TEXT NOT NULL, `playerClass` TEXT NOT NULL, `gold` INTEGER NOT NULL, `currentTownId` INTEGER NOT NULL, `inventorySlots` INTEGER NOT NULL, `bankedSteps` INTEGER NOT NULL, `lifetimeSteps` INTEGER NOT NULL, `lastSyncAt` INTEGER NOT NULL, `completedTradesCount` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`playerId`), FOREIGN KEY(`currentTownId`) REFERENCES `towns`(`townId`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
         "fields": [
           {
             "fieldPath": "playerId",
@@ -409,6 +409,13 @@
             "columnName": "lastSyncAt",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "completedTradesCount",
+            "columnName": "completedTradesCount",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
           }
         ],
         "primaryKey": {
@@ -1031,7 +1038,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ee5c33c06a8461bbfec379804063dc36')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '38a09c1bd732313fe21338be5dcf96ef')"
     ]
   }
 }

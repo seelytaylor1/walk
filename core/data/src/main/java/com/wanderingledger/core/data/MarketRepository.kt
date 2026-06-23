@@ -288,6 +288,12 @@ class MarketRepository(
                 newSupply,
             )
 
+            // Increment trade count on successful buy
+            val updatedPlayer = database.playerDao().getPlayerSnapshot()!!
+            database.playerDao().updatePlayer(
+                updatedPlayer.copy(completedTradesCount = updatedPlayer.completedTradesCount + 1)
+            )
+
             BuyResult.Success(
                 goodId = goodId,
                 quantity = quantity,
@@ -394,6 +400,12 @@ class MarketRepository(
                 newSellPrice,
                 currentSupply,
                 newSupply,
+            )
+
+            // Increment trade count on successful sell
+            val updatedPlayer = database.playerDao().getPlayerSnapshot()!!
+            database.playerDao().updatePlayer(
+                updatedPlayer.copy(completedTradesCount = updatedPlayer.completedTradesCount + 1)
             )
 
             SellResult.Success(

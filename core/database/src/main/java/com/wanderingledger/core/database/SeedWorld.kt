@@ -103,12 +103,12 @@ object SeedWorld {
             )
             database.roadSegmentDao().insertRoads(
                 listOf(
-                    RoadSegmentEntity(1, 1, 2, 120, "short", "[\"merchant-cart\"]"),
-                    RoadSegmentEntity(2, 2, 1, 120, "short", "[\"merchant-cart\"]"),
-                    RoadSegmentEntity(3, 2, 3, 180, "long", "[\"fog-bank\"]"),
-                    RoadSegmentEntity(4, 3, 2, 180, "long", "[\"fog-bank\"]"),
-                    RoadSegmentEntity(5, 1, 3, 240, "long", "[\"old-road\"]"),
-                    RoadSegmentEntity(6, 3, 1, 240, "long", "[\"old-road\"]"),
+                    RoadSegmentEntity(1, 1, 2, 1000, "short", "[\"merchant-cart\"]"),
+                    RoadSegmentEntity(2, 2, 1, 1000, "short", "[\"merchant-cart\"]"),
+                    RoadSegmentEntity(3, 2, 3, 2500, "medium", "[\"fog-bank\"]"),
+                    RoadSegmentEntity(4, 3, 2, 2500, "medium", "[\"fog-bank\"]"),
+                    RoadSegmentEntity(5, 1, 3, 5000, "long", "[\"old-road\"]"),
+                    RoadSegmentEntity(6, 3, 1, 5000, "long", "[\"old-road\"]"),
                 ),
             )
             database.companionDao().upsertCompanions(

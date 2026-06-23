@@ -4,6 +4,11 @@
 **Blocked by:** `06-viewmodel-architecture-decision.md`  
 **Label:** enhancement
 
+> **Per issue 06: Jetpack ViewModel (Option A).** `CompanionsViewModel` and
+> `LedgerViewModel` extend `androidx.lifecycle.ViewModel`, expose state via
+> `stateIn(viewModelScope, …)`, and are obtained in `MainActivity` via the
+> `viewModel { }` factory (lifecycle 2.7.0).
+
 ## What to build
 
 Extract companion and ledger state management from `MainActivity`:

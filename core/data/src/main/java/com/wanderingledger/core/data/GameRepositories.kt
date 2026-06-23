@@ -90,7 +90,7 @@ class RoomStepBankRepository(
 class GameRepository(
     private val database: WanderingLedgerDatabase,
     private val rumorRepository: RumorRepository,
-    private val encounterRepository: EncounterRepository,
+    private val companionRepository: CompanionRepository,
 ) {
     fun observePlayerState(): Flow<PlayerState> =
         database
@@ -144,34 +144,24 @@ class GameRepository(
         }
     }
 
-    suspend fun travel(segmentId: Long): TravelResult {
+    suspend fun travel(
+        segmentId: Long,
+        seed: Long = System.currentTimeMillis(),
+    ): TravelResult {
         val startedAt = System.currentTimeMillis()
         return database.withTransaction {
+            // --- Read: validate the road, then assemble a WorldSnapshot ---
             val player =
                 database.playerDao().getPlayerSnapshot()
                     ?: error("Seed world before traveling.")
             val road =
                 database.roadSegmentDao().getRoadSnapshot(segmentId)
                     ?: run {
-                        TelemetryService.tryRecord(
-                            TelemetryEvent.TravelCompleted(
-                                timestamp = startedAt,
-                                segmentId = segmentId,
-                                latencyMs = System.currentTimeMillis() - startedAt,
-                                success = false,
-                            ),
-                        )
+                        recordTravelCompleted(startedAt, segmentId, success = false)
                         return@withTransaction TravelResult.RoadNotFound
                     }
             if (road.fromTownId != player.currentTownId) {
-                TelemetryService.tryRecord(
-                    TelemetryEvent.TravelCompleted(
-                        timestamp = startedAt,
-                        segmentId = segmentId,
-                        latencyMs = System.currentTimeMillis() - startedAt,
-                        success = false,
-                    ),
-                )
+                recordTravelCompleted(startedAt, segmentId, success = false)
                 return@withTransaction TravelResult.NotAtRoadOrigin
             }
 
@@ -186,73 +176,103 @@ class GameRepository(
                 ),
             )
 
-            if (player.bankedSteps < road.stepCost) {
-                TelemetryService.tryRecord(
-                    TelemetryEvent.TravelCompleted(
-                        timestamp = startedAt,
-                        segmentId = segmentId,
-                        latencyMs = System.currentTimeMillis() - startedAt,
-                        success = false,
-                    ),
-                )
-                return@withTransaction TravelResult.NotEnoughSteps(
-                    required = road.stepCost.toLong(),
-                    available = player.bankedSteps,
-                )
-            }
-
             val arrivedAt = System.currentTimeMillis()
+            val destination = database.townDao().getTownSnapshot(road.toTownId)
+            val snapshot =
+                WorldSnapshot(
+                    player = player.toModel(),
+                    road = road.toModel(),
+                    // destinationTown is carried for completeness; TravelPolicy does
+                    // not read it, so a synthetic stand-in is harmless if the seed is
+                    // missing the row. The visited-update below re-reads the entity.
+                    destinationTown =
+                        destination?.toModel()
+                            ?: Town(townId = road.toTownId, name = "", region = "", biome = Biome.Forest),
+                    activeCompanions = companionRepository.observeActiveCompanions().first(),
+                    activeRumors = rumorRepository.observeActiveRumors().first(),
+                    arrivedAt = arrivedAt,
+                )
+
+            // --- Decide: all travel rules live in TravelPolicy ---
+            val outcome = TravelPolicy.compute(snapshot, seed)
+
+            val delta =
+                outcome.playerDelta
+                    ?: run {
+                        // Failure outcome (e.g. NotEnoughSteps): mutate nothing.
+                        recordTravelCompleted(startedAt, segmentId, success = false)
+                        return@withTransaction outcome.result
+                    }
+
+            // --- Write: apply the outcome's mutations ---
+            val goldChange = outcome.encounterOutcome?.goldChange ?: 0L
             database.playerDao().updatePlayer(
                 player.copy(
-                    currentTownId = road.toTownId,
-                    bankedSteps = player.bankedSteps - road.stepCost,
-                    lastSyncAt = arrivedAt,
+                    currentTownId = delta.newTownId,
+                    bankedSteps = player.bankedSteps - delta.stepsSpent,
+                    gold = (player.gold + goldChange).coerceAtLeast(0),
+                    lastSyncAt = delta.arrivedAt,
                 ),
             )
-            database.townDao().getTownSnapshot(road.toTownId)?.let { destination ->
-                database.townDao().updateTown(destination.copy(storyState = "visited", lastVisitedAt = arrivedAt))
-            }
-            database.rumorDao().decrementAllActive()
-            rumorRepository.generateRumorFromRoadEvent(segmentId)
-            rumorRepository.generateRumorForTownVisit(road.toTownId)
 
-            // Resolve road encounter if pool exists
-            val eventPool =
-                try {
-                    road.eventPool
-                        .trim('[', ']')
-                        .split(',')
-                        .map { it.trim(' ', '"') }
-                        .filter { it.isNotEmpty() }
-                } catch (e: Exception) {
-                    emptyList()
+            if (outcome.markDestinationVisited) {
+                database.townDao().getTownSnapshot(delta.newTownId)?.let { dest ->
+                    database.townDao().updateTown(
+                        dest.copy(storyState = "visited", lastVisitedAt = delta.arrivedAt),
+                    )
                 }
-            if (eventPool.isNotEmpty()) {
-                val encounterId = eventPool.random()
-                // Use a seed derived from time and road for determinism within this run
-                val seed = arrivedAt + segmentId
-                encounterRepository.resolveRoadEncounter(seed, encounterId)
             }
 
-            database.eventLogDao().insertEvent(
-                EventLogEntity(
-                    type = "arrival",
-                    meta = "{\"segmentId\":$segmentId,\"toTownId\":${road.toTownId}}",
-                    result = "Arrived after spending ${road.stepCost} steps.",
-                    createdAt = arrivedAt,
-                ),
-            )
-            val latencyMs = System.currentTimeMillis() - startedAt
-            TelemetryService.tryRecord(
-                TelemetryEvent.TravelCompleted(
-                    timestamp = startedAt,
-                    segmentId = segmentId,
-                    latencyMs = latencyMs,
-                    success = true,
-                ),
-            )
-            TravelResult.Arrived(road.toTownId, player.bankedSteps - road.stepCost)
+            if (outcome.decrementActiveRumors) {
+                database.rumorDao().decrementAllActive()
+            }
+
+            outcome.rumorRequests.forEach { request ->
+                when (request) {
+                    is RumorRequest.RoadEvent ->
+                        rumorRepository.generateRumorFromRoadEvent(request.segmentId, request.seed)
+                    is RumorRequest.TownVisit ->
+                        rumorRepository.generateRumorForTownVisit(request.townId, request.seed)
+                }
+            }
+
+            outcome.encounterOutcome?.let { encounter ->
+                if (encounter.bondChange != 0) {
+                    snapshot.activeCompanions.forEach { companion ->
+                        companionRepository.updateBond(companion.companionId, encounter.bondChange)
+                    }
+                }
+            }
+
+            outcome.eventLogs.forEach { log ->
+                database.eventLogDao().insertEvent(
+                    EventLogEntity(
+                        type = log.type,
+                        meta = log.meta,
+                        result = log.result,
+                        createdAt = log.createdAt,
+                    ),
+                )
+            }
+
+            recordTravelCompleted(startedAt, segmentId, success = true)
+            outcome.result
         }
+    }
+
+    private fun recordTravelCompleted(
+        startedAt: Long,
+        segmentId: Long,
+        success: Boolean,
+    ) {
+        TelemetryService.tryRecord(
+            TelemetryEvent.TravelCompleted(
+                timestamp = startedAt,
+                segmentId = segmentId,
+                latencyMs = System.currentTimeMillis() - startedAt,
+                success = success,
+            ),
+        )
     }
 }
 
@@ -288,6 +308,7 @@ private fun PlayerStateEntity.toModel(): PlayerState =
         bankedSteps = bankedSteps,
         lifetimeSteps = lifetimeSteps,
         lastSyncAt = lastSyncAt,
+        completedTradesCount = completedTradesCount,
     )
 
 private fun TownEntity.toModel(): Town =

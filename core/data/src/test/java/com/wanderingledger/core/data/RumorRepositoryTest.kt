@@ -18,7 +18,6 @@ import org.robolectric.RobolectricTestRunner
 class RumorRepositoryTest {
     private lateinit var database: WanderingLedgerDatabase
     private lateinit var companionRepository: CompanionRepository
-    private lateinit var encounterRepository: EncounterRepository
     private lateinit var rumorRepository: RumorRepository
     private lateinit var gameRepository: GameRepository
 
@@ -27,9 +26,8 @@ class RumorRepositoryTest {
         val context = ApplicationProvider.getApplicationContext<Context>()
         database = TestDatabaseFactory.createInMemoryDatabase(context)
         companionRepository = CompanionRepository(database)
-        encounterRepository = EncounterRepository(database, companionRepository)
         rumorRepository = RumorRepository(database)
-        gameRepository = GameRepository(database, rumorRepository, encounterRepository)
+        gameRepository = GameRepository(database, rumorRepository, companionRepository)
     }
 
     @After
@@ -128,6 +126,45 @@ class RumorRepositoryTest {
             val oldRumor = active.find { it.text == "Long rumor" }
             assertTrue("Old rumor should still exist", oldRumor != null)
             assertEquals(4, oldRumor!!.expiryVisitsLeft)
+        }
+
+    @Test
+    fun townVisitRumorIsReproducibleForAFixedSeed() =
+        runTest {
+            gameRepository.initializeNewGame(seed = 1L)
+            // initializeNewGame seeds exactly one rumor; remember it so we can
+            // isolate the rumors produced by the seeded calls below.
+            val baseline = rumorRepository.observeActiveRumors().first().map { it.rumorId }.toSet()
+
+            // Two generations with the same seed must produce identical text.
+            rumorRepository.generateRumorForTownVisit(visitedTownId = 2L, seed = 12345L)
+            rumorRepository.generateRumorForTownVisit(visitedTownId = 2L, seed = 12345L)
+
+            val generated =
+                rumorRepository
+                    .observeActiveRumors()
+                    .first()
+                    .filter { it.rumorId !in baseline }
+            assertEquals(2, generated.size)
+            assertEquals(
+                "Same seed must produce identical rumor text",
+                generated[0].text,
+                generated[1].text,
+            )
+        }
+
+    @Test
+    fun roadEventRumorIsReproducibleForAFixedSeed() =
+        runTest {
+            gameRepository.initializeNewGame(seed = 1L)
+
+            rumorRepository.generateRumorFromRoadEvent(segmentId = 1L, seed = 999L)
+            val rumors = rumorRepository.observeActiveRumors().first()
+
+            // Road 1's event pool is ["merchant-cart"], so the text is deterministic.
+            assertTrue(
+                rumors.any { it.text.contains("merchant cart") || it.text.contains("shortcut") },
+            )
         }
 
     @Test

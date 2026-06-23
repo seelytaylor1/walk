@@ -5,6 +5,33 @@ import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
+
+val MIGRATION_3_4 = object : Migration(3, 4) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "ALTER TABLE player_states ADD COLUMN completedTradesCount INTEGER NOT NULL DEFAULT 0"
+        )
+    }
+}
+
+val MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("""
+            UPDATE road_segments SET stepCost = CASE segmentId
+                WHEN 1 THEN 1000
+                WHEN 2 THEN 1000
+                WHEN 3 THEN 2500
+                WHEN 4 THEN 2500
+                WHEN 5 THEN 5000
+                WHEN 6 THEN 5000
+                ELSE stepCost
+            END
+        """.trimIndent())
+        db.execSQL("UPDATE road_segments SET narrativeDistance = 'medium' WHERE segmentId IN (3, 4)")
+    }
+}
 
 @Database(
     entities = [
@@ -22,7 +49,7 @@ import androidx.room.RoomDatabase
         EventLogEntity::class,
         PriceHistoryEntity::class,
     ],
-    version = 2,
+    version = 4,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -58,6 +85,7 @@ abstract class WanderingLedgerDatabase : RoomDatabase() {
                     context.applicationContext,
                     WanderingLedgerDatabase::class.java,
                     "wandering-ledger.db",
-                ).build()
+                ).addMigrations(MIGRATION_2_3, MIGRATION_3_4)
+                .build()
     }
 }

@@ -1,14 +1,15 @@
 package com.wanderingledger.core.data
 
 import androidx.room.withTransaction
+import com.wanderingledger.core.database.GoodEntity
 import com.wanderingledger.core.database.InventoryItemEntity
 import com.wanderingledger.core.database.PriceHistoryEntity
+import com.wanderingledger.core.database.TownPriceEntity
 import com.wanderingledger.core.database.WanderingLedgerDatabase
 import com.wanderingledger.core.model.Good
 import com.wanderingledger.core.model.PriceHistory
 import com.wanderingledger.core.model.SupplyLevel
 import com.wanderingledger.core.model.TownPrice
-import com.wanderingledger.core.telemetry.MarketAnomalyType
 import com.wanderingledger.core.telemetry.TelemetryEvent
 import com.wanderingledger.core.telemetry.TelemetryService
 import kotlinx.coroutines.flow.Flow
@@ -247,52 +248,8 @@ class MarketRepository(
                 )
             }
 
-            // Update supply and recompute prices
-            val currentSupply = SupplyLevel.valueOf(priceEntity.supplyLevel)
-            val newSupply = MarketEngine.decreaseSupply(currentSupply)
-            val (newSellPrice, newBuyPrice) = MarketEngine.computePrices(good.baseValue, newSupply)
-            val now = System.currentTimeMillis()
-
-            database.townPriceDao().updatePrice(
-                priceEntity.copy(
-                    supplyLevel = newSupply.name,
-                    sellPrice = newSellPrice,
-                    buyPrice = newBuyPrice,
-                    lastUpdatedAt = now,
-                ),
-            )
-
-            // Record price history snapshot and trim
-            recordPriceSnapshot(townId, goodId, newSellPrice, newBuyPrice, newSupply, now)
-
-            // Telemetry: record transaction
-            TelemetryService.tryRecord(
-                TelemetryEvent.MarketTransaction(
-                    timestamp = now,
-                    townId = townId,
-                    goodId = goodId.toString(),
-                    transactionType = "buy",
-                    quantity = quantity,
-                    pricePerUnit = priceEntity.sellPrice,
-                ),
-            )
-
-            // Telemetry: detect market anomalies
-            detectMarketAnomalies(
-                townId,
-                goodId,
-                good.baseValue,
-                priceEntity.sellPrice,
-                newSellPrice,
-                currentSupply,
-                newSupply,
-            )
-
-            // Increment trade count on successful buy
-            val updatedPlayer = database.playerDao().getPlayerSnapshot()!!
-            database.playerDao().updatePlayer(
-                updatedPlayer.copy(completedTradesCount = updatedPlayer.completedTradesCount + 1)
-            )
+            val newSupply = MarketEngine.decreaseSupply(SupplyLevel.valueOf(priceEntity.supplyLevel))
+            postTradeUpdate(townId, goodId, good, priceEntity, newSupply, "buy", quantity, priceEntity.sellPrice)
 
             BuyResult.Success(
                 goodId = goodId,
@@ -361,52 +318,8 @@ class MarketRepository(
                 )
             }
 
-            // Update supply and recompute prices
-            val currentSupply = SupplyLevel.valueOf(priceEntity.supplyLevel)
-            val newSupply = MarketEngine.increaseSupply(currentSupply)
-            val (newSellPrice, newBuyPrice) = MarketEngine.computePrices(good.baseValue, newSupply)
-            val now = System.currentTimeMillis()
-
-            database.townPriceDao().updatePrice(
-                priceEntity.copy(
-                    supplyLevel = newSupply.name,
-                    sellPrice = newSellPrice,
-                    buyPrice = newBuyPrice,
-                    lastUpdatedAt = now,
-                ),
-            )
-
-            // Record price history snapshot and trim
-            recordPriceSnapshot(townId, goodId, newSellPrice, newBuyPrice, newSupply, now)
-
-            // Telemetry: record transaction
-            TelemetryService.tryRecord(
-                TelemetryEvent.MarketTransaction(
-                    timestamp = now,
-                    townId = townId,
-                    goodId = goodId.toString(),
-                    transactionType = "sell",
-                    quantity = quantity,
-                    pricePerUnit = priceEntity.buyPrice,
-                ),
-            )
-
-            // Telemetry: detect market anomalies
-            detectMarketAnomalies(
-                townId,
-                goodId,
-                good.baseValue,
-                priceEntity.sellPrice,
-                newSellPrice,
-                currentSupply,
-                newSupply,
-            )
-
-            // Increment trade count on successful sell
-            val updatedPlayer = database.playerDao().getPlayerSnapshot()!!
-            database.playerDao().updatePlayer(
-                updatedPlayer.copy(completedTradesCount = updatedPlayer.completedTradesCount + 1)
-            )
+            val newSupply = MarketEngine.increaseSupply(SupplyLevel.valueOf(priceEntity.supplyLevel))
+            postTradeUpdate(townId, goodId, good, priceEntity, newSupply, "sell", quantity, priceEntity.buyPrice)
 
             SellResult.Success(
                 goodId = goodId,
@@ -418,6 +331,59 @@ class MarketRepository(
     }
 
     // ── Private helpers ──────────────────────────────────────────────────────
+
+    /**
+     * Shared post-trade tail: updates supply + prices, records history snapshot,
+     * emits telemetry, and increments the trade count. Must be called inside a
+     * Room transaction.
+     */
+    private suspend fun postTradeUpdate(
+        townId: Long,
+        goodId: Long,
+        good: GoodEntity,
+        priceEntity: TownPriceEntity,
+        newSupply: SupplyLevel,
+        transactionType: String,
+        quantity: Int,
+        pricePerUnit: Long,
+    ) {
+        val currentSupply = SupplyLevel.valueOf(priceEntity.supplyLevel)
+        val (newSellPrice, newBuyPrice) = MarketEngine.computePrices(good.baseValue, newSupply)
+        val now = System.currentTimeMillis()
+
+        database.townPriceDao().updatePrice(
+            priceEntity.copy(
+                supplyLevel = newSupply.name,
+                sellPrice = newSellPrice,
+                buyPrice = newBuyPrice,
+                lastUpdatedAt = now,
+            ),
+        )
+
+        recordPriceSnapshot(townId, goodId, newSellPrice, newBuyPrice, newSupply, now)
+
+        TelemetryService.tryRecord(
+            TelemetryEvent.MarketTransaction(
+                timestamp = now,
+                townId = townId,
+                goodId = goodId.toString(),
+                transactionType = transactionType,
+                quantity = quantity,
+                pricePerUnit = pricePerUnit,
+            ),
+        )
+
+        val before = PriceSnapshot(sellPrice = priceEntity.sellPrice, supplyLevel = currentSupply)
+        val after = PriceSnapshot(sellPrice = newSellPrice, supplyLevel = newSupply)
+        MarketAnomalyDetector.detect(townId, goodId, good.baseValue, before, after, now).forEach {
+            TelemetryService.tryRecord(it)
+        }
+
+        val updatedPlayer = database.playerDao().getPlayerSnapshot()!!
+        database.playerDao().updatePlayer(
+            updatedPlayer.copy(completedTradesCount = updatedPlayer.completedTradesCount + 1),
+        )
+    }
 
     /**
      * Insert a price snapshot and trim history to [PriceHistoryEntity.MAX_HISTORY_PER_GOOD_TOWN].
@@ -449,85 +415,6 @@ class MarketRepository(
         }
     }
 
-    private fun detectMarketAnomalies(
-        townId: Long,
-        goodId: Long,
-        baseValue: Long,
-        oldPrice: Long,
-        newPrice: Long,
-        oldSupply: SupplyLevel,
-        newSupply: SupplyLevel,
-    ) {
-        val now = System.currentTimeMillis()
-        val priceChangePercent =
-            if (oldPrice > 0) {
-                ((newPrice - oldPrice).toDouble() / oldPrice * 100).toLong()
-            } else {
-                0L
-            }
-
-        // Price spike: >50% increase
-        if (priceChangePercent > 50) {
-            TelemetryService.tryRecord(
-                TelemetryEvent.MarketAnomaly(
-                    timestamp = now,
-                    anomalyType = MarketAnomalyType.PriceSpike,
-                    townId = townId,
-                    goodId = goodId.toString(),
-                    value = newPrice,
-                    threshold = (oldPrice * 1.5).toLong(),
-                ),
-            )
-        }
-
-        // Price crash: >30% decrease
-        if (priceChangePercent < -30) {
-            TelemetryService.tryRecord(
-                TelemetryEvent.MarketAnomaly(
-                    timestamp = now,
-                    anomalyType = MarketAnomalyType.PriceCrash,
-                    townId = townId,
-                    goodId = goodId.toString(),
-                    value = newPrice,
-                    threshold = (oldPrice * 0.7).toLong(),
-                ),
-            )
-        }
-
-        // Supply depleted: moved to Scarce
-        if (oldSupply != SupplyLevel.Scarce && newSupply == SupplyLevel.Scarce) {
-            TelemetryService.tryRecord(
-                TelemetryEvent.MarketAnomaly(
-                    timestamp = now,
-                    anomalyType = MarketAnomalyType.SupplyDepleted,
-                    townId = townId,
-                    goodId = goodId.toString(),
-                    value = newSupply.ordinal.toLong(),
-                    threshold = SupplyLevel.Scarce.ordinal.toLong(),
-                ),
-            )
-        }
-
-        // Unusual volume: check if price deviates significantly from base value (>100%)
-        val deviationPercent =
-            if (baseValue > 0) {
-                ((newPrice - baseValue).toDouble() / baseValue * 100).toLong()
-            } else {
-                0L
-            }
-        if (deviationPercent > 100) {
-            TelemetryService.tryRecord(
-                TelemetryEvent.MarketAnomaly(
-                    timestamp = now,
-                    anomalyType = MarketAnomalyType.UnusualVolume,
-                    townId = townId,
-                    goodId = goodId.toString(),
-                    value = newPrice,
-                    threshold = baseValue * 2,
-                ),
-            )
-        }
-    }
 }
 
 // ── Entity → model mappers ───────────────────────────────────────────────────

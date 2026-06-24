@@ -6,6 +6,15 @@ import com.wanderingledger.core.model.PlayerState
 import com.wanderingledger.core.model.RoadSegment
 import com.wanderingledger.core.model.Rumor
 import com.wanderingledger.core.model.Town
+import org.json.JSONArray
+
+fun String.parseEventPool(): List<String> =
+    try {
+        val arr = JSONArray(this)
+        (0 until arr.length()).map { arr.getString(it) }
+    } catch (e: Exception) {
+        emptyList()
+    }
 
 /** 10% step cost reduction applied when a Scout companion is active. */
 const val SCOUT_STEP_DISCOUNT = 0.10
@@ -46,15 +55,24 @@ sealed interface RumorRequest {
     /** Seed forwarded to [RumorRepository] so generation is reproducible. */
     val seed: Long
 
+    /** Called by the write phase to fulfil this request via the rumor repository. */
+    suspend fun fulfill(repo: RumorRepository)
+
     data class TownVisit(
         val townId: Long,
         override val seed: Long,
-    ) : RumorRequest
+    ) : RumorRequest {
+        override suspend fun fulfill(repo: RumorRepository) =
+            repo.generateRumorForTownVisit(townId, seed)
+    }
 
     data class RoadEvent(
         val segmentId: Long,
         override val seed: Long,
-    ) : RumorRequest
+    ) : RumorRequest {
+        override suspend fun fulfill(repo: RumorRepository) =
+            repo.generateRumorFromRoadEvent(segmentId, seed)
+    }
 }
 
 /** The change to apply to the player as a result of a successful travel. */
@@ -73,22 +91,22 @@ data class EventLogDraft(
 )
 
 /**
- * The complete set of mutations a travel produces.
+ * The result of [TravelPolicy.compute].
  *
- * Plain data — no DAO calls. The repository's write phase applies each field:
- * the [playerDelta], whether to mark the destination [markDestinationVisited],
- * whether to [decrementActiveRumors], the [rumorRequests] to fulfil, the
- * [encounterOutcome] (gold/bond deltas) to apply, and the [eventLogs] to insert.
+ * [Arrived] guarantees every mutation field is valid and non-null.
+ * [Failed] carries the failure reason; no mutations apply.
  *
- * For a failed travel (e.g. not enough steps) [result] carries the failure and
- * every mutation field is empty/null.
+ * Callers pattern-match once with Kotlin's exhaustive `when` — no null-checks needed.
  */
-data class TravelOutcome(
-    val result: TravelResult,
-    val playerDelta: PlayerDelta? = null,
-    val markDestinationVisited: Boolean = false,
-    val decrementActiveRumors: Boolean = false,
-    val rumorRequests: List<RumorRequest> = emptyList(),
-    val encounterOutcome: EncounterOutcome? = null,
-    val eventLogs: List<EventLogDraft> = emptyList(),
-)
+sealed interface TravelOutcome {
+    data class Arrived(
+        val playerDelta: PlayerDelta,
+        val markDestinationVisited: Boolean = false,
+        val decrementActiveRumors: Boolean = false,
+        val rumorRequests: List<RumorRequest> = emptyList(),
+        val encounterOutcome: EncounterOutcome? = null,
+        val eventLogs: List<EventLogDraft> = emptyList(),
+    ) : TravelOutcome
+
+    data class Failed(val result: TravelResult) : TravelOutcome
+}

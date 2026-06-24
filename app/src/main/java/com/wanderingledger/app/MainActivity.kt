@@ -19,20 +19,13 @@ import androidx.compose.ui.platform.ComposeView
 import com.wanderingledger.core.audio.AudioEvent
 import com.wanderingledger.core.audio.AudioManager
 import com.wanderingledger.core.audio.AudioPreferences
-import com.wanderingledger.core.data.BuyResult
-import com.wanderingledger.core.data.CompanionCommentaryContext
-import com.wanderingledger.core.data.CompanionCommentaryEngine
-import com.wanderingledger.core.data.CompanionCommentaryResult
 import com.wanderingledger.core.data.CompanionRepository
 import com.wanderingledger.core.data.GameRepository
 import com.wanderingledger.core.data.InventoryRepository
 import com.wanderingledger.core.data.MarketRepository
-import com.wanderingledger.core.data.RecruitmentResult
 import com.wanderingledger.core.data.RoomStepBankRepository
 import com.wanderingledger.core.data.RumorRepository
-import com.wanderingledger.core.data.SellResult
 import com.wanderingledger.core.data.TravelResult
-import com.wanderingledger.core.data.requestCommentary
 import com.wanderingledger.core.database.RoadSegmentEntity
 import com.wanderingledger.core.database.TownEntity
 import com.wanderingledger.core.database.WanderingLedgerDatabase
@@ -46,7 +39,6 @@ import com.wanderingledger.core.steptracker.StepSource
 import com.wanderingledger.core.steptracker.StepTrackerService
 import com.wanderingledger.core.ui.BottomNavBar
 import com.wanderingledger.core.ui.NavigationShell
-import com.wanderingledger.feature.companions.CompanionCommentaryUi
 import com.wanderingledger.feature.companions.CompanionInteractCallback
 import com.wanderingledger.feature.companions.CompanionNavigationCallback
 import com.wanderingledger.feature.companions.CompanionRecruitCallback
@@ -109,7 +101,6 @@ class MainActivity : ComponentActivity() {
     private lateinit var gameRepository: GameRepository
     private lateinit var rumorRepository: RumorRepository
     private lateinit var companionRepository: CompanionRepository
-    private lateinit var companionCommentaryEngine: CompanionCommentaryEngine
     private lateinit var marketRepository: MarketRepository
     private lateinit var inventoryRepository: InventoryRepository
     private lateinit var stepTrackerService: StepTrackerService
@@ -171,9 +162,10 @@ class MainActivity : ComponentActivity() {
 
     private var currentScreenType: NavigationShell.ScreenType = NavigationShell.ScreenType.WORLD_MAP
     private var currentTownId: Long = 1L
-    private var latestCompanionCommentary: CompanionCommentaryUi? = null
 
     private lateinit var journeyViewModel: JourneyViewModel
+    private lateinit var marketViewModel: MarketViewModel
+    private lateinit var companionsViewModel: CompanionsViewModel
 
     private val worldMapScreenState =
         MutableStateFlow(
@@ -196,11 +188,11 @@ class MainActivity : ComponentActivity() {
             ),
         )
 
-    private var marketObserveJob: Job? = null
     private var inventoryObserveJob: Job? = null
     private var ledgerObserveJob: Job? = null
     private var chronicleObserveJob: Job? = null
     private var companionsObserveJob: Job? = null
+    private var marketObserveJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -208,7 +200,6 @@ class MainActivity : ComponentActivity() {
         database = container.database
         rumorRepository = container.rumorRepository
         companionRepository = container.companionRepository
-        companionCommentaryEngine = container.companionCommentaryEngine
         gameRepository = container.gameRepository
         marketRepository = container.marketRepository
         inventoryRepository = container.inventoryRepository
@@ -225,7 +216,7 @@ class MainActivity : ComponentActivity() {
                     JourneyViewModel(
                         gameRepository = gameRepository,
                         companionRepository = companionRepository,
-                        companionCommentaryEngine = companionCommentaryEngine,
+                        narrator = container.companionNarrator,
                         stepTrackerService = stepTrackerService,
                         accessibilityPreferences = accessibilityPreferences,
                     )
@@ -235,6 +226,55 @@ class MainActivity : ComponentActivity() {
 
         scope.launch {
             journeyViewModel.effects.collect { effect -> handleJourneyEffect(effect) }
+        }
+
+        val marketViewModelFactory =
+            viewModelFactory {
+                initializer {
+                    MarketViewModel(marketRepository = container.marketRepository)
+                }
+            }
+        marketViewModel = ViewModelProvider(this, marketViewModelFactory)[MarketViewModel::class.java]
+
+        val companionsViewModelFactory =
+            viewModelFactory {
+                initializer {
+                    CompanionsViewModel(
+                        companionRepository = container.companionRepository,
+                        gameRepository = container.gameRepository,
+                        narrator = container.companionNarrator,
+                        accessibilityPreferences = container.accessibilityPreferences,
+                    )
+                }
+            }
+        companionsViewModel = ViewModelProvider(this, companionsViewModelFactory)[CompanionsViewModel::class.java]
+
+        scope.launch {
+            marketViewModel.effects.collect { effect ->
+                when (effect) {
+                    MarketEffect.BuySuccess -> {
+                        audioManager.play(AudioEvent.MarketBuy)
+                        hapticManager.perform(HapticEffect.CONFIRM)
+                    }
+                    MarketEffect.SellSuccess -> {
+                        audioManager.play(AudioEvent.MarketSell)
+                        hapticManager.perform(HapticEffect.CONFIRM)
+                    }
+                    MarketEffect.TransactionError -> hapticManager.perform(HapticEffect.ERROR)
+                }
+            }
+        }
+
+        scope.launch {
+            companionsViewModel.effects.collect { effect ->
+                when (effect) {
+                    CompanionsEffect.InteractSuccess -> {
+                        audioManager.play(AudioEvent.BondIncrease)
+                        hapticManager.perform(HapticEffect.REWARD)
+                    }
+                    CompanionsEffect.CooldownActive -> { /* no audio cue */ }
+                }
+            }
         }
 
         // Initialize Sensors
@@ -490,9 +530,6 @@ class MainActivity : ComponentActivity() {
                 scope.launch { showTownArrival(effect.townId, effect.remainingSteps) }
             }
             is JourneyEffect.StartAmbient -> audioManager.startAmbient(effect.biome)
-            is JourneyEffect.CommentaryGenerated -> {
-                latestCompanionCommentary = effect.commentary
-            }
         }
     }
 
@@ -583,148 +620,65 @@ class MainActivity : ComponentActivity() {
     ) {
         cancelAllObservers()
         currentScreenType = NavigationShell.ScreenType.COMPANIONS
-
-        val active =
-            withContext(Dispatchers.IO) {
-                companionRepository.observeActiveCompanions().first()
-            }
-        val recruitable =
-            withContext(Dispatchers.IO) {
-                companionRepository.observeRecruitableCompanionsAtTown(townId).first()
-            }
-        val reduceMotion = accessibilityPreferences.reduceMotion.first()
+        companionsViewModel.activate(townId)
 
         navigationShell.replaceContent(companionsView)
         navigationShell.navigateTo(NavigationShell.ScreenType.COMPANIONS, "Party", null)
 
+        // Render initial state from current ViewModel state (may be null on first activate)
+        val initialActive = withContext(Dispatchers.IO) {
+            companionRepository.observeActiveCompanions().first()
+        }
+        val initialRecruitable = withContext(Dispatchers.IO) {
+            companionRepository.observeRecruitableCompanionsAtTown(townId).first()
+        }
+        val reduceMotion = accessibilityPreferences.reduceMotion.first()
         companionsView.render(
             buildCompanionsScreenState(
-                active = active,
-                recruitable = recruitable,
+                active = initialActive,
+                recruitable = initialRecruitable,
                 message = message,
-                recentCommentary = latestCompanionCommentary,
+                recentCommentary = companionsViewModel.latestCommentary.value,
                 reducedMotion = reduceMotion,
             ),
             buildCompanionsActions(townId),
         )
 
-        companionsObserveJob =
-            scope.launch {
-                kotlinx.coroutines.flow
-                    .combine(
-                        companionRepository.observeActiveCompanions(),
-                        companionRepository.observeRecruitableCompanionsAtTown(townId),
-                        accessibilityPreferences.reduceMotion,
-                    ) { a, r, rm -> Triple(a, r, rm) }
-                    .collect { (a, r, rm) ->
-                        companionsView.render(
-                            buildCompanionsScreenState(
-                                a,
-                                r,
-                                recentCommentary = latestCompanionCommentary,
-                                reducedMotion = rm,
-                            ),
-                            buildCompanionsActions(townId),
-                        )
-                    }
+        companionsObserveJob = scope.launch {
+            companionsViewModel.state.collect { state ->
+                state ?: return@collect
+                companionsView.render(
+                    buildCompanionsScreenState(
+                        active = state.active,
+                        recruitable = state.recruitable,
+                        message = state.message,
+                        recentCommentary = state.latestCommentary,
+                        reducedMotion = state.reduceMotion,
+                    ),
+                    buildCompanionsActions(townId),
+                )
             }
+        }
     }
 
     private fun buildCompanionsActions(townId: Long): CompanionsActions =
         CompanionsActions(
             onNavigateBack =
                 CompanionNavigationCallback {
-                    scope.launch { showTownView(townId) }
+                    scope.launch {
+                        companionsViewModel.deactivate()
+                        showTownView(townId)
+                    }
                 },
             onRecruit =
                 CompanionRecruitCallback { companionId ->
-                    scope.launch {
-                        val result =
-                            withContext(Dispatchers.IO) {
-                                companionRepository.recruitCompanion(companionId)
-                            }
-                        val message =
-                            when (result) {
-                                RecruitmentResult.Success -> "A new voice joins the road."
-                                RecruitmentResult.AlreadyActive -> "They are already traveling with you."
-                                RecruitmentResult.PartyFull -> "The party is full."
-                                RecruitmentResult.NotFound -> "That companion is not available here."
-                                RecruitmentResult.NotEnoughTrades -> "Complete a few more trades first."
-                            }
-                        renderCompanionsView(townId, message)
-                    }
+                    companionsViewModel.recruit(companionId)
                 },
             onInteract =
                 CompanionInteractCallback { companionId ->
-                    scope.launch {
-                        val player =
-                            withContext(Dispatchers.IO) {
-                                gameRepository.observePlayerState().first()
-                            }
-                        val town =
-                            withContext(Dispatchers.IO) {
-                                gameRepository.observeTown(townId).first()
-                            }
-                        val result =
-                            withContext(Dispatchers.IO) {
-                                companionRepository.requestCommentary(
-                                    companionId = companionId,
-                                    context =
-                                        if (player.bankedSteps < 80L) {
-                                            CompanionCommentaryContext.LowSteps
-                                        } else {
-                                            CompanionCommentaryContext.Town
-                                        },
-                                    engine = companionCommentaryEngine,
-                                    biome = town?.biome,
-                                    bankedSteps = player.bankedSteps,
-                                )
-                            }
-                        val message =
-                            when (result) {
-                                is CompanionCommentaryResult.Spoken -> {
-                                    latestCompanionCommentary = result.commentary.toUi()
-                                    withContext(Dispatchers.IO) {
-                                        companionRepository.updateBond(companionId, 1)
-                                    }
-                                    audioManager.play(AudioEvent.BondIncrease)
-                                    hapticManager.perform(HapticEffect.REWARD)
-                                    null
-                                }
-                                is CompanionCommentaryResult.OnCooldown ->
-                                    "${result.companionName} is still considering the last thing they said."
-                                CompanionCommentaryResult.NotActive ->
-                                    "Only active companions can answer from the road."
-                            }
-                        renderCompanionsView(townId, message)
-                    }
+                    companionsViewModel.interact(companionId, townId)
                 },
         )
-
-    private suspend fun renderCompanionsView(
-        townId: Long,
-        message: String? = null,
-    ) {
-        val active =
-            withContext(Dispatchers.IO) {
-                companionRepository.observeActiveCompanions().first()
-            }
-        val recruitable =
-            withContext(Dispatchers.IO) {
-                companionRepository.observeRecruitableCompanionsAtTown(townId).first()
-            }
-        val reduceMotion = accessibilityPreferences.reduceMotion.first()
-        companionsView.render(
-            buildCompanionsScreenState(
-                active = active,
-                recruitable = recruitable,
-                message = message,
-                recentCommentary = latestCompanionCommentary,
-                reducedMotion = reduceMotion,
-            ),
-            buildCompanionsActions(townId),
-        )
-    }
 
     private suspend fun showLedgerView(townId: Long) {
         cancelAllObservers()
@@ -817,29 +771,30 @@ class MainActivity : ComponentActivity() {
     ) {
         cancelAllObservers()
         currentScreenType = NavigationShell.ScreenType.MARKET
-
-        val initialMarketState =
-            withContext(Dispatchers.IO) {
-                marketRepository.observeMarket(townId).first()
-            }
+        marketViewModel.activate(townId)
 
         navigationShell.replaceContent(marketView)
         navigationShell.navigateTo(NavigationShell.ScreenType.MARKET, "Market", null)
 
+        // Render initial state
+        val initialMarket = withContext(Dispatchers.IO) {
+            marketRepository.observeMarket(townId).first()
+        }
         marketView.render(
-            buildMarketScreenState(initialMarketState, message),
+            buildMarketScreenState(initialMarket, message),
             buildMarketActions(townId),
         )
 
-        marketObserveJob =
-            scope.launch {
-                marketRepository.observeMarket(townId).collect { marketState ->
-                    marketView.render(
-                        buildMarketScreenState(marketState),
-                        buildMarketActions(townId),
-                    )
+        marketObserveJob = scope.launch {
+            kotlinx.coroutines.flow.combine(
+                marketViewModel.state,
+                marketViewModel.message,
+            ) { state, msg -> Pair(state, msg) }
+                .collect { (state, msg) ->
+                    state ?: return@collect
+                    marketView.render(buildMarketScreenState(state, msg), buildMarketActions(townId))
                 }
-            }
+        }
     }
 
     private suspend fun showInventoryView(townId: Long) {
@@ -889,60 +844,16 @@ class MainActivity : ComponentActivity() {
         MarketActions(
             onBuy =
                 BuyActionCallback { goodId ->
-                    scope.launch {
-                        val result =
-                            withContext(Dispatchers.IO) {
-                                marketRepository.buyGood(townId, goodId, quantity = 1)
-                            }
-                        if (result is BuyResult.Success) {
-                            audioManager.play(AudioEvent.MarketBuy)
-                            hapticManager.perform(HapticEffect.CONFIRM)
-                        } else if (result is BuyResult.NotEnoughGold || result == BuyResult.InventoryFull) {
-                            hapticManager.perform(HapticEffect.ERROR)
-                        }
-                        val msg = result.toBuyMessage()
-                        if (msg != null) {
-                            val marketState =
-                                withContext(Dispatchers.IO) {
-                                    marketRepository.observeMarket(townId).first()
-                                }
-                            marketView.render(
-                                buildMarketScreenState(marketState, msg),
-                                buildMarketActions(townId),
-                            )
-                        }
-                    }
+                    marketViewModel.buy(townId, goodId)
                 },
             onSell =
                 SellActionCallback { goodId ->
-                    scope.launch {
-                        val result =
-                            withContext(Dispatchers.IO) {
-                                marketRepository.sellGood(townId, goodId, quantity = 1)
-                            }
-                        if (result is SellResult.Success) {
-                            audioManager.play(AudioEvent.MarketSell)
-                            hapticManager.perform(HapticEffect.CONFIRM)
-                        } else if (result is SellResult.NotEnoughInventory) {
-                            hapticManager.perform(HapticEffect.ERROR)
-                        }
-                        val msg = result.toSellMessage()
-                        if (msg != null) {
-                            val marketState =
-                                withContext(Dispatchers.IO) {
-                                    marketRepository.observeMarket(townId).first()
-                                }
-                            marketView.render(
-                                buildMarketScreenState(marketState, msg),
-                                buildMarketActions(townId),
-                            )
-                        }
-                    }
+                    marketViewModel.sell(townId, goodId)
                 },
             onNavigateBackToTown =
                 MarketNavigationCallback {
                     scope.launch {
-                        marketObserveJob?.cancel()
+                        marketViewModel.deactivate()
                         showTownView(townId)
                     }
                 },
@@ -1108,11 +1019,13 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun cancelAllObservers() {
-        marketObserveJob?.cancel()
         inventoryObserveJob?.cancel()
         ledgerObserveJob?.cancel()
         chronicleObserveJob?.cancel()
         companionsObserveJob?.cancel()
+        companionsViewModel.deactivate()
+        marketObserveJob?.cancel()
+        marketViewModel.deactivate()
     }
 
     private fun TravelResult.toMessage(): String =
@@ -1121,23 +1034,6 @@ class MainActivity : ComponentActivity() {
             is TravelResult.NotEnoughSteps -> "Need ${required - available} more steps."
             TravelResult.NotAtRoadOrigin -> "That road starts elsewhere."
             TravelResult.RoadNotFound -> "Road not found."
-        }
-
-    private fun BuyResult.toBuyMessage(): String? =
-        when (this) {
-            is BuyResult.Success -> "Bought ${quantity}x for ${goldSpent}g. Gold remaining: ${remainingGold}g."
-            is BuyResult.NotEnoughGold -> "Not enough gold. Need ${required}g, have ${available}g."
-            BuyResult.InventoryFull -> "Inventory is full."
-            BuyResult.GoodNotAvailable -> "That good is not available here."
-            BuyResult.InvalidQuantity -> null
-        }
-
-    private fun SellResult.toSellMessage(): String? =
-        when (this) {
-            is SellResult.Success -> "Sold ${quantity}x for ${goldEarned}g. Gold: ${remainingGold}g."
-            is SellResult.NotEnoughInventory -> "You only have $available of that good."
-            SellResult.GoodNotAvailable -> "That good is not available here."
-            SellResult.InvalidQuantity -> null
         }
 
     private fun TownEntity.toMapModel(): Town =

@@ -27,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import com.wanderingledger.core.designsystem.component.WLMessageOverlay
 import com.wanderingledger.core.model.Biome
 import com.wanderingledger.core.model.Companion
-import org.json.JSONArray
 
 data class JourneyScreenState(
     val currentTownName: String,
@@ -291,11 +290,3 @@ fun buildJourneyScreenState(
         message = message,
         campState = campState,
     )
-
-fun parseEventPool(eventPoolJson: String): List<String> =
-    try {
-        val jsonArray = JSONArray(eventPoolJson)
-        (0 until jsonArray.length()).map { jsonArray.getString(it) }
-    } catch (e: Exception) {
-        emptyList()
-    }

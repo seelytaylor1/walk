@@ -42,6 +42,9 @@ class OrderRepository(private val database: WanderingLedgerDatabase) {
 
             if (tryRoute && abundant.isNotEmpty()) {
                 val priceEntry = abundant.random(rng)
+                // Exclude contraband goods from Route orders
+                val good = database.goodDao().getGoodSnapshot(priceEntry.goodId)
+                if (good?.isContraband == true) continue
                 val destinations = database.townDao().getTownsDemanding(priceEntry.goodId, excludeTownId = townId)
                 if (destinations.isEmpty()) continue
                 val destination = destinations.random(rng)

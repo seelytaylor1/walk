@@ -64,28 +64,32 @@ class TravelTypesTest {
 
     @Test
     fun travelOutcomeCoversEveryMutationFieldForASuccessfulTravel() {
-        val outcome = TravelOutcome.Arrived(
-            playerDelta = PlayerDelta(newTownId = 2, stepsSpent = 120, arrivedAt = 1_000L),
-            markDestinationVisited = true,
-            decrementActiveRumors = true,
-            rumorRequests = listOf(
-                RumorRequest.RoadEvent(segmentId = 1, seed = 42),
-                RumorRequest.TownVisit(townId = 2, seed = 43),
-            ),
-            encounterOutcome = EncounterOutcome(
-                encounterId = "merchant-cart",
-                resultText = "They thanked you with coin.",
-                goldChange = 15,
-            ),
-            eventLogs = listOf(
-                EventLogDraft(
-                    type = "arrival",
-                    meta = "{\"segmentId\":1,\"toTownId\":2}",
-                    result = "Arrived after spending 120 steps.",
-                    createdAt = 1_000L,
-                ),
-            ),
-        )
+        val outcome =
+            TravelOutcome.Arrived(
+                playerDelta = PlayerDelta(newTownId = 2, stepsSpent = 120, arrivedAt = 1_000L),
+                markDestinationVisited = true,
+                decrementActiveRumors = true,
+                rumorRequests =
+                    listOf(
+                        RumorRequest.RoadEvent(segmentId = 1, seed = 42),
+                        RumorRequest.TownVisit(townId = 2, seed = 43),
+                    ),
+                encounterOutcome =
+                    EncounterOutcome(
+                        encounterId = "merchant-cart",
+                        resultText = "They thanked you with coin.",
+                        goldChange = 15,
+                    ),
+                eventLogs =
+                    listOf(
+                        EventLogDraft(
+                            type = "arrival",
+                            meta = "{\"segmentId\":1,\"toTownId\":2}",
+                            result = "Arrived after spending 120 steps.",
+                            createdAt = 1_000L,
+                        ),
+                    ),
+            )
 
         assertTrue(outcome is TravelOutcome.Arrived)
         assertEquals(120L, outcome.playerDelta.stepsSpent)
@@ -98,9 +102,10 @@ class TravelTypesTest {
 
     @Test
     fun travelOutcomeForFailureCarriesNoMutations() {
-        val outcome = TravelOutcome.Failed(
-            result = TravelResult.NotEnoughSteps(required = 120, available = 50),
-        )
+        val outcome =
+            TravelOutcome.Failed(
+                result = TravelResult.NotEnoughSteps(required = 120, available = 50),
+            )
 
         assertTrue(outcome is TravelOutcome.Failed)
         assertTrue(outcome.result is TravelResult.NotEnoughSteps)

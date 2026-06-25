@@ -96,10 +96,11 @@ class TravelPolicyTest {
 
     @Test
     fun roadWithEventPoolResolvesAnEncounter() {
-        val outcome = TravelPolicy.compute(
-            snapshot(bankedSteps = 200, eventPool = "[\"merchant-cart\"]"),
-            seed = 1L,
-        )
+        val outcome =
+            TravelPolicy.compute(
+                snapshot(bankedSteps = 200, eventPool = "[\"merchant-cart\"]"),
+                seed = 1L,
+            )
 
         assertTrue(outcome is TravelOutcome.Arrived)
         val arrived = outcome as TravelOutcome.Arrived
@@ -124,32 +125,37 @@ class TravelPolicyTest {
     @Test
     fun encounterResolutionIsDeterministicForAGivenSeed() {
         val party = listOf(Companion(1, "Rogue", CompanionRole.Rogue, 2, 0, "active", 1, true))
-        val first = TravelPolicy.compute(
-            snapshot(bankedSteps = 200, eventPool = "[\"merchant-cart\"]", companions = party),
-            seed = 99L,
-        )
-        val second = TravelPolicy.compute(
-            snapshot(bankedSteps = 200, eventPool = "[\"merchant-cart\"]", companions = party),
-            seed = 99L,
-        )
+        val first =
+            TravelPolicy.compute(
+                snapshot(bankedSteps = 200, eventPool = "[\"merchant-cart\"]", companions = party),
+                seed = 99L,
+            )
+        val second =
+            TravelPolicy.compute(
+                snapshot(bankedSteps = 200, eventPool = "[\"merchant-cart\"]", companions = party),
+                seed = 99L,
+            )
 
         assertTrue(first is TravelOutcome.Arrived && second is TravelOutcome.Arrived)
-        assertEquals((first as TravelOutcome.Arrived).encounterOutcome,
-                     (second as TravelOutcome.Arrived).encounterOutcome)
+        assertEquals(
+            (first as TravelOutcome.Arrived).encounterOutcome,
+            (second as TravelOutcome.Arrived).encounterOutcome,
+        )
     }
 
     @Test
     fun scoutAtBondZeroAppliesTenPercentDiscount() {
-        val scout = Companion(
-            companionId = 1,
-            name = "Mira",
-            role = CompanionRole.Scout,
-            combatPower = 3,
-            bondLevel = 0,
-            questState = "active",
-            locationTownId = 1,
-            isActive = true,
-        )
+        val scout =
+            Companion(
+                companionId = 1,
+                name = "Mira",
+                role = CompanionRole.Scout,
+                combatPower = 3,
+                bondLevel = 0,
+                questState = "active",
+                locationTownId = 1,
+                isActive = true,
+            )
         val outcome = TravelPolicy.compute(snapshot(bankedSteps = 200, companions = listOf(scout)), seed = 1L)
 
         assertTrue(outcome is TravelOutcome.Arrived)
@@ -160,16 +166,17 @@ class TravelPolicyTest {
 
     @Test
     fun scoutAtMaxBondAppliesTwentyPercentDiscount() {
-        val scout = Companion(
-            companionId = 1,
-            name = "Mira",
-            role = CompanionRole.Scout,
-            combatPower = 3,
-            bondLevel = 5,
-            questState = "active",
-            locationTownId = 1,
-            isActive = true,
-        )
+        val scout =
+            Companion(
+                companionId = 1,
+                name = "Mira",
+                role = CompanionRole.Scout,
+                combatPower = 3,
+                bondLevel = 5,
+                questState = "active",
+                locationTownId = 1,
+                isActive = true,
+            )
         val outcome = TravelPolicy.compute(snapshot(bankedSteps = 200, companions = listOf(scout)), seed = 1L)
 
         assertTrue(outcome is TravelOutcome.Arrived)

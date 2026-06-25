@@ -225,11 +225,12 @@ class EncounterEngineTest {
                 locationTownId = 2,
                 isActive = true,
             )
-        val outcome = EncounterEngine.resolve(
-            seed = 1L,
-            encounterId = "bandit-ambush",
-            party = listOf(powerfulFighter),
-        )
+        val outcome =
+            EncounterEngine.resolve(
+                seed = 1L,
+                encounterId = "bandit-ambush",
+                party = listOf(powerfulFighter),
+            )
         assertTrue("High-power Fighter should always repel bandits", outcome.success)
         assertEquals("bandit-ambush", outcome.encounterId)
     }

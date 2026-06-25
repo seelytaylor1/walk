@@ -28,55 +28,65 @@ object MarketAnomalyDetector {
     ): List<TelemetryEvent.MarketAnomaly> {
         val events = mutableListOf<TelemetryEvent.MarketAnomaly>()
 
-        val priceChangePct = if (before.sellPrice > 0) {
-            ((after.sellPrice - before.sellPrice).toDouble() / before.sellPrice * 100).toLong()
-        } else 0L
+        val priceChangePct =
+            if (before.sellPrice > 0) {
+                ((after.sellPrice - before.sellPrice).toDouble() / before.sellPrice * 100).toLong()
+            } else {
+                0L
+            }
 
         if (priceChangePct > 50) {
-            events += TelemetryEvent.MarketAnomaly(
-                timestamp = now,
-                anomalyType = MarketAnomalyType.PriceSpike,
-                townId = townId,
-                goodId = goodId.toString(),
-                value = after.sellPrice,
-                threshold = (before.sellPrice * 1.5).toLong(),
-            )
+            events +=
+                TelemetryEvent.MarketAnomaly(
+                    timestamp = now,
+                    anomalyType = MarketAnomalyType.PriceSpike,
+                    townId = townId,
+                    goodId = goodId.toString(),
+                    value = after.sellPrice,
+                    threshold = (before.sellPrice * 1.5).toLong(),
+                )
         }
 
         if (priceChangePct < -30) {
-            events += TelemetryEvent.MarketAnomaly(
-                timestamp = now,
-                anomalyType = MarketAnomalyType.PriceCrash,
-                townId = townId,
-                goodId = goodId.toString(),
-                value = after.sellPrice,
-                threshold = (before.sellPrice * 0.7).toLong(),
-            )
+            events +=
+                TelemetryEvent.MarketAnomaly(
+                    timestamp = now,
+                    anomalyType = MarketAnomalyType.PriceCrash,
+                    townId = townId,
+                    goodId = goodId.toString(),
+                    value = after.sellPrice,
+                    threshold = (before.sellPrice * 0.7).toLong(),
+                )
         }
 
         if (before.supplyLevel != SupplyLevel.Scarce && after.supplyLevel == SupplyLevel.Scarce) {
-            events += TelemetryEvent.MarketAnomaly(
-                timestamp = now,
-                anomalyType = MarketAnomalyType.SupplyDepleted,
-                townId = townId,
-                goodId = goodId.toString(),
-                value = after.supplyLevel.ordinal.toLong(),
-                threshold = SupplyLevel.Scarce.ordinal.toLong(),
-            )
+            events +=
+                TelemetryEvent.MarketAnomaly(
+                    timestamp = now,
+                    anomalyType = MarketAnomalyType.SupplyDepleted,
+                    townId = townId,
+                    goodId = goodId.toString(),
+                    value = after.supplyLevel.ordinal.toLong(),
+                    threshold = SupplyLevel.Scarce.ordinal.toLong(),
+                )
         }
 
-        val deviationPct = if (baseValue > 0) {
-            ((after.sellPrice - baseValue).toDouble() / baseValue * 100).toLong()
-        } else 0L
+        val deviationPct =
+            if (baseValue > 0) {
+                ((after.sellPrice - baseValue).toDouble() / baseValue * 100).toLong()
+            } else {
+                0L
+            }
         if (deviationPct > 100) {
-            events += TelemetryEvent.MarketAnomaly(
-                timestamp = now,
-                anomalyType = MarketAnomalyType.UnusualVolume,
-                townId = townId,
-                goodId = goodId.toString(),
-                value = after.sellPrice,
-                threshold = baseValue * 2,
-            )
+            events +=
+                TelemetryEvent.MarketAnomaly(
+                    timestamp = now,
+                    anomalyType = MarketAnomalyType.UnusualVolume,
+                    townId = townId,
+                    goodId = goodId.toString(),
+                    value = after.sellPrice,
+                    threshold = baseValue * 2,
+                )
         }
 
         return events

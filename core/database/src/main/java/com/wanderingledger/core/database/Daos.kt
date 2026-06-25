@@ -143,9 +143,6 @@ interface CompanionDao {
     @Query("SELECT * FROM companions WHERE isActive = 1 ORDER BY companionId")
     fun listActiveCompanions(): Flow<List<CompanionEntity>>
 
-    @Query("SELECT * FROM companions WHERE isActive = 1 ORDER BY companionId")
-    suspend fun listActiveCompanionsSnapshot(): List<CompanionEntity>
-
     @Query("SELECT * FROM companions WHERE isActive = 0 ORDER BY companionId")
     fun listRecruitableCompanions(): Flow<List<CompanionEntity>>
 

@@ -127,7 +127,7 @@ interface InventoryDao {
         goodId: Long,
     ): InventoryItemEntity?
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Update
     suspend fun updateItem(item: InventoryItemEntity)
 }
 

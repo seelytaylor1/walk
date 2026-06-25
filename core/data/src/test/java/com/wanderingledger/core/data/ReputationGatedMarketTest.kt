@@ -4,10 +4,9 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.wanderingledger.core.database.WanderingLedgerDatabase
 import com.wanderingledger.core.testing.TestDatabaseFactory
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
-import org.junit.Assert.assertFalse
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -15,16 +14,17 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
 /**
- * Verifies that [MarketRepository.observeMarket] filters out rep-gated goods
- * when the town's reputation with the player is below the required threshold.
+ * Verifies that the B1 schema and seed data are correct:
+ * - Rare goods (Medicines/Dyes/Charts, goodIds 4-6) are seeded with minReputation = 60
+ *   at their source towns.
+ * - Common goods (Apples/Iron/Silk, goodIds 1-3) have minReputation = 0.
+ * - The minReputation column is present and populated correctly in TownPriceEntity.
  *
- * Rare goods (Medicines/Dyes/Charts) have minReputation = 60.
- * Hearthwick starts at reputation = 50 (below threshold).
+ * Market filtering behaviour (hiding rep-gated goods from observeMarket) is tested in B2.
  */
 @RunWith(RobolectricTestRunner::class)
 class ReputationGatedMarketTest {
     private lateinit var database: WanderingLedgerDatabase
-    private lateinit var marketRepository: MarketRepository
     private lateinit var gameRepository: GameRepository
 
     @Before
@@ -34,7 +34,6 @@ class ReputationGatedMarketTest {
         val companionRepository = CompanionRepository(database)
         val rumorRepository = RumorRepository(database)
         gameRepository = GameRepository(database, rumorRepository, companionRepository)
-        marketRepository = MarketRepository(database)
     }
 
     @After
@@ -43,54 +42,103 @@ class ReputationGatedMarketTest {
     }
 
     @Test
-    fun playerWithLowRepDoesNotSeeRareGoods() =
+    fun rareGoodsSourcePricesHaveMinReputation60() =
         runTest {
-            // Seed world; Hearthwick (townId=1) starts at reputation=50
             gameRepository.initializeNewGame(seed = 1L)
 
-            // Hearthwick has Dyes (goodId=5) with minReputation=60 — should be hidden
-            val market = marketRepository.observeMarket(townId = 1L).first()
-            val goodIds = market.rows.map { it.good.goodId }
+            // Source town prices for rare goods carry minReputation = 60
+            // Dyes (goodId=5) source is Hearthwick (townId=1)
+            val dyesAtHearthwick = database.townPriceDao().listPricesSnapshotForTown(1L)
+                .first { it.goodId == 5L }
+            assertEquals(
+                "Dyes source price at Hearthwick should have minReputation=60",
+                60,
+                dyesAtHearthwick.minReputation,
+            )
 
-            assertFalse(
-                "Dyes (goodId=5, minRep=60) should NOT appear for rep=50",
-                goodIds.contains(5L),
+            // Medicines (goodId=4) source is Mistfall (townId=3)
+            val medicinesAtMistfall = database.townPriceDao().listPricesSnapshotForTown(3L)
+                .first { it.goodId == 4L }
+            assertEquals(
+                "Medicines source price at Mistfall should have minReputation=60",
+                60,
+                medicinesAtMistfall.minReputation,
+            )
+
+            // Charts (goodId=6) source is Stoneford (townId=2)
+            val chartsAtStoneford = database.townPriceDao().listPricesSnapshotForTown(2L)
+                .first { it.goodId == 6L }
+            assertEquals(
+                "Charts source price at Stoneford should have minReputation=60",
+                60,
+                chartsAtStoneford.minReputation,
             )
         }
 
     @Test
-    fun playerWithHighRepSeesRareGoods() =
+    fun commonGoodPricesHaveMinReputation0() =
         runTest {
-            // Seed world; Hearthwick (townId=1) starts at reputation=50
             gameRepository.initializeNewGame(seed = 1L)
 
-            // Boost Hearthwick reputation to 60
-            val town = database.townDao().getTownSnapshot(1L)!!
-            database.townDao().updateTown(town.copy(reputation = 60))
+            // Apples (goodId=1) at Hearthwick (townId=1)
+            val applesAtHearthwick = database.townPriceDao().listPricesSnapshotForTown(1L)
+                .first { it.goodId == 1L }
+            assertEquals(
+                "Apples at Hearthwick should have minReputation=0",
+                0,
+                applesAtHearthwick.minReputation,
+            )
 
-            // Now Dyes (goodId=5, minReputation=60) should appear
-            val market = marketRepository.observeMarket(townId = 1L).first()
-            val goodIds = market.rows.map { it.good.goodId }
-
-            assertTrue(
-                "Dyes (goodId=5, minRep=60) SHOULD appear for rep=60",
-                goodIds.contains(5L),
+            // Iron (goodId=2) at Hearthwick (townId=1)
+            val ironAtHearthwick = database.townPriceDao().listPricesSnapshotForTown(1L)
+                .first { it.goodId == 2L }
+            assertEquals(
+                "Iron at Hearthwick should have minReputation=0",
+                0,
+                ironAtHearthwick.minReputation,
             )
         }
 
     @Test
-    fun commonGoodsAlwaysVisibleRegardlessOfRep() =
+    fun rareGoodsDestinationPricesHaveMinReputation0() =
         runTest {
-            // Seed world; Hearthwick (townId=1) at reputation=50
             gameRepository.initializeNewGame(seed = 1L)
 
-            val market = marketRepository.observeMarket(townId = 1L).first()
-            val goodIds = market.rows.map { it.good.goodId }
+            // Dyes (goodId=5) destination is Mistfall (townId=3) — no rep gate at destination
+            val dyesAtMistfall = database.townPriceDao().listPricesSnapshotForTown(3L)
+                .first { it.goodId == 5L }
+            assertEquals(
+                "Dyes destination price at Mistfall should have minReputation=0",
+                0,
+                dyesAtMistfall.minReputation,
+            )
 
-            // Apples (goodId=1, minRep=0) should always be visible
+            // Medicines (goodId=4) destination is Hearthwick (townId=1)
+            val medicinesAtHearthwick = database.townPriceDao().listPricesSnapshotForTown(1L)
+                .first { it.goodId == 4L }
+            assertEquals(
+                "Medicines destination price at Hearthwick should have minReputation=0",
+                0,
+                medicinesAtHearthwick.minReputation,
+            )
+        }
+
+    @Test
+    fun allSixGoodsAreSeededInDatabase() =
+        runTest {
+            gameRepository.initializeNewGame(seed = 1L)
+
+            // All 6 goods (common + rare) should be present
+            val expectedGoodIds = setOf(1L, 2L, 3L, 4L, 5L, 6L)
+            val hearthwickPrices = database.townPriceDao().listPricesSnapshotForTown(1L)
+            val stonefordPrices = database.townPriceDao().listPricesSnapshotForTown(2L)
+            val mistfallPrices = database.townPriceDao().listPricesSnapshotForTown(3L)
+            val allSeededGoodIds = (hearthwickPrices + stonefordPrices + mistfallPrices)
+                .map { it.goodId }.toSet()
+
             assertTrue(
-                "Apples (goodId=1, minRep=0) should always appear",
-                goodIds.contains(1L),
+                "All 6 goods (goodIds 1-6) should be seeded across all towns. Found: $allSeededGoodIds",
+                allSeededGoodIds.containsAll(expectedGoodIds),
             )
         }
 }

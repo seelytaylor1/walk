@@ -132,6 +132,8 @@ class MarketRepository(
             val rows =
                 prices.mapNotNull { priceEntity ->
                     val good = goodsById[priceEntity.goodId] ?: return@mapNotNull null
+                    // Hide rep-gated goods if the town's reputation with the player is too low
+                    if (priceEntity.minReputation > town.reputation) return@mapNotNull null
                     val supplyLevel = SupplyLevel.valueOf(priceEntity.supplyLevel)
                     val playerQty = inventoryByGoodId[priceEntity.goodId] ?: 0
                     val inventoryUsed = inventory.sumOf { it.quantity }
@@ -414,7 +416,6 @@ class MarketRepository(
             database.priceHistoryDao().trimOldest(townId, goodId, excess)
         }
     }
-
 }
 
 // ── Entity → model mappers ───────────────────────────────────────────────────

@@ -73,6 +73,8 @@ data class TownPriceEntity(
     val sellPrice: Long,
     val supplyLevel: String,
     val lastUpdatedAt: Long,
+    @ColumnInfo(defaultValue = "0")
+    val minReputation: Int = 0,
 )
 
 @Entity(

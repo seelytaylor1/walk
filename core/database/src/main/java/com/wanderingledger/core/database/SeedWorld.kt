@@ -24,20 +24,30 @@ object SeedWorld {
                     GoodEntity(1, "Apples", 8),
                     GoodEntity(2, "Iron", 18),
                     GoodEntity(3, "Silk", 30),
+                    // Rare goods: rep-gated, require Reputation ≥ 60 to appear at source town
+                    GoodEntity(4, "Medicines", 20),
+                    GoodEntity(5, "Dyes", 17),
+                    GoodEntity(6, "Charts", 22),
                 ),
             )
             database.townDao().insertProducedGoods(
                 listOf(
-                    TownProducesEntity(1, 1),
-                    TownProducesEntity(2, 2),
-                    TownProducesEntity(3, 3),
+                    TownProducesEntity(1, 1), // Hearthwick → Apples
+                    TownProducesEntity(2, 2), // Stoneford → Iron
+                    TownProducesEntity(3, 3), // Mistfall → Silk
+                    TownProducesEntity(3, 4), // Mistfall → Medicines
+                    TownProducesEntity(1, 5), // Hearthwick → Dyes
+                    TownProducesEntity(2, 6), // Stoneford → Charts
                 ),
             )
             database.townDao().insertDemandedGoods(
                 listOf(
-                    TownDemandsEntity(1, 2),
-                    TownDemandsEntity(2, 3),
-                    TownDemandsEntity(3, 1),
+                    TownDemandsEntity(1, 2), // Hearthwick demands Iron
+                    TownDemandsEntity(2, 3), // Stoneford demands Silk
+                    TownDemandsEntity(3, 1), // Mistfall demands Apples
+                    TownDemandsEntity(1, 4), // Hearthwick demands Medicines
+                    TownDemandsEntity(3, 5), // Mistfall demands Dyes
+                    TownDemandsEntity(3, 6), // Mistfall demands Charts
                 ),
             )
             database.townPriceDao().upsertPrices(
@@ -98,6 +108,63 @@ object SeedWorld {
                         sellPrice = 12,
                         supplyLevel = "Scarce",
                         lastUpdatedAt = now,
+                    ),
+                    // Medicines (4): Mistfall source (rep-gated), Hearthwick destination
+                    TownPriceEntity(
+                        townId = 3,
+                        goodId = 4,
+                        buyPrice = 8,
+                        sellPrice = 14,
+                        supplyLevel = "Abundant",
+                        lastUpdatedAt = now,
+                        minReputation = 60,
+                    ),
+                    TownPriceEntity(
+                        townId = 1,
+                        goodId = 4,
+                        buyPrice = 24,
+                        sellPrice = 40,
+                        supplyLevel = "Scarce",
+                        lastUpdatedAt = now,
+                        minReputation = 0,
+                    ),
+                    // Dyes (5): Hearthwick source (rep-gated), Mistfall destination
+                    TownPriceEntity(
+                        townId = 1,
+                        goodId = 5,
+                        buyPrice = 7,
+                        sellPrice = 12,
+                        supplyLevel = "Abundant",
+                        lastUpdatedAt = now,
+                        minReputation = 60,
+                    ),
+                    TownPriceEntity(
+                        townId = 3,
+                        goodId = 5,
+                        buyPrice = 20,
+                        sellPrice = 32,
+                        supplyLevel = "Scarce",
+                        lastUpdatedAt = now,
+                        minReputation = 0,
+                    ),
+                    // Charts (6): Stoneford source (rep-gated), Mistfall destination
+                    TownPriceEntity(
+                        townId = 2,
+                        goodId = 6,
+                        buyPrice = 9,
+                        sellPrice = 15,
+                        supplyLevel = "Abundant",
+                        lastUpdatedAt = now,
+                        minReputation = 60,
+                    ),
+                    TownPriceEntity(
+                        townId = 3,
+                        goodId = 6,
+                        buyPrice = 23,
+                        sellPrice = 37,
+                        supplyLevel = "Scarce",
+                        lastUpdatedAt = now,
+                        minReputation = 0,
                     ),
                 ),
             )

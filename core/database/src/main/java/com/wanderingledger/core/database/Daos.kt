@@ -39,12 +39,30 @@ interface TownDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertDemandedGoods(goods: List<TownDemandsEntity>)
+
+    @Query(
+        "SELECT t.* FROM towns t JOIN town_demands td ON t.townId = td.townId " +
+            "WHERE td.goodId = :goodId AND t.townId != :excludeTownId",
+    )
+    suspend fun getTownsDemanding(
+        goodId: Long,
+        excludeTownId: Long,
+    ): List<TownEntity>
+
+    @Query("UPDATE towns SET reputation = MIN(reputation + :amount, 100) WHERE townId = :townId")
+    suspend fun addReputation(
+        townId: Long,
+        amount: Int,
+    )
 }
 
 @Dao
 interface GoodDao {
     @Query("SELECT * FROM goods WHERE goodId = :id")
     fun getGood(id: Long): Flow<GoodEntity?>
+
+    @Query("SELECT * FROM goods WHERE goodId = :id")
+    suspend fun getGoodSnapshot(id: Long): GoodEntity?
 
     @Query("SELECT * FROM goods ORDER BY goodId")
     fun listGoods(): Flow<List<GoodEntity>>
@@ -63,6 +81,9 @@ interface TownPriceDao {
 
     @Query("SELECT * FROM town_prices WHERE townId = :townId ORDER BY goodId")
     fun listPricesForTown(townId: Long): Flow<List<TownPriceEntity>>
+
+    @Query("SELECT * FROM town_prices WHERE townId = :townId ORDER BY goodId")
+    suspend fun listPricesSnapshotForTown(townId: Long): List<TownPriceEntity>
 
     @Upsert
     suspend fun upsertPrice(price: TownPriceEntity)
@@ -99,6 +120,15 @@ interface InventoryDao {
 
     @Query("DELETE FROM inventory_items WHERE id = :itemId")
     suspend fun removeItem(itemId: Long)
+
+    @Query("SELECT * FROM inventory_items WHERE playerId = :playerId AND goodId = :goodId LIMIT 1")
+    suspend fun getItemSnapshot(
+        playerId: Long,
+        goodId: Long,
+    ): InventoryItemEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun updateItem(item: InventoryItemEntity)
 }
 
 @Dao

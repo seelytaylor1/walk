@@ -198,6 +198,33 @@ interface EventLogDao {
 }
 
 @Dao
+interface OrderDao {
+    @Query("SELECT COUNT(*) FROM orders WHERE issuingTownId = :townId AND isActive = 1")
+    suspend fun countActiveOrdersForTown(townId: Long): Int
+
+    @Insert
+    suspend fun insertOrder(order: OrderEntity): Long
+
+    @Query("UPDATE orders SET isActive = 0 WHERE orderId = :orderId")
+    suspend fun deactivateOrder(orderId: Long)
+
+    @Query(
+        "UPDATE orders SET deadlineVisitsLeft = deadlineVisitsLeft - 1 " +
+            "WHERE isActive = 1 AND deadlineVisitsLeft > 0",
+    )
+    suspend fun decrementAllActiveDeadlines()
+
+    @Query("UPDATE orders SET isActive = 0 WHERE isActive = 1 AND deadlineVisitsLeft <= 0")
+    suspend fun expireOverdueOrders()
+
+    @Query("SELECT * FROM orders WHERE isActive = 1 ORDER BY orderId")
+    suspend fun getActiveOrdersSnapshot(): List<OrderEntity>
+
+    @Query("SELECT * FROM orders WHERE issuingTownId = :townId AND isActive = 1 ORDER BY orderId")
+    suspend fun getActiveOrdersForTownSnapshot(townId: Long): List<OrderEntity>
+}
+
+@Dao
 interface PriceHistoryDao {
     /**
      * Insert a new price snapshot for a (townId, goodId) pair.

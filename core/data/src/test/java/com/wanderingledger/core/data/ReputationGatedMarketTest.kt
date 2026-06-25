@@ -36,7 +36,7 @@ class ReputationGatedMarketTest {
         database = TestDatabaseFactory.createInMemoryDatabase(context)
         val companionRepository = CompanionRepository(database)
         val rumorRepository = RumorRepository(database)
-        gameRepository = GameRepository(database, rumorRepository, companionRepository)
+        gameRepository = GameRepository(database, rumorRepository, companionRepository, OrderRepository(database))
         marketRepository = MarketRepository(database)
     }
 

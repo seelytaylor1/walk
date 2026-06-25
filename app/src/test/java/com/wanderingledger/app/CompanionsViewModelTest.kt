@@ -5,6 +5,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.wanderingledger.core.data.CompanionCommentaryEngine
 import com.wanderingledger.core.data.CompanionRepository
 import com.wanderingledger.core.data.GameRepository
+import com.wanderingledger.core.data.OrderRepository
 import com.wanderingledger.core.data.RumorRepository
 import com.wanderingledger.core.database.CompanionEntity
 import com.wanderingledger.core.database.WanderingLedgerDatabase
@@ -53,7 +54,7 @@ class CompanionsViewModelTest {
         database = TestDatabaseFactory.createInMemoryDatabase(context)
         val rumorRepository = RumorRepository(database)
         companionRepository = CompanionRepository(database)
-        gameRepository = GameRepository(database, rumorRepository, companionRepository)
+        gameRepository = GameRepository(database, rumorRepository, companionRepository, OrderRepository(database))
         accessibilityPreferences = AccessibilityPreferences(context)
         narrator = CompanionNarrator(
             companionRepository = companionRepository,

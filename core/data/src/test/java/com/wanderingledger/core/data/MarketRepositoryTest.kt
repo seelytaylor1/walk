@@ -32,7 +32,7 @@ class MarketRepositoryTest {
         database = TestDatabaseFactory.createInMemoryDatabase(context)
         companionRepository = CompanionRepository(database)
         rumorRepository = RumorRepository(database)
-        gameRepository = GameRepository(database, rumorRepository, companionRepository)
+        gameRepository = GameRepository(database, rumorRepository, companionRepository, OrderRepository(database))
         marketRepository = MarketRepository(database)
     }
 

@@ -27,7 +27,7 @@ class RumorRepositoryTest {
         database = TestDatabaseFactory.createInMemoryDatabase(context)
         companionRepository = CompanionRepository(database)
         rumorRepository = RumorRepository(database)
-        gameRepository = GameRepository(database, rumorRepository, companionRepository)
+        gameRepository = GameRepository(database, rumorRepository, companionRepository, OrderRepository(database))
     }
 
     @After
@@ -134,7 +134,12 @@ class RumorRepositoryTest {
             gameRepository.initializeNewGame(seed = 1L)
             // initializeNewGame seeds exactly one rumor; remember it so we can
             // isolate the rumors produced by the seeded calls below.
-            val baseline = rumorRepository.observeActiveRumors().first().map { it.rumorId }.toSet()
+            val baseline =
+                rumorRepository
+                    .observeActiveRumors()
+                    .first()
+                    .map { it.rumorId }
+                    .toSet()
 
             // Two generations with the same seed must produce identical text.
             rumorRepository.generateRumorForTownVisit(visitedTownId = 2L, seed = 12345L)

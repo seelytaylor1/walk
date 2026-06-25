@@ -5,6 +5,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.wanderingledger.core.data.CompanionRepository
 import com.wanderingledger.core.data.GameRepository
 import com.wanderingledger.core.data.MarketRepository
+import com.wanderingledger.core.data.OrderRepository
 import com.wanderingledger.core.data.RumorRepository
 import com.wanderingledger.core.database.WanderingLedgerDatabase
 import com.wanderingledger.core.testing.TestDatabaseFactory
@@ -48,7 +49,7 @@ class MarketViewModelTest {
         database = TestDatabaseFactory.createInMemoryDatabase(context)
         val rumorRepository = RumorRepository(database)
         val companionRepository = CompanionRepository(database)
-        gameRepository = GameRepository(database, rumorRepository, companionRepository)
+        gameRepository = GameRepository(database, rumorRepository, companionRepository, OrderRepository(database))
         marketRepository = MarketRepository(database)
         // Seed the world: inserts Hearthwick (townId=1), player (gold=50), goods, prices
         runBlocking { gameRepository.initializeNewGame(seed = 1L) }

@@ -52,7 +52,7 @@ class TravelLatencyBenchmarkTest {
             val context = ApplicationProvider.getApplicationContext<Context>()
             database = TestDatabaseFactory.createInMemoryDatabase(context)
             val rumorRepository = RumorRepository(database)
-            gameRepository = GameRepository(database, rumorRepository, CompanionRepository(database))
+            gameRepository = GameRepository(database, rumorRepository, CompanionRepository(database), OrderRepository(database))
             stepBankRepository = RoomStepBankRepository(database)
             stepTrackerService = StepTrackerService(stepBankRepository)
 
@@ -187,7 +187,7 @@ class TravelLatencyBenchmarkTest {
                     )
                 val localRumorRepo = RumorRepository(localDatabase)
                 val localGameRepo =
-                    GameRepository(localDatabase, localRumorRepo, CompanionRepository(localDatabase))
+                    GameRepository(localDatabase, localRumorRepo, CompanionRepository(localDatabase), OrderRepository(localDatabase))
                 val localStepBank = RoomStepBankRepository(localDatabase)
                 val localService = StepTrackerService(localStepBank)
 

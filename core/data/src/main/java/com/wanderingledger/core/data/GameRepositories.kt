@@ -91,6 +91,7 @@ class GameRepository(
     private val database: WanderingLedgerDatabase,
     private val rumorRepository: RumorRepository,
     private val companionRepository: CompanionRepository,
+    private val orderRepository: OrderRepository,
 ) {
     fun observePlayerState(): Flow<PlayerState> =
         database
@@ -247,6 +248,26 @@ class GameRepository(
                             ),
                         )
                     }
+
+                    // Complete eligible orders and award reputation
+                    val orderCompletions = orderRepository.checkAndCompleteOrders(
+                        arrivedTownId = delta.newTownId,
+                        playerId = player.playerId,
+                    )
+                    orderCompletions.forEach { completion ->
+                        database.eventLogDao().insertEvent(
+                            EventLogEntity(
+                                type = "order-complete",
+                                meta = "{\"orderId\":${completion.orderId},\"issuingTownId\":${completion.issuingTownId},\"rep\":${completion.reputationReward}}",
+                                result = "Order fulfilled: delivered ${completion.goodName}. +${completion.reputationReward} reputation.",
+                                createdAt = delta.arrivedAt,
+                            ),
+                        )
+                    }
+
+                    // Expire overdue orders and generate new ones for the arrived town
+                    orderRepository.tickDeadlines()
+                    orderRepository.generateOrdersForTown(townId = delta.newTownId, seed = seed + delta.newTownId)
 
                     val remainingSteps = player.bankedSteps - delta.stepsSpent
                     recordTravelCompleted(startedAt, segmentId, success = true)

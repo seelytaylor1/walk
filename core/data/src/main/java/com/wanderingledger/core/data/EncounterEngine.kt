@@ -36,7 +36,8 @@ object EncounterEngine {
         random: Random,
         party: List<Companion>,
     ): EncounterOutcome {
-        val bonus = if (party.any { it.role == CompanionRole.Rogue }) 20 else 0
+        val rogue = party.firstOrNull { it.role == CompanionRole.Rogue && it.isActive }
+        val bonus = if (rogue != null) 20 + (rogue.bondLevel * 4) else 0
         val roll = random.nextInt(100) + bonus
 
         return if (roll > 50) {

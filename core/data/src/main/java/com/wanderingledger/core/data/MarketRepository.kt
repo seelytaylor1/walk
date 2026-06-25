@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import com.wanderingledger.core.database.CompanionEntity
 
 // ── Domain result types ──────────────────────────────────────────────────────
 
@@ -120,24 +121,41 @@ class MarketRepository(
      * Stream the full market state for [townId].
      * Emits whenever prices, inventory, or player gold changes.
      */
-    fun observeMarket(townId: Long): Flow<MarketState> =
-        combine(
-            database.townDao().getTown(townId).filterNotNull(),
-            database.townPriceDao().listPricesForTown(townId),
-            database.playerDao().getPlayer().filterNotNull(),
-            database.inventoryDao().listInventory(playerId = 1L),
+    fun observeMarket(townId: Long): Flow<MarketState> {
+        val coreFlow =
+            combine(
+                database.townDao().getTown(townId).filterNotNull(),
+                database.townPriceDao().listPricesForTown(townId),
+                database.playerDao().getPlayer().filterNotNull(),
+                database.inventoryDao().listInventory(playerId = 1L),
+            ) { town, prices, player, inventory ->
+                Triple(Pair(town, prices), Pair(player, inventory), Unit)
+            }
+
+        return combine(
+            coreFlow,
             database.goodDao().listGoods(),
-        ) { town, prices, player, inventory, goods ->
+            database.companionDao().listActiveCompanions(),
+        ) { (townAndPrices, playerAndInventory, _), goods, companions ->
+            val (town, prices) = townAndPrices
+            val (player, inventory) = playerAndInventory
             val goodsById = goods.associateBy { it.goodId }
             val inventoryByGoodId =
                 inventory
                     .groupBy { it.goodId }
                     .mapValues { (_, items) -> items.sumOf { it.quantity } }
             val rep = town.reputation
+            val hasActiveRogue = companions.any { it.role == "Rogue" && it.isActive }
 
             val rows =
                 prices
-                    .filter { it.minReputation <= rep }
+                    .filter { priceEntity ->
+                        val minRep = priceEntity.minReputation
+                        if (minRep > rep) return@filter false
+                        val good = goodsById[priceEntity.goodId]
+                        if (good?.isContraband == true && !hasActiveRogue) return@filter false
+                        true
+                    }
                     .mapNotNull { priceEntity ->
                         val good = goodsById[priceEntity.goodId] ?: return@mapNotNull null
                         val supplyLevel = SupplyLevel.valueOf(priceEntity.supplyLevel)
@@ -181,6 +199,7 @@ class MarketRepository(
                 rows = rows,
             )
         }
+    }
 
     /**
      * Stream price history for a specific good at a town, newest first.

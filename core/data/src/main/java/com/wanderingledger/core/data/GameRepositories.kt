@@ -269,6 +269,29 @@ class GameRepository(
                     orderRepository.tickDeadlines()
                     orderRepository.generateOrdersForTown(townId = delta.newTownId, seed = seed + delta.newTownId)
 
+                    // Arrival inspection: check for contraband and roll inspection
+                    val contrabandItems = database.inventoryDao().listContrabandItemsSnapshot(player.playerId)
+                    if (contrabandItems.isNotEmpty()) {
+                        val activeRogue = snapshot.activeCompanions.firstOrNull {
+                            it.role == com.wanderingledger.core.model.CompanionRole.Rogue && it.isActive
+                        }
+                        val inspectionChance = InspectionEngine.inspectionChance(activeRogue)
+                        val inspected = InspectionEngine.rollInspection(inspectionChance, seed = seed + 7919L)
+                        if (inspected) {
+                            contrabandItems.forEach { item ->
+                                database.inventoryDao().removeItem(item.id)
+                            }
+                            database.eventLogDao().insertEvent(
+                                EventLogEntity(
+                                    type = "inspection",
+                                    meta = "{\"arrivedTownId\":${delta.newTownId},\"itemsConfiscated\":${contrabandItems.size}}",
+                                    result = "Your goods were inspected. Contraband was confiscated.",
+                                    createdAt = delta.arrivedAt,
+                                ),
+                            )
+                        }
+                    }
+
                     val remainingSteps = player.bankedSteps - delta.stepsSpent
                     recordTravelCompleted(startedAt, segmentId, success = true)
                     return@withTransaction TravelResult.Arrived(

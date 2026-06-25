@@ -8,7 +8,6 @@ import org.junit.Test
 
 /** Pure unit tests — no Room, no Robolectric. */
 class MarketAnomalyDetectorTest {
-
     private fun detect(
         baseSell: Long = 100L,
         newSell: Long = 100L,
@@ -83,10 +82,13 @@ class MarketAnomalyDetectorTest {
     @Test
     fun multipleAnomaliesReturnedWhenMultipleThresholdsBroken() {
         // Price spikes AND moves to Scarce in one trade
-        val events = detect(
-            baseSell = 100L, newSell = 160L,
-            oldSupply = SupplyLevel.Normal, newSupply = SupplyLevel.Scarce,
-        )
+        val events =
+            detect(
+                baseSell = 100L,
+                newSell = 160L,
+                oldSupply = SupplyLevel.Normal,
+                newSupply = SupplyLevel.Scarce,
+            )
         assertTrue(events.any { it.anomalyType == MarketAnomalyType.PriceSpike })
         assertTrue(events.any { it.anomalyType == MarketAnomalyType.SupplyDepleted })
     }

@@ -46,8 +46,9 @@ class CompanionRepository(
                 }.firstOrNull() ?: return RecruitmentResult.NotFound
 
         // Gate: require 3 completed trades
-        val player = database.playerDao().getPlayerSnapshot()
-            ?: return RecruitmentResult.NotFound
+        val player =
+            database.playerDao().getPlayerSnapshot()
+                ?: return RecruitmentResult.NotFound
         if (player.completedTradesCount < 3) {
             return RecruitmentResult.NotEnoughTrades
         }

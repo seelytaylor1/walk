@@ -36,7 +36,8 @@ object EncounterEngine {
         random: Random,
         party: List<Companion>,
     ): EncounterOutcome {
-        val bonus = if (party.any { it.role == CompanionRole.Rogue }) 20 else 0
+        val rogue = party.firstOrNull { it.role == CompanionRole.Rogue && it.isActive }
+        val bonus = if (rogue != null) 20 + (rogue.bondLevel * 4) else 0
         val roll = random.nextInt(100) + bonus
 
         return if (roll > 50) {
@@ -89,22 +90,21 @@ object EncounterEngine {
         random: Random,
         party: List<Companion>,
     ): EncounterOutcome {
-        val totalPower = party.sumOf { it.combatPower }
-        val roll = random.nextInt(100) + totalPower * 10
+        val effectivePower = party.sumOf { it.combatPower + it.bondLevel }
+        val roll = random.nextInt(100) + effectivePower * 2
 
-        return if (roll > 60) {
+        return if (roll > 70) {
             EncounterOutcome(
-                "bandit-ambush",
-                "Bandits tried to ambush you, but your party drove them off!",
-                bondChange = 5,
+                encounterId = "bandit-ambush",
+                resultText = "Bandits tried to ambush you, but your party drove them off!",
+                bondChange = 1,
             )
         } else {
             EncounterOutcome(
-                "bandit-ambush",
-                "You were ambushed by bandits! You managed to escape, but they stole some of your gold.",
+                encounterId = "bandit-ambush",
+                resultText = "You were ambushed by bandits and couldn't hold them off. They took what they could.",
                 goldChange = -30,
                 success = false,
-                bondChange = -2,
             )
         }
     }

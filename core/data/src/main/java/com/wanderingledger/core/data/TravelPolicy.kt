@@ -1,5 +1,6 @@
 package com.wanderingledger.core.data
 
+import com.wanderingledger.core.model.CompanionRole
 import kotlin.random.Random
 
 /**
@@ -24,10 +25,11 @@ object TravelPolicy {
     ): TravelOutcome {
         val player = snapshot.player
         val road = snapshot.road
-        val hasActiveScout = snapshot.activeCompanions.any {
-            it.role == com.wanderingledger.core.model.CompanionRole.Scout && it.isActive
-        }
-        val effectiveStepCost = applyScoutDiscount(road.stepCost, hasActiveScout)
+        val activeScout =
+            snapshot.activeCompanions.firstOrNull {
+                it.role == CompanionRole.Scout && it.isActive
+            }
+        val effectiveStepCost = applyScoutDiscount(road.stepCost, activeScout?.bondLevel)
         val stepCost = effectiveStepCost.toLong()
 
         // Rule: travel is blocked when the player cannot afford the road's cost.
@@ -79,22 +81,23 @@ object TravelPolicy {
             }
 
         return TravelOutcome.Arrived(
-            playerDelta = PlayerDelta(
-                newTownId = road.toTownId,
-                stepsSpent = stepCost,
-                arrivedAt = arrivedAt,
-            ),
+            playerDelta =
+                PlayerDelta(
+                    newTownId = road.toTownId,
+                    stepsSpent = stepCost,
+                    arrivedAt = arrivedAt,
+                ),
             markDestinationVisited = true,
             decrementActiveRumors = true,
             // Road event first, then town visit — the order the inline
             // transaction generated them in.
-            rumorRequests = listOf(
-                RumorRequest.RoadEvent(segmentId = road.segmentId, seed = seed + road.segmentId),
-                RumorRequest.TownVisit(townId = road.toTownId, seed = seed),
-            ),
+            rumorRequests =
+                listOf(
+                    RumorRequest.RoadEvent(segmentId = road.segmentId, seed = seed + road.segmentId),
+                    RumorRequest.TownVisit(townId = road.toTownId, seed = seed),
+                ),
             encounterOutcome = encounter,
             eventLogs = eventLogs,
         )
     }
-
 }

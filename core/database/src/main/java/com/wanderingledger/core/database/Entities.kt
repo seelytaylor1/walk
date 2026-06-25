@@ -73,6 +73,8 @@ data class TownPriceEntity(
     val sellPrice: Long,
     val supplyLevel: String,
     val lastUpdatedAt: Long,
+    @ColumnInfo(defaultValue = "0")
+    val minReputation: Int = 0,
 )
 
 @Entity(
@@ -206,3 +208,16 @@ data class PriceHistoryEntity(
         const val MAX_HISTORY_PER_GOOD_TOWN = 10
     }
 }
+
+@Entity(tableName = "orders")
+data class OrderEntity(
+    @PrimaryKey(autoGenerate = true) val orderId: Long = 0,
+    val issuingTownId: Long,
+    val destinationTownId: Long,
+    val goodId: Long,
+    val quantity: Int,
+    val type: String, // "Delivery" or "Route"
+    val reputationReward: Int,
+    val deadlineVisitsLeft: Int,
+    val isActive: Boolean = true,
+)

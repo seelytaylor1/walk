@@ -1,30 +1,36 @@
 package com.wanderingledger.core.data
 
 import com.wanderingledger.core.model.Companion
-import com.wanderingledger.core.model.CompanionRole
 import com.wanderingledger.core.model.PlayerState
 import com.wanderingledger.core.model.RoadSegment
 import com.wanderingledger.core.model.Rumor
 import com.wanderingledger.core.model.Town
-import org.json.JSONArray
+private val EVENT_ENTRY = Regex(""""([^"]+)"""")
 
 fun String.parseEventPool(): List<String> =
     try {
-        val arr = JSONArray(this)
-        (0 until arr.length()).map { arr.getString(it) }
+        val trimmed = trim()
+        if (!trimmed.startsWith("[") || !trimmed.endsWith("]")) emptyList()
+        else EVENT_ENTRY.findAll(trimmed).map { it.groupValues[1] }.toList()
     } catch (e: Exception) {
         emptyList()
     }
 
-/** 10% step cost reduction applied when a Scout companion is active. */
-const val SCOUT_STEP_DISCOUNT = 0.10
+const val SCOUT_BASE_DISCOUNT = 0.10
+const val SCOUT_BOND_DISCOUNT_PER_LEVEL = 0.02
 
 /**
  * Returns the effective step cost for a road segment, applying the Scout
- * discount when [hasActiveScout] is true.
+ * discount scaled by bond level. A null [scoutBondLevel] means no active Scout.
  */
-fun applyScoutDiscount(stepCost: Int, hasActiveScout: Boolean): Int =
-    if (hasActiveScout) (stepCost * (1.0 - SCOUT_STEP_DISCOUNT)).toInt() else stepCost
+fun applyScoutDiscount(
+    stepCost: Int,
+    scoutBondLevel: Int?,
+): Int {
+    if (scoutBondLevel == null) return stepCost
+    val discount = SCOUT_BASE_DISCOUNT + (scoutBondLevel * SCOUT_BOND_DISCOUNT_PER_LEVEL)
+    return (stepCost * (1.0 - discount)).toInt()
+}
 
 /**
  * A point-in-time read of everything a travel transaction needs to decide its
@@ -62,16 +68,14 @@ sealed interface RumorRequest {
         val townId: Long,
         override val seed: Long,
     ) : RumorRequest {
-        override suspend fun fulfill(repo: RumorRepository) =
-            repo.generateRumorForTownVisit(townId, seed)
+        override suspend fun fulfill(repo: RumorRepository) = repo.generateRumorForTownVisit(townId, seed)
     }
 
     data class RoadEvent(
         val segmentId: Long,
         override val seed: Long,
     ) : RumorRequest {
-        override suspend fun fulfill(repo: RumorRepository) =
-            repo.generateRumorFromRoadEvent(segmentId, seed)
+        override suspend fun fulfill(repo: RumorRepository) = repo.generateRumorFromRoadEvent(segmentId, seed)
     }
 }
 
@@ -108,5 +112,7 @@ sealed interface TravelOutcome {
         val eventLogs: List<EventLogDraft> = emptyList(),
     ) : TravelOutcome
 
-    data class Failed(val result: TravelResult) : TravelOutcome
+    data class Failed(
+        val result: TravelResult,
+    ) : TravelOutcome
 }

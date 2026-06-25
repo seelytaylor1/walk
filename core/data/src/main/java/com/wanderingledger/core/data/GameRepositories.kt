@@ -91,6 +91,7 @@ class GameRepository(
     private val database: WanderingLedgerDatabase,
     private val rumorRepository: RumorRepository,
     private val companionRepository: CompanionRepository,
+    private val orderRepository: OrderRepository,
 ) {
     fun observePlayerState(): Flow<PlayerState> =
         database
@@ -246,6 +247,49 @@ class GameRepository(
                                 createdAt = log.createdAt,
                             ),
                         )
+                    }
+
+                    // Complete eligible orders and award reputation
+                    val orderCompletions = orderRepository.checkAndCompleteOrders(
+                        arrivedTownId = delta.newTownId,
+                        playerId = player.playerId,
+                    )
+                    orderCompletions.forEach { completion ->
+                        database.eventLogDao().insertEvent(
+                            EventLogEntity(
+                                type = "order-complete",
+                                meta = "{\"orderId\":${completion.orderId},\"issuingTownId\":${completion.issuingTownId},\"rep\":${completion.reputationReward}}",
+                                result = "Order fulfilled: delivered ${completion.goodName}. +${completion.reputationReward} reputation.",
+                                createdAt = delta.arrivedAt,
+                            ),
+                        )
+                    }
+
+                    // Expire overdue orders and generate new ones for the arrived town
+                    orderRepository.tickDeadlines()
+                    orderRepository.generateOrdersForTown(townId = delta.newTownId, seed = seed + delta.newTownId)
+
+                    // Arrival inspection: check for contraband and roll inspection
+                    val contrabandItems = database.inventoryDao().listContrabandItemsSnapshot(player.playerId)
+                    if (contrabandItems.isNotEmpty()) {
+                        val activeRogue = snapshot.activeCompanions.firstOrNull {
+                            it.role == com.wanderingledger.core.model.CompanionRole.Rogue && it.isActive
+                        }
+                        val inspectionChance = InspectionEngine.inspectionChance(activeRogue)
+                        val inspected = InspectionEngine.rollInspection(inspectionChance, seed = seed + 7919L)
+                        if (inspected) {
+                            contrabandItems.forEach { item ->
+                                database.inventoryDao().removeItem(item.id)
+                            }
+                            database.eventLogDao().insertEvent(
+                                EventLogEntity(
+                                    type = "inspection",
+                                    meta = "{\"arrivedTownId\":${delta.newTownId},\"itemsConfiscated\":${contrabandItems.size}}",
+                                    result = "Your goods were inspected. Contraband was confiscated.",
+                                    createdAt = delta.arrivedAt,
+                                ),
+                            )
+                        }
                     }
 
                     val remainingSteps = player.bankedSteps - delta.stepsSpent

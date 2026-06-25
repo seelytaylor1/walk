@@ -33,7 +33,7 @@ class ScoutDiscountTest {
         database = TestDatabaseFactory.createInMemoryDatabase(context)
         companionRepository = CompanionRepository(database)
         rumorRepository = RumorRepository(database)
-        gameRepository = GameRepository(database, rumorRepository, companionRepository)
+        gameRepository = GameRepository(database, rumorRepository, companionRepository, OrderRepository(database))
         marketRepository = MarketRepository(database)
         stepBankRepository = RoomStepBankRepository(database)
         stepTrackerService = StepTrackerService(stepBankRepository)
@@ -53,34 +53,36 @@ class ScoutDiscountTest {
 
     /** AC-14: With Scout active, travel spends the discounted step cost. */
     @Test
-    fun `AC-14 Scout reduces actual step spend by 10 percent`() = runTest {
-        recruitMiraTheScout()
+    fun `AC-14 Scout reduces actual step spend by 10 percent`() =
+        runTest {
+            recruitMiraTheScout()
 
-        val companions = companionRepository.observeActiveCompanions().first()
-        assertTrue("Mira should be active", companions.any { it.role == CompanionRole.Scout && it.isActive })
+            val companions = companionRepository.observeActiveCompanions().first()
+            assertTrue("Mira should be active", companions.any { it.role == CompanionRole.Scout && it.isActive })
 
-        // Short road costs 1000 steps; with 10% Scout discount = 900
-        stepTrackerService.recordSensorDelta(count = 900, source = StepSource.Simulation)
+            // Short road costs 1000 steps; with 10% Scout discount = 900
+            stepTrackerService.recordSensorDelta(count = 900, source = StepSource.Simulation)
 
-        val roads = gameRepository.observeRoadsFromCurrentTown().first()
-        val shortRoad = roads.first { it.toTownId == 2L }
+            val roads = gameRepository.observeRoadsFromCurrentTown().first()
+            val shortRoad = roads.first { it.toTownId == 2L }
 
-        val result = gameRepository.travel(shortRoad.segmentId)
-        assertTrue("Travel should succeed with Scout discount applied, got $result", result is TravelResult.Arrived)
+            val result = gameRepository.travel(shortRoad.segmentId)
+            assertTrue("Travel should succeed with Scout discount applied, got $result", result is TravelResult.Arrived)
 
-        val player = gameRepository.observePlayerState().first()
-        assertEquals(0L, player.bankedSteps) // 900 spent exactly
-    }
+            val player = gameRepository.observePlayerState().first()
+            assertEquals(0L, player.bankedSteps) // 900 spent exactly
+        }
 
     /** AC-14: Without Scout, 900 steps is not enough for a 1000-step road. */
     @Test
-    fun `AC-14 Without Scout 900 steps is insufficient for 1000-step road`() = runTest {
-        stepTrackerService.recordSensorDelta(count = 900, source = StepSource.Simulation)
+    fun `AC-14 Without Scout 900 steps is insufficient for 1000-step road`() =
+        runTest {
+            stepTrackerService.recordSensorDelta(count = 900, source = StepSource.Simulation)
 
-        val roads = gameRepository.observeRoadsFromCurrentTown().first()
-        val shortRoad = roads.first { it.toTownId == 2L }
+            val roads = gameRepository.observeRoadsFromCurrentTown().first()
+            val shortRoad = roads.first { it.toTownId == 2L }
 
-        val result = gameRepository.travel(shortRoad.segmentId)
-        assertTrue("Travel should be blocked without Scout, got $result", result is TravelResult.NotEnoughSteps)
-    }
+            val result = gameRepository.travel(shortRoad.segmentId)
+            assertTrue("Travel should be blocked without Scout, got $result", result is TravelResult.NotEnoughSteps)
+        }
 }

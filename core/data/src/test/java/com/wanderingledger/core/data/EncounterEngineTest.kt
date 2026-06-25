@@ -103,11 +103,11 @@ class EncounterEngineTest {
                 Companion(1, "Warrior", CompanionRole.Fighter, 5, 0, "active", 1, true),
             )
 
-        // With 5 power, roll gets +50 bonus (5*10), should succeed
-        val outcome = EncounterEngine.resolve(10, "bandit-ambush", party)
+        // With effectivePower = 5 + 0 = 5, roll gets +10 bonus (5*2), threshold 70
+        val outcome = EncounterEngine.resolve(100, "bandit-ambush", party)
 
         assertTrue("Fighter should defeat bandits", outcome.success)
-        assertEquals(5, outcome.bondChange)
+        assertEquals(1, outcome.bondChange)
     }
 
     @Test
@@ -191,8 +191,8 @@ class EncounterEngineTest {
         assertNotNull("old-road should produce outcome at seed 75", oldRoadOutcome)
 
         val fighterParty = listOf(Companion(1, "W", CompanionRole.Fighter, 5, 0, "active", 1, true))
-        val banditWin = EncounterEngine.resolve(10, "bandit-ambush", fighterParty)
-        assertTrue("Fighter party should succeed at seed 10", banditWin.success)
+        val banditWin = EncounterEngine.resolve(100, "bandit-ambush", fighterParty)
+        assertTrue("Fighter party should succeed at seed 100", banditWin.success)
 
         val banditAny = EncounterEngine.resolve(1, "bandit-ambush", emptyList())
         assertNotNull("Empty party gets some outcome at seed 1", banditAny)
@@ -209,5 +209,65 @@ class EncounterEngineTest {
 
         val uniqueOutcomes = outcomes.distinct()
         assertTrue("Different seeds should produce different outcomes", uniqueOutcomes.size > 1)
+    }
+
+    @Test
+    fun banditAmbushWithHighEffectivePowerAlwaysSucceeds() {
+        // effectivePower = combatPower(45) + bondLevel(5) = 50 → bonus = 100 → always > 70
+        val powerfulFighter =
+            Companion(
+                companionId = 1,
+                name = "Bram",
+                role = CompanionRole.Fighter,
+                combatPower = 45,
+                bondLevel = 5,
+                questState = "active",
+                locationTownId = 2,
+                isActive = true,
+            )
+        val outcome =
+            EncounterEngine.resolve(
+                seed = 1L,
+                encounterId = "bandit-ambush",
+                party = listOf(powerfulFighter),
+            )
+        assertTrue("High-power Fighter should always repel bandits", outcome.success)
+        assertEquals("bandit-ambush", outcome.encounterId)
+    }
+
+    @Test
+    fun banditAmbushWithoutPartyProducesSomeFailures() {
+        var failCount = 0
+        for (seed in 1L..30L) {
+            val outcome = EncounterEngine.resolve(seed = seed, encounterId = "bandit-ambush", party = emptyList())
+            if (!outcome.success) failCount++
+        }
+        // With threshold 70 and no party, ~29% success → expect ~21 failures in 30 rolls
+        assertTrue("Expected at least 10 failures in 30 rolls with no party", failCount >= 10)
+    }
+
+    @Test
+    fun banditAmbushFighterWithMaxBondOutperformsNoParty() {
+        val fighter =
+            Companion(
+                companionId = 1,
+                name = "Bram",
+                role = CompanionRole.Fighter,
+                combatPower = 5,
+                bondLevel = 5,
+                questState = "active",
+                locationTownId = 2,
+                isActive = true,
+            )
+        var withFighterSuccess = 0
+        var withoutFighterSuccess = 0
+        for (seed in 1L..30L) {
+            if (EncounterEngine.resolve(seed, "bandit-ambush", listOf(fighter)).success) withFighterSuccess++
+            if (EncounterEngine.resolve(seed, "bandit-ambush", emptyList()).success) withoutFighterSuccess++
+        }
+        assertTrue(
+            "Max-bond Fighter (effectivePower=10, bonus=20) should succeed more often than no party",
+            withFighterSuccess > withoutFighterSuccess,
+        )
     }
 }

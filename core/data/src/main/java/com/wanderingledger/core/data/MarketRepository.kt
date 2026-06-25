@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import com.wanderingledger.core.database.CompanionEntity
 
 // ── Domain result types ──────────────────────────────────────────────────────
 
@@ -109,55 +110,85 @@ data class MarketState(
 class MarketRepository(
     private val database: WanderingLedgerDatabase,
 ) {
+    companion object {
+        const val REP_BETTER_PRICE_THRESHOLD = 75
+        const val REP_BETTER_PRICE_DISCOUNT = 0.15
+    }
+
     // ── Observation ──────────────────────────────────────────────────────────
 
     /**
      * Stream the full market state for [townId].
      * Emits whenever prices, inventory, or player gold changes.
      */
-    fun observeMarket(townId: Long): Flow<MarketState> =
-        combine(
-            database.townDao().getTown(townId).filterNotNull(),
-            database.townPriceDao().listPricesForTown(townId),
-            database.playerDao().getPlayer().filterNotNull(),
-            database.inventoryDao().listInventory(playerId = 1L),
+    fun observeMarket(townId: Long): Flow<MarketState> {
+        val coreFlow =
+            combine(
+                database.townDao().getTown(townId).filterNotNull(),
+                database.townPriceDao().listPricesForTown(townId),
+                database.playerDao().getPlayer().filterNotNull(),
+                database.inventoryDao().listInventory(playerId = 1L),
+            ) { town, prices, player, inventory ->
+                Triple(Pair(town, prices), Pair(player, inventory), Unit)
+            }
+
+        return combine(
+            coreFlow,
             database.goodDao().listGoods(),
-        ) { town, prices, player, inventory, goods ->
+            database.companionDao().listActiveCompanions(),
+        ) { (townAndPrices, playerAndInventory, _), goods, companions ->
+            val (town, prices) = townAndPrices
+            val (player, inventory) = playerAndInventory
             val goodsById = goods.associateBy { it.goodId }
             val inventoryByGoodId =
                 inventory
                     .groupBy { it.goodId }
                     .mapValues { (_, items) -> items.sumOf { it.quantity } }
+            val rep = town.reputation
+            val hasActiveRogue = companions.any { it.role == "Rogue" && it.isActive }
 
             val rows =
-                prices.mapNotNull { priceEntity ->
-                    val good = goodsById[priceEntity.goodId] ?: return@mapNotNull null
-                    val supplyLevel = SupplyLevel.valueOf(priceEntity.supplyLevel)
-                    val playerQty = inventoryByGoodId[priceEntity.goodId] ?: 0
-                    val inventoryUsed = inventory.sumOf { it.quantity }
-                    MarketRow(
-                        good =
-                            Good(
-                                goodId = good.goodId,
-                                name = good.name,
-                                baseValue = good.baseValue,
-                                isContraband = good.isContraband,
-                            ),
-                        townPrice =
-                            TownPrice(
-                                id = priceEntity.id,
-                                townId = priceEntity.townId,
-                                goodId = priceEntity.goodId,
-                                buyPrice = priceEntity.buyPrice,
-                                sellPrice = priceEntity.sellPrice,
-                                supplyLevel = supplyLevel,
-                                lastUpdatedAt = priceEntity.lastUpdatedAt,
-                            ),
-                        playerQuantity = playerQty,
-                        canAfford = player.gold >= priceEntity.sellPrice,
-                        canSell = playerQty > 0,
-                    )
-                }
+                prices
+                    .filter { priceEntity ->
+                        val minRep = priceEntity.minReputation
+                        if (minRep > rep) return@filter false
+                        val good = goodsById[priceEntity.goodId]
+                        if (good?.isContraband == true && !hasActiveRogue) return@filter false
+                        true
+                    }
+                    .mapNotNull { priceEntity ->
+                        val good = goodsById[priceEntity.goodId] ?: return@mapNotNull null
+                        val supplyLevel = SupplyLevel.valueOf(priceEntity.supplyLevel)
+                        val playerQty = inventoryByGoodId[priceEntity.goodId] ?: 0
+                        val effectiveSellPrice =
+                            if (priceEntity.minReputation > 0 && rep >= REP_BETTER_PRICE_THRESHOLD) {
+                                (priceEntity.sellPrice * (1.0 - REP_BETTER_PRICE_DISCOUNT)).toLong()
+                            } else {
+                                priceEntity.sellPrice
+                            }
+                        MarketRow(
+                            good =
+                                Good(
+                                    goodId = good.goodId,
+                                    name = good.name,
+                                    baseValue = good.baseValue,
+                                    isContraband = good.isContraband,
+                                ),
+                            townPrice =
+                                TownPrice(
+                                    id = priceEntity.id,
+                                    townId = priceEntity.townId,
+                                    goodId = priceEntity.goodId,
+                                    buyPrice = priceEntity.buyPrice,
+                                    sellPrice = effectiveSellPrice,
+                                    supplyLevel = supplyLevel,
+                                    lastUpdatedAt = priceEntity.lastUpdatedAt,
+                                ),
+                            playerQuantity = playerQty,
+                            canAfford = player.gold >= effectiveSellPrice,
+                            canSell = playerQty > 0,
+                        )
+                    }
 
             MarketState(
                 townId = town.townId,
@@ -168,6 +199,7 @@ class MarketRepository(
                 rows = rows,
             )
         }
+    }
 
     /**
      * Stream price history for a specific good at a town, newest first.
@@ -213,7 +245,14 @@ class MarketRepository(
                 database.goodDao().getGood(goodId).first()
                     ?: return@withTransaction BuyResult.GoodNotAvailable
 
-            val totalCost = priceEntity.sellPrice * quantity
+            val townRep = database.townDao().getTownSnapshot(townId)?.reputation ?: 0
+            val actualSellPrice =
+                if (priceEntity.minReputation > 0 && townRep >= REP_BETTER_PRICE_THRESHOLD) {
+                    (priceEntity.sellPrice * (1.0 - REP_BETTER_PRICE_DISCOUNT)).toLong()
+                } else {
+                    priceEntity.sellPrice
+                }
+            val totalCost = actualSellPrice * quantity
             if (player.gold < totalCost) {
                 return@withTransaction BuyResult.NotEnoughGold(
                     required = totalCost,
@@ -249,7 +288,7 @@ class MarketRepository(
             }
 
             val newSupply = MarketEngine.decreaseSupply(SupplyLevel.valueOf(priceEntity.supplyLevel))
-            postTradeUpdate(townId, goodId, good, priceEntity, newSupply, "buy", quantity, priceEntity.sellPrice)
+            postTradeUpdate(townId, goodId, good, priceEntity, newSupply, "buy", quantity, actualSellPrice)
 
             BuyResult.Success(
                 goodId = goodId,
@@ -414,7 +453,6 @@ class MarketRepository(
             database.priceHistoryDao().trimOldest(townId, goodId, excess)
         }
     }
-
 }
 
 // ── Entity → model mappers ───────────────────────────────────────────────────

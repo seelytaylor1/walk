@@ -6,6 +6,7 @@ import com.wanderingledger.core.data.CompanionRepository
 import com.wanderingledger.core.data.GameRepository
 import com.wanderingledger.core.data.InventoryRepository
 import com.wanderingledger.core.data.MarketRepository
+import com.wanderingledger.core.data.OrderRepository
 import com.wanderingledger.core.data.RoomStepBankRepository
 import com.wanderingledger.core.data.RumorRepository
 import com.wanderingledger.core.audio.AudioPreferences
@@ -32,7 +33,8 @@ class AppContainer(
     val rumorRepository = RumorRepository(database)
     val companionRepository = CompanionRepository(database)
     val companionNarrator = CompanionNarrator(companionRepository, CompanionCommentaryEngine())
-    val gameRepository = GameRepository(database, rumorRepository, companionRepository)
+    val orderRepository = OrderRepository(database)
+    val gameRepository = GameRepository(database, rumorRepository, companionRepository, orderRepository)
     val marketRepository = MarketRepository(database)
     val inventoryRepository = InventoryRepository(database)
     val stepTrackerService = StepTrackerService(RoomStepBankRepository(database))

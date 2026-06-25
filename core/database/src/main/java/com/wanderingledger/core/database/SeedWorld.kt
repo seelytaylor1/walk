@@ -24,20 +24,37 @@ object SeedWorld {
                     GoodEntity(1, "Apples", 8),
                     GoodEntity(2, "Iron", 18),
                     GoodEntity(3, "Silk", 30),
+                    // Rare goods: rep-gated, require Reputation ≥ 60 to appear at source town
+                    GoodEntity(4, "Medicines", 20),
+                    GoodEntity(5, "Dyes", 17),
+                    GoodEntity(6, "Charts", 22),
+                    // Contraband goods
+                    GoodEntity(7, "Smuggled Spirits", 25, isContraband = true),
+                    GoodEntity(8, "Stolen Relics", 40, isContraband = true),
                 ),
             )
             database.townDao().insertProducedGoods(
                 listOf(
-                    TownProducesEntity(1, 1),
-                    TownProducesEntity(2, 2),
-                    TownProducesEntity(3, 3),
+                    TownProducesEntity(1, 1), // Hearthwick → Apples
+                    TownProducesEntity(2, 2), // Stoneford → Iron
+                    TownProducesEntity(3, 3), // Mistfall → Silk
+                    TownProducesEntity(3, 4), // Mistfall → Medicines
+                    TownProducesEntity(1, 5), // Hearthwick → Dyes
+                    TownProducesEntity(2, 6), // Stoneford → Charts
+                    TownProducesEntity(1, 7), // Hearthwick produces Smuggled Spirits
+                    TownProducesEntity(3, 8), // Mistfall produces Stolen Relics
                 ),
             )
             database.townDao().insertDemandedGoods(
                 listOf(
-                    TownDemandsEntity(1, 2),
-                    TownDemandsEntity(2, 3),
-                    TownDemandsEntity(3, 1),
+                    TownDemandsEntity(1, 2), // Hearthwick demands Iron
+                    TownDemandsEntity(2, 3), // Stoneford demands Silk
+                    TownDemandsEntity(3, 1), // Mistfall demands Apples
+                    TownDemandsEntity(1, 4), // Hearthwick demands Medicines
+                    TownDemandsEntity(3, 5), // Mistfall demands Dyes
+                    TownDemandsEntity(3, 6), // Mistfall demands Charts
+                    TownDemandsEntity(2, 7), // Stoneford demands Smuggled Spirits
+                    TownDemandsEntity(1, 8), // Hearthwick demands Stolen Relics
                 ),
             )
             database.townPriceDao().upsertPrices(
@@ -99,6 +116,101 @@ object SeedWorld {
                         supplyLevel = "Scarce",
                         lastUpdatedAt = now,
                     ),
+                    // Medicines (4): Mistfall source (rep-gated), Hearthwick destination
+                    TownPriceEntity(
+                        townId = 3,
+                        goodId = 4,
+                        buyPrice = 8,
+                        sellPrice = 14,
+                        supplyLevel = "Abundant",
+                        lastUpdatedAt = now,
+                        minReputation = 60,
+                    ),
+                    TownPriceEntity(
+                        townId = 1,
+                        goodId = 4,
+                        buyPrice = 24,
+                        sellPrice = 40,
+                        supplyLevel = "Scarce",
+                        lastUpdatedAt = now,
+                        minReputation = 0,
+                    ),
+                    // Dyes (5): Hearthwick source (rep-gated), Mistfall destination
+                    TownPriceEntity(
+                        townId = 1,
+                        goodId = 5,
+                        buyPrice = 7,
+                        sellPrice = 12,
+                        supplyLevel = "Abundant",
+                        lastUpdatedAt = now,
+                        minReputation = 60,
+                    ),
+                    TownPriceEntity(
+                        townId = 3,
+                        goodId = 5,
+                        buyPrice = 20,
+                        sellPrice = 32,
+                        supplyLevel = "Scarce",
+                        lastUpdatedAt = now,
+                        minReputation = 0,
+                    ),
+                    // Charts (6): Stoneford source (rep-gated), Mistfall destination
+                    TownPriceEntity(
+                        townId = 2,
+                        goodId = 6,
+                        buyPrice = 9,
+                        sellPrice = 15,
+                        supplyLevel = "Abundant",
+                        lastUpdatedAt = now,
+                        minReputation = 60,
+                    ),
+                    TownPriceEntity(
+                        townId = 3,
+                        goodId = 6,
+                        buyPrice = 23,
+                        sellPrice = 37,
+                        supplyLevel = "Scarce",
+                        lastUpdatedAt = now,
+                        minReputation = 0,
+                    ),
+                    // Smuggled Spirits (7): Hearthwick source, Stoneford destination
+                    TownPriceEntity(
+                        townId = 1,
+                        goodId = 7,
+                        buyPrice = 28,
+                        sellPrice = 15,
+                        supplyLevel = "Abundant",
+                        lastUpdatedAt = now,
+                        minReputation = 0,
+                    ),
+                    TownPriceEntity(
+                        townId = 2,
+                        goodId = 7,
+                        buyPrice = 44,
+                        sellPrice = 28,
+                        supplyLevel = "Scarce",
+                        lastUpdatedAt = now,
+                        minReputation = 0,
+                    ),
+                    // Stolen Relics (8): Mistfall source, Hearthwick destination
+                    TownPriceEntity(
+                        townId = 3,
+                        goodId = 8,
+                        buyPrice = 38,
+                        sellPrice = 22,
+                        supplyLevel = "Abundant",
+                        lastUpdatedAt = now,
+                        minReputation = 0,
+                    ),
+                    TownPriceEntity(
+                        townId = 1,
+                        goodId = 8,
+                        buyPrice = 58,
+                        sellPrice = 38,
+                        supplyLevel = "Scarce",
+                        lastUpdatedAt = now,
+                        minReputation = 0,
+                    ),
                 ),
             )
             database.roadSegmentDao().insertRoads(
@@ -107,14 +219,15 @@ object SeedWorld {
                     RoadSegmentEntity(2, 2, 1, 1000, "short", "[\"merchant-cart\"]"),
                     RoadSegmentEntity(3, 2, 3, 2500, "medium", "[\"fog-bank\"]"),
                     RoadSegmentEntity(4, 3, 2, 2500, "medium", "[\"fog-bank\"]"),
-                    RoadSegmentEntity(5, 1, 3, 5000, "long", "[\"old-road\"]"),
-                    RoadSegmentEntity(6, 3, 1, 5000, "long", "[\"old-road\"]"),
+                    RoadSegmentEntity(5, 1, 3, 5000, "long", "[\"old-road\",\"bandit-ambush\"]"),
+                    RoadSegmentEntity(6, 3, 1, 5000, "long", "[\"old-road\",\"bandit-ambush\"]"),
                 ),
             )
             database.companionDao().upsertCompanions(
                 listOf(
                     CompanionEntity(1, "Mira", "Scout", 3, 0, "available", 1, false),
                     CompanionEntity(2, "Bram", "Fighter", 5, 0, "available", 2, false),
+                    CompanionEntity(3, "Cael", "Rogue", 2, 0, "available", 3, false),
                 ),
             )
             database.playerDao().upsertPlayer(

@@ -129,12 +129,22 @@ interface InventoryDao {
 
     @Update
     suspend fun updateItem(item: InventoryItemEntity)
+
+    @Query(
+        "SELECT i.* FROM inventory_items i " +
+            "JOIN goods g ON i.goodId = g.goodId " +
+            "WHERE i.playerId = :playerId AND g.isContraband = 1",
+    )
+    suspend fun listContrabandItemsSnapshot(playerId: Long): List<InventoryItemEntity>
 }
 
 @Dao
 interface CompanionDao {
     @Query("SELECT * FROM companions WHERE isActive = 1 ORDER BY companionId")
     fun listActiveCompanions(): Flow<List<CompanionEntity>>
+
+    @Query("SELECT * FROM companions WHERE isActive = 1 ORDER BY companionId")
+    suspend fun listActiveCompanionsSnapshot(): List<CompanionEntity>
 
     @Query("SELECT * FROM companions WHERE isActive = 0 ORDER BY companionId")
     fun listRecruitableCompanions(): Flow<List<CompanionEntity>>

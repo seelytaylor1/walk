@@ -145,25 +145,25 @@ Color scripts for:
 ### AI Prompt
 
 **Daylight travel:**
-Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG background. Warm, cozy, atmospheric, and literary. A color palette study for a sunlit country road — golden amber light, dusty ochre earth, sage green hedgerows, soft cerulean sky, cream parchment shadows. Show the palette as painted swatches arranged on aged parchment. Visible brushwork, natural pigment texture. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG background. Warm, cozy, atmospheric, and literary. A sunlit country road at midday — golden amber light on dusty ochre earth, sage green hedgerows lining both sides, soft cerulean sky with cream clouds, dappled shadows warm as parchment. Wide landscape composition. Visible brushwork, natural pigment texture. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
 
 **Dusk roads:**
-Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG background. Warm, cozy, atmospheric, and literary. A color palette study for a road at dusk — deep amber horizon, burnt sienna silhouettes, violet-rose sky, lantern gold highlights, cool purple road shadows. Show the palette as painted swatches on aged parchment. Visible brushwork, natural pigment texture. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG background. Warm, cozy, atmospheric, and literary. A road at dusk — deep amber horizon bleeding into a violet-rose sky, burnt sienna tree silhouettes lining the path, lantern gold highlights catching the last light, cool purple shadows pooling on the road. Wide landscape composition. Visible brushwork, natural pigment texture. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
 
 **Moonlit camp:**
-Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG background. Warm, cozy, atmospheric, and literary. A color palette study for a moonlit camp — deep indigo sky, silver-blue moonlight, warm firelight amber, cool shadow violet, ivory tent canvas. Show the palette as painted swatches on aged parchment. Visible brushwork, natural pigment texture. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG background. Warm, cozy, atmospheric, and literary. A moonlit camp at night — deep indigo sky overhead, silver-blue moonlight washing over a small tent, warm firelight amber glowing at the fire's heart, cool violet shadows at the edges of the scene, ivory canvas catching the glow. Wide landscape composition. Visible brushwork, natural pigment texture. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
 
 **Snowy routes:**
-Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG background. Warm, cozy, atmospheric, and literary. A color palette study for a winter road — pale blue-white snow, steel grey clouds, pine green, warm lantern amber against cold blue shadow. Show the palette as painted swatches on aged parchment. Visible brushwork, natural pigment texture. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG background. Warm, cozy, atmospheric, and literary. A snow-covered road in winter — pale blue-white snow underfoot, steel grey clouds massing overhead, dark pine green silhouettes on either side, a warm lantern amber glow from a distant shelter set against deep cold blue shadows. Wide landscape composition. Visible brushwork, natural pigment texture. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
 
 **Rainy travel:**
-Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG background. Warm, cozy, atmospheric, and literary. A color palette study for a rainy road — slate grey sky, deep olive foliage, wet mud brown road, muted teal puddles, soft diffused white light. Show the palette as painted swatches on aged parchment. Visible brushwork, natural pigment texture. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG background. Warm, cozy, atmospheric, and literary. A rainy road — slate grey sky, deep olive foliage dripping with rain, wet mud brown road reflecting the overcast light, muted teal puddles, soft diffused white light through the clouds. Wide landscape composition. Visible brushwork, natural pigment texture. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
 
 **Warm taverns:**
-Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG background. Warm, cozy, atmospheric, and literary. A color palette study for a tavern interior — deep mahogany wood, firelight amber and orange, warm cream candlelight, rich burgundy curtains, soot-darkened ceiling. Show the palette as painted swatches on aged parchment. Visible brushwork, natural pigment texture. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG background. Warm, cozy, atmospheric, and literary. A tavern interior at night — deep mahogany wood beams and bar, firelight amber and orange from the hearth, warm cream candlelight on the tables, rich burgundy curtains framing the windows, soot-darkened ceiling above. Wide or portrait composition. Visible brushwork, natural pigment texture. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
 
 **Bustling markets:**
-Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG background. Warm, cozy, atmospheric, and literary. A color palette study for an outdoor market — terracotta awnings, saffron spices, rich indigo cloth bolts, sun-bleached stone, warm noon light. Show the palette as painted swatches on aged parchment. Visible brushwork, natural pigment texture. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG background. Warm, cozy, atmospheric, and literary. A bustling outdoor market at noon — terracotta awnings overhead, saffron-colored spices in open stalls, rich indigo cloth bolts hanging from hooks, sun-bleached stone underfoot, warm midday light filling the square. Wide landscape composition. Visible brushwork, natural pigment texture. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
 
 ---
 
@@ -498,17 +498,22 @@ Sprite sheets for:
 
 ### AI Prompt
 
-**Player walk cycle:**
-Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG character art. Warm, cozy, atmospheric, and literary. A sprite sheet of a cloaked traveler walking — 8 frames showing a smooth walk cycle in profile, left-facing, on a transparent background. Simple, readable silhouette, parchment-warm palette, expressive hand-painted style. Each frame clearly separated. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+*Generate one frame per generation, then vary the pose for the next frame.*
 
-**Companion walk cycle:**
-Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG character art. Warm, cozy, atmospheric, and literary. A sprite sheet of a companion character walking — 8 frames of a smooth walk cycle in profile, left-facing, on a transparent background. Distinct silhouette from the player character, same warm hand-painted style. Each frame clearly separated. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+**Player walk cycle — mid-stride:**
+Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG character art. Warm, cozy, atmospheric, and literary. A cloaked traveler mid-stride in profile, left-facing — weight forward on the front foot, back leg extended, arms in a natural swing, cloak flowing. Simple, readable silhouette, parchment-warm palette, expressive hand-painted style. Transparent background. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
 
-**Idle loop:**
-Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG character art. Warm, cozy, atmospheric, and literary. A sprite sheet of a traveler in an idle loop — 4 frames showing gentle breathing and weight shift while standing, on a transparent background. Subtle movement, parchment-warm palette, readable silhouette. Each frame clearly separated. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+**Player walk cycle — contact:**
+Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG character art. Warm, cozy, atmospheric, and literary. A cloaked traveler at foot-contact in a walk cycle, left-facing profile — heel just touching down, body upright, opposite arm forward. Simple, readable silhouette, parchment-warm palette. Transparent background. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
 
-**Camp idle loop:**
-Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG character art. Warm, cozy, atmospheric, and literary. A sprite sheet of a traveler in a camp idle loop — 4-6 frames showing sitting by a fire, poking at it occasionally, on a transparent background. Firelight coloring, restful and cozy mood. Each frame clearly separated. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+**Companion walk cycle — mid-stride:**
+Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG character art. Warm, cozy, atmospheric, and literary. A companion character mid-stride in profile, left-facing — distinct silhouette from a cloaked traveler, perhaps taller or differently geared, natural walking pose. Transparent background, warm hand-painted style. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+
+**Idle — standing rest:**
+Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG character art. Warm, cozy, atmospheric, and literary. A cloaked traveler standing at rest in profile — relaxed posture, weight on one foot, hands at sides or resting on a walking staff, head slightly bowed. Transparent background, parchment-warm palette, readable silhouette. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+
+**Camp idle — seated by fire:**
+Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG character art. Warm, cozy, atmospheric, and literary. A traveler seated beside a campfire — legs crossed, hands resting in lap, firelight painting their face amber, expression restful and at ease. Transparent background, warm firelight palette. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
 
 ---
 
@@ -613,7 +618,7 @@ Watercolor fantasy illustration in the style of an illuminated manuscript and ha
 Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG map. Warm, cozy, atmospheric, and literary. A set of encounter marker icons for a travel map — a crossed-swords symbol, a question mark in an ornate frame, a beast footprint, a storm cloud — hand-inked on transparent background. Slightly foreboding but still cozy in style. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
 
 **Animated footstep frames:**
-Watercolor fantasy illustration in the style of an illuminated manuscript. Warm, cozy, atmospheric, and literary. A sprite sheet of animated footstep frames — boot prints appearing one by one on a parchment road, 6 frames showing the progression, on a transparent background. Ink and watercolor, warm earthen tones. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+Watercolor fantasy illustration in the style of an illuminated manuscript. Warm, cozy, atmospheric, and literary. A single boot print in ink and watercolor — dark and fresh at the heel and toe, fading slightly at the edges, on a transparent background. Warm earthen tones. Generate one print per run; vary ink density and completeness across generations to build up a step-by-step appearance sequence. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
 
 **Caravan markers:**
 Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG map. Warm, cozy, atmospheric, and literary. A set of caravan marker icons for a travel map — a covered wagon side view, a merchant cart, a pack mule, a caravan group silhouette — hand-inked on transparent background. Readable at small map scale. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
@@ -753,17 +758,19 @@ Watercolor fantasy illustration in the style of an illuminated manuscript and ha
 
 ### AI Prompt
 
+*Generate one still per generation; vary position slightly across runs to build a looping sequence.*
+
 **Cloud layers:**
-Watercolor fantasy illustration in the style of an illuminated manuscript map. Warm, cozy, atmospheric. A sprite sheet of soft watercolor clouds drifting across a parchment sky — 6 frames of a gentle loop, clouds in cream and grey-white, on a transparent background. Painterly, natural, loop-ready. No neon colors, no corporate UI, no photorealism.
+Watercolor fantasy illustration in the style of an illuminated manuscript map. Warm, cozy, atmospheric. A single soft watercolor cloud — cream and grey-white tones, natural painterly shape, transparent background. Generate multiple clouds at slightly different positions and shapes to assemble a drifting loop. No neon colors, no corporate UI, no photorealism.
 
 **Wave loops:**
-Watercolor fantasy illustration in the style of an illuminated manuscript map. Warm, atmospheric. A sprite sheet of decorative map ocean waves — 4-6 frames of a simple loop, blue-grey watercolor waves in a medieval cartographic style, on transparent background. Readable as a map element, loop-ready. No neon colors, no corporate UI, no photorealism.
+Watercolor fantasy illustration in the style of an illuminated manuscript map. Warm, atmospheric. A single decorative map ocean wave in a still position — blue-grey watercolor, medieval cartographic style, transparent background. Generate at slightly different crest heights to assemble a looping wave animation. No neon colors, no corporate UI, no photorealism.
 
 **Birds:**
-Watercolor fantasy illustration in the style of an illuminated manuscript map. Warm, cozy, atmospheric. A sprite sheet of small birds in flight over a map — 4 frames showing wing positions in a flight loop, silhouette style in dark ink with faint watercolor, on transparent background. Tiny enough to decorate a map sea or sky. No neon colors, no corporate UI, no photorealism.
+Watercolor fantasy illustration in the style of an illuminated manuscript map. Warm, cozy, atmospheric. A single small bird in flight — wings at mid-stroke, silhouette style in dark ink with faint watercolor, transparent background. Tiny enough to decorate a map sea or sky. Generate with wings up, level, and down for a three-frame loop. No neon colors, no corporate UI, no photorealism.
 
 **Drifting banners:**
-Watercolor fantasy illustration in the style of an illuminated manuscript map. Warm, cozy, atmospheric. A sprite sheet of small heraldic banners or pennants on map markers — 4 frames of gentle ripple in wind, on transparent background. Rich jewel-tone fabric colors (burgundy, forest green, midnight blue), ink-drawn detail. No neon colors, no corporate UI, no photorealism.
+Watercolor fantasy illustration in the style of an illuminated manuscript map. Warm, cozy, atmospheric. A single small heraldic pennant hanging still — rich jewel-tone fabric color (burgundy, forest green, or midnight blue), ink-drawn detail, transparent background. Generate at slightly different drape angles to assemble a gentle wind-ripple animation. No neon colors, no corporate UI, no photorealism.
 
 ---
 
@@ -898,14 +905,34 @@ Per-town:
 
 ### AI Prompt
 
-**Market town theme pack:**
-Watercolor fantasy illustration in the style of an illuminated manuscript. Warm, cozy, atmospheric, and literary. A visual identity sheet for a market town — hand-painted signage samples (merchant guild crest, inn sign, market banner), a heraldic symbol (scales on a field), decorative border motifs in terracotta and gold, and a painted palette swatch strip. All on aged parchment. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+*Generate each element separately — one banner, one seal, one border per run.*
 
-**Mountain trading post theme pack:**
-Watercolor fantasy illustration in the style of an illuminated manuscript. Warm, cozy, atmospheric, and literary. A visual identity sheet for a mountain trading post — signage samples (forge mark, trader seal, waypost banner), a heraldic symbol (mountain peak with crossed axes), decorative border motifs in steel blue and iron grey, palette swatch strip. All on aged parchment. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+**Market town banner:**
+Watercolor fantasy illustration in the style of an illuminated manuscript. Warm, cozy, atmospheric, and literary. A hand-painted market town hanging banner — terracotta and gold cloth, a scales motif at the center, folk-art lettering, slightly worn edges and fraying at the bottom. Transparent background. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
 
-**Coastal port theme pack:**
-Watercolor fantasy illustration in the style of an illuminated manuscript. Warm, cozy, atmospheric, and literary. A visual identity sheet for a coastal port town — signage samples (harbormaster seal, fishmonger sign, lighthouse pennant), a heraldic symbol (anchor on a wave), decorative border motifs in sea blue and white, palette swatch strip. All on aged parchment. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+**Market town heraldic seal:**
+Watercolor fantasy illustration in the style of an illuminated manuscript. Warm, cozy, atmospheric, and literary. A hand-inked heraldic seal for a market town — a pair of merchant's scales on a simple shield shape, terracotta and gold tones, ink outline, slightly imperfect as if pressed in wax. Transparent background. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+
+**Market town decorative border:**
+Watercolor fantasy illustration in the style of an illuminated manuscript. Warm, cozy, atmospheric, and literary. A decorative page border in a market town style — terracotta and gold vine-and-coin motifs, hand-inked, suitable for framing a card or UI panel. Transparent background. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+
+**Mountain trading post banner:**
+Watercolor fantasy illustration in the style of an illuminated manuscript. Warm, cozy, atmospheric, and literary. A hand-painted mountain trading post banner — steel blue and iron grey cloth, a crossed-axes-over-peak motif, rugged folk-art lettering. Transparent background. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+
+**Mountain trading post heraldic seal:**
+Watercolor fantasy illustration in the style of an illuminated manuscript. Warm, cozy, atmospheric, and literary. A hand-inked heraldic seal for a mountain trading post — a mountain peak with crossed axes on a simple shield, steel blue and iron grey tones, ink outline. Transparent background. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+
+**Mountain trading post decorative border:**
+Watercolor fantasy illustration in the style of an illuminated manuscript. Warm, cozy, atmospheric, and literary. A decorative page border in a mountain trading post style — steel blue and grey geometric knotwork and forge-hammer motifs, hand-inked, suitable for framing a card or UI panel. Transparent background. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+
+**Coastal port banner:**
+Watercolor fantasy illustration in the style of an illuminated manuscript. Warm, cozy, atmospheric, and literary. A hand-painted coastal port banner — sea blue and white cloth, an anchor-on-wave motif, nautical folk-art lettering, salt-worn edges. Transparent background. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+
+**Coastal port heraldic seal:**
+Watercolor fantasy illustration in the style of an illuminated manuscript. Warm, cozy, atmospheric, and literary. A hand-inked heraldic seal for a coastal port town — an anchor rising from a stylized wave on a simple shield, sea blue and white tones, ink outline. Transparent background. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+
+**Coastal port decorative border:**
+Watercolor fantasy illustration in the style of an illuminated manuscript. Warm, cozy, atmospheric, and literary. A decorative page border in a coastal port style — sea blue and white rope-and-wave motifs, hand-inked, suitable for framing a card or UI panel. Transparent background. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
 
 ---
 
@@ -1194,14 +1221,46 @@ Watercolor fantasy illustration in the style of an illuminated manuscript and ha
 
 ### AI Prompt
 
-**Facial variants:**
-Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG character art. Warm, cozy, atmospheric, and literary. A companion character expression sheet — 6 face close-ups in a grid: neutral, happy, sad, surprised, angry, thoughtful — consistent character design, each expression clearly readable. Transparent background, painterly, warm palette. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+*Generate one expression or pose per run. Establish the neutral portrait first, then reference it in follow-up prompts to keep the character consistent.*
 
-**Reaction poses:**
-Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG character art. Warm, cozy, atmospheric, and literary. A companion character reaction pose sheet — full or half-body: startled step back, arms crossed in disagreement, delighted hands clasped, shrug, pointing with urgency. Consistent character design, transparent background, painterly. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+**Facial variant — neutral:**
+Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG character portrait. Warm, cozy, atmospheric, and literary. A companion character face close-up — neutral, calm expression, direct gaze, road-worn but kind. Transparent background, painterly, warm palette. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
 
-**Dialogue expressions:**
-Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG character art. Warm, cozy, atmospheric, and literary. A companion character dialogue expression sheet — bust portraits suitable for a dialogue UI: speaking animatedly, listening carefully, hesitating, confiding quietly. Consistent character design, transparent background, painterly. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+**Facial variant — happy:**
+Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG character portrait. Warm, cozy, atmospheric, and literary. The same companion character face close-up — a warm, genuine smile reaching the eyes, relaxed brow. Transparent background, painterly, warm palette. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+
+**Facial variant — sad:**
+Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG character portrait. Warm, cozy, atmospheric, and literary. The same companion character face close-up — downcast eyes, a slight trembling of the lip, quiet sorrow. Transparent background, painterly, muted warm palette. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+
+**Facial variant — surprised:**
+Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG character portrait. Warm, cozy, atmospheric, and literary. The same companion character face close-up — wide eyes, raised brows, mouth slightly open in genuine surprise. Transparent background, painterly, warm palette. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+
+**Facial variant — angry:**
+Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG character portrait. Warm, cozy, atmospheric, and literary. The same companion character face close-up — brow furrowed deeply, jaw set, eyes hard but not cruel. Transparent background, painterly, warm palette with slightly cooler tones. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+
+**Facial variant — thoughtful:**
+Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG character portrait. Warm, cozy, atmospheric, and literary. The same companion character face close-up — gaze slightly averted, brow softly furrowed, lips pressed together in quiet consideration. Transparent background, painterly, warm palette. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+
+**Reaction pose — startled:**
+Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG character art. Warm, cozy, atmospheric, and literary. The companion character half-body — a startled step back, one hand raised in surprise, weight shifted to the rear foot. Transparent background, painterly. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+
+**Reaction pose — disagreement:**
+Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG character art. Warm, cozy, atmospheric, and literary. The companion character half-body — arms crossed firmly, chin slightly raised, expression unconvinced. Transparent background, painterly. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+
+**Reaction pose — delighted:**
+Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG character art. Warm, cozy, atmospheric, and literary. The companion character half-body — hands clasped together, leaning forward, face bright with delight. Transparent background, painterly, warm palette. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+
+**Reaction pose — pointing urgently:**
+Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG character art. Warm, cozy, atmospheric, and literary. The companion character half-body — arm extended, finger pointing with urgency, expression intent and alert. Transparent background, painterly. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+
+**Dialogue — speaking:**
+Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG character portrait. Warm, cozy, atmospheric, and literary. The companion character bust portrait — mid-sentence, one hand raised slightly, expression animated and engaged. Transparent background, painterly, warm palette. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+
+**Dialogue — listening:**
+Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG character portrait. Warm, cozy, atmospheric, and literary. The companion character bust portrait — attentive, head tilted slightly, expression open and receptive. Transparent background, painterly, warm palette. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+
+**Dialogue — confiding:**
+Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG character portrait. Warm, cozy, atmospheric, and literary. The companion character bust portrait — leaning slightly forward, voice low, expression earnest and private. Transparent background, painterly, warm palette. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
 
 ---
 
@@ -1328,19 +1387,19 @@ Annotated references for:
 ### AI Prompt
 
 **Footsteps:**
-Watercolor fantasy illustration in the style of an illuminated manuscript. Warm, cozy, atmospheric, and literary. A moodboard illustration for footstep audio — a sequence of boot prints on a cobblestone road, arrows showing timing rhythm (regular, slow travel pace), annotated with handwritten notes about surface types (stone, mud, grass, snow). Aged parchment background, ink and watercolor. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG background. Warm, cozy, atmospheric, and literary. A close-up of a cobblestone road with fresh boot prints in soft mud at the edge — the texture of worn stone, a dusting of dry grass at the verge, the quiet of a road between villages. Evokes the steady sound of unhurried footsteps. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
 
 **Rain:**
-Watercolor fantasy illustration in the style of an illuminated manuscript. Atmospheric and literary. A moodboard illustration for rain audio — a layered scene showing light drizzle, moderate rain, and heavy downpour, each with handwritten annotation about the intended emotional tone (cozy shelter, atmospheric travel, dramatic urgency). Aged parchment background, ink and grey-blue watercolor. No neon colors, no corporate UI, no photorealism.
+Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG background. Atmospheric and literary. A rain-soaked scene — heavy drops exploding across a stone surface, rivulets threading between cobbles, a puddle's surface alive with concentric rings, grey-blue diffusion through the downpour. Immersive and layered, evoking the full sound of rainfall. No neon colors, no corporate UI, no photorealism.
 
 **Market chatter:**
-Watercolor fantasy illustration in the style of an illuminated manuscript. Warm, cozy, atmospheric, and literary. A moodboard illustration for market ambience audio — a busy market scene annotated with handwritten notes about sound layers (haggling voices, distant bells, cart wheels, animal sounds, background crowd murmur). Aged parchment, ink and watercolor. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG background. Warm, cozy, atmospheric, and literary. A bustling market scene viewed from within the crowd — a merchant mid-call, two buyers in close conversation, a cart wheel turning nearby, a dog weaving between legs, a distant bell above a shop door. The warmth and noise of a living market. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
 
 **Fire ambience:**
-Watercolor fantasy illustration in the style of an illuminated manuscript. Warm, cozy, atmospheric, and literary. A moodboard illustration for fire ambience audio — a campfire close-up with annotated notes about sound qualities (crackle frequency, ember pops, wood settling, wind interaction). Warm amber and ochre palette, aged parchment background. No neon colors, no corporate UI, no photorealism.
+Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG background. Warm, cozy, atmospheric, and literary. A campfire at close range — glowing embers shifting orange and white at the core, a log just beginning to settle, sparks lifting lazily into the dark above, the fire's heat felt in the warm palette. Intimate and crackling. No neon colors, no corporate UI, no photorealism.
 
 **Page turns:**
-Watercolor fantasy illustration in the style of an illuminated manuscript. Warm, cozy, atmospheric, and literary. A moodboard illustration for page turn audio — a hand turning a heavy parchment page, annotated with notes about the intended sound (heavy paper rustle, slight parchment creak, satisfying weight). Aged parchment background, ink and watercolor. No neon colors, no corporate UI, no photorealism.
+Watercolor fantasy illustration in the style of an illuminated manuscript. Warm, cozy, atmospheric, and literary. A hand mid-turn on a heavy parchment page — fingers at the corner lifting it, the page curving in arc, light catching the paper grain and showing its thickness and weight. The satisfying mass of an old journal. No neon colors, no corporate UI, no photorealism.
 
 **Companion presence:**
-Watercolor fantasy illustration in the style of an illuminated manuscript. Warm, cozy, atmospheric, and literary. A moodboard illustration for companion ambient audio — a companion seated by a fire, annotated with handwritten notes about the sounds that suggest presence (soft breath, occasional murmur, gentle movement, page rustle, soft hum). Warm firelit palette, aged parchment background. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.
+Watercolor fantasy illustration in the style of an illuminated manuscript and hand-painted RPG background. Warm, cozy, atmospheric, and literary. A companion seated quietly by a campfire — head bowed slightly over a book, one hand resting near the warmth, firelight soft on their face, the scene unhurried and intimate. Their presence felt without words. No neon colors, no corporate UI, no anime gacha aesthetic, no photorealism.

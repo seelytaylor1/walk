@@ -137,4 +137,44 @@ class TravelPolicyTest {
         assertEquals((first as TravelOutcome.Arrived).encounterOutcome,
                      (second as TravelOutcome.Arrived).encounterOutcome)
     }
+
+    @Test
+    fun scoutAtBondZeroAppliesTenPercentDiscount() {
+        val scout = Companion(
+            companionId = 1,
+            name = "Mira",
+            role = CompanionRole.Scout,
+            combatPower = 3,
+            bondLevel = 0,
+            questState = "active",
+            locationTownId = 1,
+            isActive = true,
+        )
+        val outcome = TravelPolicy.compute(snapshot(bankedSteps = 200, companions = listOf(scout)), seed = 1L)
+
+        assertTrue(outcome is TravelOutcome.Arrived)
+        val arrived = outcome as TravelOutcome.Arrived
+        // stepCost=120, discount=0.10+(0*0.02)=0.10, effective=(120*0.90).toInt()=108
+        assertEquals(108L, arrived.playerDelta.stepsSpent)
+    }
+
+    @Test
+    fun scoutAtMaxBondAppliesTwentyPercentDiscount() {
+        val scout = Companion(
+            companionId = 1,
+            name = "Mira",
+            role = CompanionRole.Scout,
+            combatPower = 3,
+            bondLevel = 5,
+            questState = "active",
+            locationTownId = 1,
+            isActive = true,
+        )
+        val outcome = TravelPolicy.compute(snapshot(bankedSteps = 200, companions = listOf(scout)), seed = 1L)
+
+        assertTrue(outcome is TravelOutcome.Arrived)
+        val arrived = outcome as TravelOutcome.Arrived
+        // stepCost=120, discount=0.10+(5*0.02)=0.20, effective=(120*0.80).toInt()=96
+        assertEquals(96L, arrived.playerDelta.stepsSpent)
+    }
 }

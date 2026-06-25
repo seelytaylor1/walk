@@ -1,5 +1,6 @@
 package com.wanderingledger.core.data
 
+import com.wanderingledger.core.model.CompanionRole
 import kotlin.random.Random
 
 /**
@@ -24,10 +25,10 @@ object TravelPolicy {
     ): TravelOutcome {
         val player = snapshot.player
         val road = snapshot.road
-        val hasActiveScout = snapshot.activeCompanions.any {
-            it.role == com.wanderingledger.core.model.CompanionRole.Scout && it.isActive
+        val activeScout = snapshot.activeCompanions.firstOrNull {
+            it.role == CompanionRole.Scout && it.isActive
         }
-        val effectiveStepCost = applyScoutDiscount(road.stepCost, hasActiveScout)
+        val effectiveStepCost = applyScoutDiscount(road.stepCost, activeScout?.bondLevel)
         val stepCost = effectiveStepCost.toLong()
 
         // Rule: travel is blocked when the player cannot afford the road's cost.

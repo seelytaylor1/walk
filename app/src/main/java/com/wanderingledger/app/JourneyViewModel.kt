@@ -196,7 +196,7 @@ class JourneyViewModel(
             bankedSteps = player.bankedSteps,
             lifetimeSteps = player.lifetimeSteps,
             routeDestinations = run {
-                val hasActiveScout = activeCompanions.any {
+                val activeScout = activeCompanions.firstOrNull {
                     it.role == CompanionRole.Scout && it.isActive
                 }
                 gameRepository.observeTravelRoutesFromCurrentTown().first().map { route ->
@@ -204,7 +204,7 @@ class JourneyViewModel(
                         route.segment.segmentId,
                         route.destination.name,
                         Pair(
-                            applyScoutDiscount(route.segment.stepCost, hasActiveScout),
+                            applyScoutDiscount(route.segment.stepCost, activeScout?.bondLevel),
                             route.segment.narrativeDistance,
                         ),
                     )

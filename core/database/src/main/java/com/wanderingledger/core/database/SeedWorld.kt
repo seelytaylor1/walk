@@ -177,7 +177,7 @@ object SeedWorld {
                     TownPriceEntity(
                         townId = 1,
                         goodId = 7,
-                        buyPrice = 10,
+                        buyPrice = 28,
                         sellPrice = 15,
                         supplyLevel = "Abundant",
                         lastUpdatedAt = now,
@@ -186,8 +186,8 @@ object SeedWorld {
                     TownPriceEntity(
                         townId = 2,
                         goodId = 7,
-                        buyPrice = 28,
-                        sellPrice = 45,
+                        buyPrice = 44,
+                        sellPrice = 28,
                         supplyLevel = "Scarce",
                         lastUpdatedAt = now,
                         minReputation = 0,
@@ -196,7 +196,7 @@ object SeedWorld {
                     TownPriceEntity(
                         townId = 3,
                         goodId = 8,
-                        buyPrice = 15,
+                        buyPrice = 38,
                         sellPrice = 22,
                         supplyLevel = "Abundant",
                         lastUpdatedAt = now,
@@ -205,8 +205,8 @@ object SeedWorld {
                     TownPriceEntity(
                         townId = 1,
                         goodId = 8,
-                        buyPrice = 38,
-                        sellPrice = 60,
+                        buyPrice = 58,
+                        sellPrice = 38,
                         supplyLevel = "Scarce",
                         lastUpdatedAt = now,
                         minReputation = 0,

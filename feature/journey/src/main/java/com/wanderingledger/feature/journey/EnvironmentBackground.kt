@@ -2,6 +2,7 @@ package com.wanderingledger.feature.journey
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,6 +20,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.wanderingledger.core.designsystem.theme.WLTheme
 import com.wanderingledger.core.model.Biome
@@ -36,45 +40,55 @@ fun EnvironmentBackground(
     reducedMotion: Boolean = false,
 ) {
     val biomeColors = WLTheme.current.biomeColors
+    val bgPainter = biomeBackgroundPainter(biome, timeOfDay)
 
     Box(modifier = modifier.fillMaxSize()) {
-        Box(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.verticalGradient(
-                            colors =
-                                listOf(
-                                    biomeColors.background,
-                                    biomeColors.background.copy(alpha = 0.95f),
-                                    MaterialTheme.colorScheme.surface,
-                                ),
+        if (bgPainter != null) {
+            Image(
+                painter = bgPainter,
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
+            )
+        } else {
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.verticalGradient(
+                                colors =
+                                    listOf(
+                                        biomeColors.background,
+                                        biomeColors.background.copy(alpha = 0.95f),
+                                        MaterialTheme.colorScheme.surface,
+                                    ),
+                            ),
                         ),
-                    ),
-        )
+            )
 
-        ParallaxLayer(
-            depth = ParallaxDepth.Background,
-            biome = biome,
-            reducedMotion = reducedMotion,
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.TopCenter)
-                    .offset(y = 20.dp),
-        )
+            ParallaxLayer(
+                depth = ParallaxDepth.Background,
+                biome = biome,
+                reducedMotion = reducedMotion,
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.TopCenter)
+                        .offset(y = 20.dp),
+            )
 
-        ParallaxLayer(
-            depth = ParallaxDepth.Midground,
-            biome = biome,
-            reducedMotion = reducedMotion,
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.TopCenter)
-                    .offset(y = 40.dp),
-        )
+            ParallaxLayer(
+                depth = ParallaxDepth.Midground,
+                biome = biome,
+                reducedMotion = reducedMotion,
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.TopCenter)
+                        .offset(y = 40.dp),
+            )
+        }
 
         WeatherOverlay(
             weather = weather,
@@ -146,18 +160,30 @@ fun EnvironmentBackground(
             )
         }
 
-        ParallaxLayer(
-            depth = ParallaxDepth.Foreground,
-            biome = biome,
-            reducedMotion = reducedMotion,
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.BottomCenter)
-                    .offset(y = (-20).dp),
-        )
+        if (bgPainter == null) {
+            ParallaxLayer(
+                depth = ParallaxDepth.Foreground,
+                biome = biome,
+                reducedMotion = reducedMotion,
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.BottomCenter)
+                        .offset(y = (-20).dp),
+            )
+        }
     }
 }
+
+@Composable
+private fun biomeBackgroundPainter(
+    biome: Biome,
+    timeOfDay: TimeOfDay,
+): Painter? =
+    when {
+        biome == Biome.Forest && timeOfDay == TimeOfDay.Day -> painterResource(R.drawable.bg_forest_day)
+        else -> null
+    }
 
 private val MaterialTheme = androidx.compose.material3.MaterialTheme
 

@@ -106,23 +106,23 @@ class JourneyScreenStateTest {
 
     @Test
     fun `parseEventPool returns list from valid JSON array`() {
-        val result = parseEventPool("""["merchant-cart","fog-bank"]""")
+        val result = """["merchant-cart","fog-bank"]""".parseEventPool()
         assertEquals(listOf("merchant-cart", "fog-bank"), result)
     }
 
     @Test
     fun `parseEventPool returns empty list for empty JSON array`() {
-        assertTrue(parseEventPool("[]").isEmpty())
+        assertTrue("[]".parseEventPool().isEmpty())
     }
 
     @Test
     fun `parseEventPool returns empty list for invalid JSON`() {
-        assertTrue(parseEventPool("not-valid-json").isEmpty())
+        assertTrue("not-valid-json".parseEventPool().isEmpty())
     }
 
     @Test
     fun `parseEventPool returns empty list for malformed JSON`() {
-        assertTrue(parseEventPool("{\"key\":\"value\"}").isEmpty())
+        assertTrue("{\"key\":\"value\"}".parseEventPool().isEmpty())
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

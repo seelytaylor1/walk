@@ -63,41 +63,43 @@ class GameRepositoryTest {
         }
 
     @Test
-    fun travelCompletesDeliveryOrderOnArrival() = runBlocking {
-        gameRepository.initializeNewGame()
-        // Give player enough steps to travel segment 1 (Hearthwick→Stoneford, 1000 steps)
-        database.playerDao().updatePlayer(
-            database.playerDao().getPlayerSnapshot()!!.copy(bankedSteps = 2000)
-        )
-        // Insert Delivery order: bring Iron (goodId=2) to Stoneford (townId=2)
-        val orderId = database.orderDao().insertOrder(
-            OrderEntity(
-                issuingTownId = 2L,
-                destinationTownId = 2L,
-                goodId = 2L,
-                quantity = 1,
-                type = "Delivery",
-                reputationReward = 5,
-                deadlineVisitsLeft = 3,
+    fun travelCompletesDeliveryOrderOnArrival() =
+        runBlocking {
+            gameRepository.initializeNewGame()
+            // Give player enough steps to travel segment 1 (Hearthwick→Stoneford, 1000 steps)
+            database.playerDao().updatePlayer(
+                database.playerDao().getPlayerSnapshot()!!.copy(bankedSteps = 2000),
             )
-        )
-        // Give player 1 Iron
-        database.inventoryDao().addItem(
-            InventoryItemEntity(playerId = 1L, goodId = 2L, quantity = 1)
-        )
+            // Insert Delivery order: bring Iron (goodId=2) to Stoneford (townId=2)
+            val orderId =
+                database.orderDao().insertOrder(
+                    OrderEntity(
+                        issuingTownId = 2L,
+                        destinationTownId = 2L,
+                        goodId = 2L,
+                        quantity = 1,
+                        type = "Delivery",
+                        reputationReward = 5,
+                        deadlineVisitsLeft = 3,
+                    ),
+                )
+            // Give player 1 Iron
+            database.inventoryDao().addItem(
+                InventoryItemEntity(playerId = 1L, goodId = 2L, quantity = 1),
+            )
 
-        val result = gameRepository.travel(segmentId = 1L, seed = 42L)
+            val result = gameRepository.travel(segmentId = 1L, seed = 42L)
 
-        assertTrue("Travel should succeed", result is TravelResult.Arrived)
-        // Verify the specific order was deactivated (not isActive)
-        // getActiveOrdersSnapshot returns only isActive=1 orders; our order should not appear
-        val allActive = database.orderDao().getActiveOrdersSnapshot()
-        assertTrue(
-            "Completed order (id=$orderId) should be deactivated",
-            allActive.none { it.orderId == orderId },
-        )
-        // Verify Stoneford gained rep
-        val stoneford = database.townDao().getTownSnapshot(2L)
-        assertEquals("Stoneford reputation should increase by 5", 55, stoneford?.reputation)
-    }
+            assertTrue("Travel should succeed", result is TravelResult.Arrived)
+            // Verify the specific order was deactivated (not isActive)
+            // getActiveOrdersSnapshot returns only isActive=1 orders; our order should not appear
+            val allActive = database.orderDao().getActiveOrdersSnapshot()
+            assertTrue(
+                "Completed order (id=$orderId) should be deactivated",
+                allActive.none { it.orderId == orderId },
+            )
+            // Verify Stoneford gained rep
+            val stoneford = database.townDao().getTownSnapshot(2L)
+            assertEquals("Stoneford reputation should increase by 5", 55, stoneford?.reputation)
+        }
 }

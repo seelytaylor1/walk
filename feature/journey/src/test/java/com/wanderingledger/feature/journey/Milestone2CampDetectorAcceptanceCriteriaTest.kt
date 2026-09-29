@@ -11,7 +11,6 @@ import org.junit.Test
  * and is not a dependency of core:data.
  */
 class Milestone2CampDetectorAcceptanceCriteriaTest {
-
     // ── Issue #15: CampState auto-detection ──────────────────────────────────
 
     /**
@@ -22,11 +21,12 @@ class Milestone2CampDetectorAcceptanceCriteriaTest {
         val lastTravelTime = System.currentTimeMillis() - (6 * 60 * 1000L) // 6 minutes ago
         val currentTime = System.currentTimeMillis()
 
-        val shouldCamp = CampStateDetector.shouldEnterCamp(
-            lastTravelTime = lastTravelTime,
-            currentTime = currentTime,
-            bankedSteps = 100L,
-        )
+        val shouldCamp =
+            CampStateDetector.shouldEnterCamp(
+                lastTravelTime = lastTravelTime,
+                currentTime = currentTime,
+                bankedSteps = 100L,
+            )
         assertTrue("Should enter camp after 5+ min idle with 100 banked steps", shouldCamp)
     }
 
@@ -38,11 +38,12 @@ class Milestone2CampDetectorAcceptanceCriteriaTest {
         val lastTravelTime = System.currentTimeMillis() - (6 * 60 * 1000L)
         val currentTime = System.currentTimeMillis()
 
-        val shouldCamp = CampStateDetector.shouldEnterCamp(
-            lastTravelTime = lastTravelTime,
-            currentTime = currentTime,
-            bankedSteps = 50L,
-        )
+        val shouldCamp =
+            CampStateDetector.shouldEnterCamp(
+                lastTravelTime = lastTravelTime,
+                currentTime = currentTime,
+                bankedSteps = 50L,
+            )
         assertFalse("Should not enter camp with only 50 banked steps", shouldCamp)
     }
 
@@ -54,11 +55,12 @@ class Milestone2CampDetectorAcceptanceCriteriaTest {
         val lastTravelTime = System.currentTimeMillis() - (2 * 60 * 1000L) // 2 minutes ago
         val currentTime = System.currentTimeMillis()
 
-        val shouldCamp = CampStateDetector.shouldEnterCamp(
-            lastTravelTime = lastTravelTime,
-            currentTime = currentTime,
-            bankedSteps = 500L,
-        )
+        val shouldCamp =
+            CampStateDetector.shouldEnterCamp(
+                lastTravelTime = lastTravelTime,
+                currentTime = currentTime,
+                bankedSteps = 500L,
+            )
         assertFalse("Should not enter camp after only 2 min idle", shouldCamp)
     }
 }

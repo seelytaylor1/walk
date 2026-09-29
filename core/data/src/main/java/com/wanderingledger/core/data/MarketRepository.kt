@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import com.wanderingledger.core.database.CompanionEntity
 
 // ── Domain result types ──────────────────────────────────────────────────────
 
@@ -155,8 +154,7 @@ class MarketRepository(
                         val good = goodsById[priceEntity.goodId]
                         if (good?.isContraband == true && !hasActiveRogue) return@filter false
                         true
-                    }
-                    .mapNotNull { priceEntity ->
+                    }.mapNotNull { priceEntity ->
                         val good = goodsById[priceEntity.goodId] ?: return@mapNotNull null
                         val supplyLevel = SupplyLevel.valueOf(priceEntity.supplyLevel)
                         val playerQty = inventoryByGoodId[priceEntity.goodId] ?: 0

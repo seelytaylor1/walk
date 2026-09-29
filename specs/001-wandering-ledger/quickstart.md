@@ -18,12 +18,12 @@ The Gradle wrapper is checked in. Use `gradlew.bat` on Windows. On macOS/Linux, 
 ## Expected Commands
 
 ```powershell
-.\gradlew.bat check assembleDebug
+.\gradlew.bat ktlintCheck testDebugUnitTest check assembleDebug
 .\gradlew.bat testDebugUnitTest
 .\gradlew.bat connectedDebugAndroidTest
 ```
 
-`check assembleDebug` is the CI verification command. `connectedDebugAndroidTest` requires a connected Android device or emulator. Coverage reporting is configured in selected modules, but CI does not currently enforce a coverage threshold.
+`ktlintCheck testDebugUnitTest check assembleDebug` is the CI verification command. `connectedDebugAndroidTest` requires a connected Android device or emulator. Coverage reporting is configured in selected modules, but CI does not currently enforce a coverage threshold.
 
 ## First Playable Slice
 

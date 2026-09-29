@@ -21,7 +21,7 @@ The core game loop and supporting systems are implemented. The project is in rel
 ### Gradle commands
 
 ```powershell
-.\gradlew.bat check assembleDebug
+.\gradlew.bat ktlintCheck testDebugUnitTest check assembleDebug
 .\gradlew.bat testDebugUnitTest
 .\gradlew.bat lintDebug
 .\gradlew.bat connectedDebugAndroidTest # Requires a connected device or emulator

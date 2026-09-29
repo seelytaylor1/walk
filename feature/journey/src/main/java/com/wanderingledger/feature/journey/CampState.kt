@@ -1,8 +1,8 @@
 package com.wanderingledger.feature.journey
 
 import com.wanderingledger.core.model.Biome
-import com.wanderingledger.core.model.Companion as CoreCompanion
 import com.wanderingledger.core.model.CompanionRole
+import com.wanderingledger.core.model.Companion as CoreCompanion
 
 enum class JourneyMode {
     ActiveTravel,

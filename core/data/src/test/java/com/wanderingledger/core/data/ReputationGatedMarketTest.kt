@@ -52,8 +52,11 @@ class ReputationGatedMarketTest {
 
             // Source town prices for rare goods carry minReputation = 60
             // Dyes (goodId=5) source is Hearthwick (townId=1)
-            val dyesAtHearthwick = database.townPriceDao().listPricesSnapshotForTown(1L)
-                .first { it.goodId == 5L }
+            val dyesAtHearthwick =
+                database
+                    .townPriceDao()
+                    .listPricesSnapshotForTown(1L)
+                    .first { it.goodId == 5L }
             assertEquals(
                 "Dyes source price at Hearthwick should have minReputation=60",
                 60,
@@ -61,8 +64,11 @@ class ReputationGatedMarketTest {
             )
 
             // Medicines (goodId=4) source is Mistfall (townId=3)
-            val medicinesAtMistfall = database.townPriceDao().listPricesSnapshotForTown(3L)
-                .first { it.goodId == 4L }
+            val medicinesAtMistfall =
+                database
+                    .townPriceDao()
+                    .listPricesSnapshotForTown(3L)
+                    .first { it.goodId == 4L }
             assertEquals(
                 "Medicines source price at Mistfall should have minReputation=60",
                 60,
@@ -70,8 +76,11 @@ class ReputationGatedMarketTest {
             )
 
             // Charts (goodId=6) source is Stoneford (townId=2)
-            val chartsAtStoneford = database.townPriceDao().listPricesSnapshotForTown(2L)
-                .first { it.goodId == 6L }
+            val chartsAtStoneford =
+                database
+                    .townPriceDao()
+                    .listPricesSnapshotForTown(2L)
+                    .first { it.goodId == 6L }
             assertEquals(
                 "Charts source price at Stoneford should have minReputation=60",
                 60,
@@ -85,8 +94,11 @@ class ReputationGatedMarketTest {
             gameRepository.initializeNewGame(seed = 1L)
 
             // Apples (goodId=1) at Hearthwick (townId=1)
-            val applesAtHearthwick = database.townPriceDao().listPricesSnapshotForTown(1L)
-                .first { it.goodId == 1L }
+            val applesAtHearthwick =
+                database
+                    .townPriceDao()
+                    .listPricesSnapshotForTown(1L)
+                    .first { it.goodId == 1L }
             assertEquals(
                 "Apples at Hearthwick should have minReputation=0",
                 0,
@@ -94,8 +106,11 @@ class ReputationGatedMarketTest {
             )
 
             // Iron (goodId=2) at Hearthwick (townId=1)
-            val ironAtHearthwick = database.townPriceDao().listPricesSnapshotForTown(1L)
-                .first { it.goodId == 2L }
+            val ironAtHearthwick =
+                database
+                    .townPriceDao()
+                    .listPricesSnapshotForTown(1L)
+                    .first { it.goodId == 2L }
             assertEquals(
                 "Iron at Hearthwick should have minReputation=0",
                 0,
@@ -109,8 +124,11 @@ class ReputationGatedMarketTest {
             gameRepository.initializeNewGame(seed = 1L)
 
             // Dyes (goodId=5) destination is Mistfall (townId=3) — no rep gate at destination
-            val dyesAtMistfall = database.townPriceDao().listPricesSnapshotForTown(3L)
-                .first { it.goodId == 5L }
+            val dyesAtMistfall =
+                database
+                    .townPriceDao()
+                    .listPricesSnapshotForTown(3L)
+                    .first { it.goodId == 5L }
             assertEquals(
                 "Dyes destination price at Mistfall should have minReputation=0",
                 0,
@@ -118,8 +136,11 @@ class ReputationGatedMarketTest {
             )
 
             // Medicines (goodId=4) destination is Hearthwick (townId=1)
-            val medicinesAtHearthwick = database.townPriceDao().listPricesSnapshotForTown(1L)
-                .first { it.goodId == 4L }
+            val medicinesAtHearthwick =
+                database
+                    .townPriceDao()
+                    .listPricesSnapshotForTown(1L)
+                    .first { it.goodId == 4L }
             assertEquals(
                 "Medicines destination price at Hearthwick should have minReputation=0",
                 0,
@@ -137,8 +158,10 @@ class ReputationGatedMarketTest {
             val hearthwickPrices = database.townPriceDao().listPricesSnapshotForTown(1L)
             val stonefordPrices = database.townPriceDao().listPricesSnapshotForTown(2L)
             val mistfallPrices = database.townPriceDao().listPricesSnapshotForTown(3L)
-            val allSeededGoodIds = (hearthwickPrices + stonefordPrices + mistfallPrices)
-                .map { it.goodId }.toSet()
+            val allSeededGoodIds =
+                (hearthwickPrices + stonefordPrices + mistfallPrices)
+                    .map { it.goodId }
+                    .toSet()
 
             assertTrue(
                 "All 6 goods (goodIds 1-6) should be seeded across all towns. Found: $allSeededGoodIds",

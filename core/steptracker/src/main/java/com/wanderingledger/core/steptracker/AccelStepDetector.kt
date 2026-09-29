@@ -27,7 +27,9 @@ class PeakDetectionStepDetector(
 
     override fun processSample(
         timestampNs: Long,
-        ax: Float, ay: Float, az: Float
+        ax: Float,
+        ay: Float,
+        az: Float,
     ): Int {
         val magnitude = sqrt(ax * ax + ay * ay + az * az)
         movingAverage = alpha * magnitude + (1f - alpha) * movingAverage

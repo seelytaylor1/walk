@@ -6,7 +6,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class JourneyRouteOptionTest {
-
     @Test
     fun `canAfford is true when banked steps exactly equal step cost`() {
         val route = route(stepCost = 100, bankedSteps = 100)

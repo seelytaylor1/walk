@@ -8,9 +8,9 @@ import com.wanderingledger.core.data.CompanionRepository
 import com.wanderingledger.core.data.GameRepository
 import com.wanderingledger.core.data.TravelResult
 import com.wanderingledger.core.data.applyScoutDiscount
-import com.wanderingledger.core.model.CompanionRole
 import com.wanderingledger.core.designsystem.accessibility.AccessibilityPreferences
 import com.wanderingledger.core.model.Biome
+import com.wanderingledger.core.model.CompanionRole
 import com.wanderingledger.core.steptracker.StepSource
 import com.wanderingledger.core.steptracker.StepTrackerService
 import com.wanderingledger.feature.companions.CompanionCommentaryUi
@@ -195,21 +195,23 @@ class JourneyViewModel(
             currentBiome = town.biome,
             bankedSteps = player.bankedSteps,
             lifetimeSteps = player.lifetimeSteps,
-            routeDestinations = run {
-                val activeScout = activeCompanions.firstOrNull {
-                    it.role == CompanionRole.Scout && it.isActive
-                }
-                gameRepository.observeTravelRoutesFromCurrentTown().first().map { route ->
-                    Triple(
-                        route.segment.segmentId,
-                        route.destination.name,
-                        Pair(
-                            applyScoutDiscount(route.segment.stepCost, activeScout?.bondLevel),
-                            route.segment.narrativeDistance,
-                        ),
-                    )
-                }
-            },
+            routeDestinations =
+                run {
+                    val activeScout =
+                        activeCompanions.firstOrNull {
+                            it.role == CompanionRole.Scout && it.isActive
+                        }
+                    gameRepository.observeTravelRoutesFromCurrentTown().first().map { route ->
+                        Triple(
+                            route.segment.segmentId,
+                            route.destination.name,
+                            Pair(
+                                applyScoutDiscount(route.segment.stepCost, activeScout?.bondLevel),
+                                route.segment.narrativeDistance,
+                            ),
+                        )
+                    }
+                },
             message = message,
             campState = campState,
             activeCompanions = activeCompanions,
@@ -222,17 +224,21 @@ class JourneyViewModel(
         biome: Biome?,
         bankedSteps: Long?,
     ): String? {
-        val companion = withContext(Dispatchers.IO) {
-            companionRepository.observeActiveCompanions().first().firstOrNull()
-        } ?: return null
-        return when (val result = withContext(Dispatchers.IO) {
-            narrator.requestLine(
-                companionId = companion.companionId,
-                context = context,
-                biome = biome,
-                bankedSteps = bankedSteps,
-            )
-        }) {
+        val companion =
+            withContext(Dispatchers.IO) {
+                companionRepository.observeActiveCompanions().first().firstOrNull()
+            } ?: return null
+        return when (
+            val result =
+                withContext(Dispatchers.IO) {
+                    narrator.requestLine(
+                        companionId = companion.companionId,
+                        context = context,
+                        biome = biome,
+                        bankedSteps = bankedSteps,
+                    )
+                }
+        ) {
             is CompanionCommentaryResult.Spoken -> "${result.commentary.companionName}: ${result.commentary.line}"
             else -> null
         }

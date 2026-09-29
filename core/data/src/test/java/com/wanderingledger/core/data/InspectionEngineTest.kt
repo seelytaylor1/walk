@@ -8,17 +8,17 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class InspectionEngineTest {
-
-    private fun makeRogue(bondLevel: Int) = Companion(
-        companionId = 3,
-        name = "Cael",
-        role = CompanionRole.Rogue,
-        combatPower = 2,
-        bondLevel = bondLevel,
-        questState = "active",
-        locationTownId = 3,
-        isActive = true,
-    )
+    private fun makeRogue(bondLevel: Int) =
+        Companion(
+            companionId = 3,
+            name = "Cael",
+            role = CompanionRole.Rogue,
+            combatPower = 2,
+            bondLevel = bondLevel,
+            questState = "active",
+            locationTownId = 3,
+            isActive = true,
+        )
 
     @Test
     fun baseChanceIsFortyPercentWithoutRogue() {

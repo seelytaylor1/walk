@@ -34,7 +34,6 @@ import org.robolectric.RobolectricTestRunner
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
 class MarketViewModelTest {
-
     private lateinit var database: WanderingLedgerDatabase
     private lateinit var marketRepository: MarketRepository
     private lateinit var gameRepository: GameRepository
@@ -53,10 +52,11 @@ class MarketViewModelTest {
         marketRepository = MarketRepository(database)
         // Seed the world: inserts Hearthwick (townId=1), player (gold=50), goods, prices
         runBlocking { gameRepository.initializeNewGame(seed = 1L) }
-        viewModel = MarketViewModel(
-            marketRepository = marketRepository,
-            ioDispatcher = testDispatcher,
-        )
+        viewModel =
+            MarketViewModel(
+                marketRepository = marketRepository,
+                ioDispatcher = testDispatcher,
+            )
         viewModel.activate(townId = 1L)
     }
 
@@ -72,9 +72,10 @@ class MarketViewModelTest {
     fun `buy with enough gold emits BuySuccess effect and sets success message`() =
         runTest(testDispatcher) {
             val effects = mutableListOf<MarketEffect>()
-            val effectJob = launch {
-                viewModel.effects.collect { effects.add(it) }
-            }
+            val effectJob =
+                launch {
+                    viewModel.effects.collect { effects.add(it) }
+                }
 
             // Player starts with 50g; Apples sell at 5g each — should succeed
             viewModel.buy(townId = 1L, goodId = 1L).join()
@@ -101,9 +102,10 @@ class MarketViewModelTest {
             database.playerDao().updatePlayer(player.copy(gold = 0L))
 
             val effects = mutableListOf<MarketEffect>()
-            val effectJob = launch {
-                viewModel.effects.collect { effects.add(it) }
-            }
+            val effectJob =
+                launch {
+                    viewModel.effects.collect { effects.add(it) }
+                }
 
             viewModel.buy(townId = 1L, goodId = 1L).join()
 
@@ -128,9 +130,10 @@ class MarketViewModelTest {
             marketRepository.buyGood(townId = 1L, goodId = 1L, quantity = 1)
 
             val effects = mutableListOf<MarketEffect>()
-            val effectJob = launch {
-                viewModel.effects.collect { effects.add(it) }
-            }
+            val effectJob =
+                launch {
+                    viewModel.effects.collect { effects.add(it) }
+                }
 
             viewModel.sell(townId = 1L, goodId = 1L).join()
 
@@ -149,19 +152,21 @@ class MarketViewModelTest {
     // ── Test 4: sell() with no inventory emits TransactionError ──
 
     @Test
-    fun `sell with no inventory emits TransactionError`() = runTest(testDispatcher) {
-        // Player has no Apples in inventory (fresh seeded state)
-        val effects = mutableListOf<MarketEffect>()
-        val effectJob = launch {
-            viewModel.effects.collect { effects.add(it) }
+    fun `sell with no inventory emits TransactionError`() =
+        runTest(testDispatcher) {
+            // Player has no Apples in inventory (fresh seeded state)
+            val effects = mutableListOf<MarketEffect>()
+            val effectJob =
+                launch {
+                    viewModel.effects.collect { effects.add(it) }
+                }
+
+            viewModel.sell(townId = 1L, goodId = 1L).join()
+
+            assertTrue(
+                "Expected TransactionError for empty-inventory sell, got: $effects",
+                effects.contains(MarketEffect.TransactionError),
+            )
+            effectJob.cancel()
         }
-
-        viewModel.sell(townId = 1L, goodId = 1L).join()
-
-        assertTrue(
-            "Expected TransactionError for empty-inventory sell, got: $effects",
-            effects.contains(MarketEffect.TransactionError),
-        )
-        effectJob.cancel()
-    }
 }

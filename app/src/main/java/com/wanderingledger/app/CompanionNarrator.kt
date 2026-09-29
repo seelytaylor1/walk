@@ -33,10 +33,12 @@ class CompanionNarrator(
         bankedSteps: Long? = null,
         nowMs: Long = System.currentTimeMillis(),
     ): CompanionCommentaryResult {
-        val companion = companionRepository.observeActiveCompanions()
-            .firstOrNull()
-            ?.firstOrNull { it.companionId == companionId }
-            ?: return CompanionCommentaryResult.NotActive
+        val companion =
+            companionRepository
+                .observeActiveCompanions()
+                .firstOrNull()
+                ?.firstOrNull { it.companionId == companionId }
+                ?: return CompanionCommentaryResult.NotActive
 
         val result = engine.selectLine(companion, context, biome, bankedSteps, nowMs)
         if (result is CompanionCommentaryResult.Spoken) {

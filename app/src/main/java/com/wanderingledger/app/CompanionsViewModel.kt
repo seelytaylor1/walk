@@ -34,6 +34,7 @@ data class CompanionsViewState(
 
 sealed interface CompanionsEffect {
     data object InteractSuccess : CompanionsEffect
+
     data object CooldownActive : CompanionsEffect
 }
 
@@ -57,22 +58,23 @@ class CompanionsViewModel(
 
     fun activate(townId: Long) {
         observeJob?.cancel()
-        observeJob = viewModelScope.launch {
-            combine(
-                companionRepository.observeActiveCompanions(),
-                companionRepository.observeRecruitableCompanionsAtTown(townId),
-                accessibilityPreferences.reduceMotion,
-                narrator.latestLine,
-            ) { active, recruitable, reduceMotion, commentary ->
-                CompanionsViewState(
-                    active = active,
-                    recruitable = recruitable,
-                    reduceMotion = reduceMotion,
-                    message = _state.value?.message,
-                    latestCommentary = commentary,
-                )
-            }.collect { _state.value = it }
-        }
+        observeJob =
+            viewModelScope.launch {
+                combine(
+                    companionRepository.observeActiveCompanions(),
+                    companionRepository.observeRecruitableCompanionsAtTown(townId),
+                    accessibilityPreferences.reduceMotion,
+                    narrator.latestLine,
+                ) { active, recruitable, reduceMotion, commentary ->
+                    CompanionsViewState(
+                        active = active,
+                        recruitable = recruitable,
+                        reduceMotion = reduceMotion,
+                        message = _state.value?.message,
+                        latestCommentary = commentary,
+                    )
+                }.collect { _state.value = it }
+            }
     }
 
     fun deactivate() {
@@ -80,58 +82,72 @@ class CompanionsViewModel(
         observeJob = null
     }
 
-    fun recruit(companionId: Long): Job = viewModelScope.launch {
-        val result = withContext(ioDispatcher) {
-            companionRepository.recruitCompanion(companionId)
-        }
-        val message = when (result) {
-            RecruitmentResult.Success -> "A new voice joins the road."
-            RecruitmentResult.AlreadyActive -> "They are already traveling with you."
-            RecruitmentResult.PartyFull -> "The party is full."
-            RecruitmentResult.NotFound -> "That companion is not available here."
-            RecruitmentResult.NotEnoughTrades -> "Complete a few more trades first."
-        }
-        _state.value = _state.value?.copy(message = message)
-    }
-
-    fun interact(companionId: Long, townId: Long): Job = viewModelScope.launch {
-        val player = withContext(ioDispatcher) {
-            gameRepository.observePlayerState().first()
-        }
-        val town = withContext(ioDispatcher) {
-            gameRepository.observeTown(townId).first()
-        }
-        val context = if (player.bankedSteps < 80L)
-            CompanionCommentaryContext.LowSteps
-        else
-            CompanionCommentaryContext.Town
-
-        val result = withContext(ioDispatcher) {
-            narrator.requestLine(
-                companionId = companionId,
-                context = context,
-                biome = town?.biome,
-                bankedSteps = player.bankedSteps,
-            )
-        }
-        when (result) {
-            is CompanionCommentaryResult.Spoken -> {
+    fun recruit(companionId: Long): Job =
+        viewModelScope.launch {
+            val result =
                 withContext(ioDispatcher) {
-                    companionRepository.updateBond(companionId, 1)
+                    companionRepository.recruitCompanion(companionId)
                 }
-                _effects.emit(CompanionsEffect.InteractSuccess)
-                _state.value = _state.value?.copy(message = null)
-            }
-            is CompanionCommentaryResult.OnCooldown -> {
-                _state.value = _state.value?.copy(
-                    message = "${result.companionName} is still considering the last thing they said.",
-                )
-                _effects.emit(CompanionsEffect.CooldownActive)
-            }
-            CompanionCommentaryResult.NotActive ->
-                _state.value = _state.value?.copy(
-                    message = "Only active companions can answer from the road.",
-                )
+            val message =
+                when (result) {
+                    RecruitmentResult.Success -> "A new voice joins the road."
+                    RecruitmentResult.AlreadyActive -> "They are already traveling with you."
+                    RecruitmentResult.PartyFull -> "The party is full."
+                    RecruitmentResult.NotFound -> "That companion is not available here."
+                    RecruitmentResult.NotEnoughTrades -> "Complete a few more trades first."
+                }
+            _state.value = _state.value?.copy(message = message)
         }
-    }
+
+    fun interact(
+        companionId: Long,
+        townId: Long,
+    ): Job =
+        viewModelScope.launch {
+            val player =
+                withContext(ioDispatcher) {
+                    gameRepository.observePlayerState().first()
+                }
+            val town =
+                withContext(ioDispatcher) {
+                    gameRepository.observeTown(townId).first()
+                }
+            val context =
+                if (player.bankedSteps < 80L) {
+                    CompanionCommentaryContext.LowSteps
+                } else {
+                    CompanionCommentaryContext.Town
+                }
+
+            val result =
+                withContext(ioDispatcher) {
+                    narrator.requestLine(
+                        companionId = companionId,
+                        context = context,
+                        biome = town?.biome,
+                        bankedSteps = player.bankedSteps,
+                    )
+                }
+            when (result) {
+                is CompanionCommentaryResult.Spoken -> {
+                    withContext(ioDispatcher) {
+                        companionRepository.updateBond(companionId, 1)
+                    }
+                    _effects.emit(CompanionsEffect.InteractSuccess)
+                    _state.value = _state.value?.copy(message = null)
+                }
+                is CompanionCommentaryResult.OnCooldown -> {
+                    _state.value =
+                        _state.value?.copy(
+                            message = "${result.companionName} is still considering the last thing they said.",
+                        )
+                    _effects.emit(CompanionsEffect.CooldownActive)
+                }
+                CompanionCommentaryResult.NotActive ->
+                    _state.value =
+                        _state.value?.copy(
+                            message = "Only active companions can answer from the road.",
+                        )
+            }
+        }
 }

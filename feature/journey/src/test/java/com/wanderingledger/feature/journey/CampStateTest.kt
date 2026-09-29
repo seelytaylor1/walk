@@ -9,7 +9,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class CampStateTest {
-
     // ── CampStateDetector.shouldEnterCamp ────────────────────────────────────
 
     @Test
@@ -44,28 +43,43 @@ class CampStateTest {
 
     @Test
     fun `determineCampActivity assigns KeepingWatch to Scout`() {
-        assertEquals(CampActivity.KeepingWatch, CampStateDetector.determineCampActivity(companion(role = CompanionRole.Scout)))
+        assertEquals(
+            CampActivity.KeepingWatch,
+            CampStateDetector.determineCampActivity(companion(role = CompanionRole.Scout)),
+        )
     }
 
     @Test
     fun `determineCampActivity assigns Cooking to Healer`() {
-        assertEquals(CampActivity.Cooking, CampStateDetector.determineCampActivity(companion(role = CompanionRole.Healer)))
+        assertEquals(
+            CampActivity.Cooking,
+            CampStateDetector.determineCampActivity(companion(role = CompanionRole.Healer)),
+        )
     }
 
     @Test
     fun `determineCampActivity assigns Chatting to high-bond non-special role`() {
-        assertEquals(CampActivity.Chatting, CampStateDetector.determineCampActivity(companion(role = CompanionRole.Fighter, bondLevel = 5)))
+        assertEquals(
+            CampActivity.Chatting,
+            CampStateDetector.determineCampActivity(companion(role = CompanionRole.Fighter, bondLevel = 5)),
+        )
     }
 
     @Test
     fun `determineCampActivity assigns Sitting to low-bond non-special role`() {
-        assertEquals(CampActivity.Sitting, CampStateDetector.determineCampActivity(companion(role = CompanionRole.Mage, bondLevel = 2)))
+        assertEquals(
+            CampActivity.Sitting,
+            CampStateDetector.determineCampActivity(companion(role = CompanionRole.Mage, bondLevel = 2)),
+        )
     }
 
     @Test
     fun `determineCampActivity prioritises role over bond level for Scout`() {
         // A Scout with high bond level should still get KeepingWatch, not Chatting.
-        assertEquals(CampActivity.KeepingWatch, CampStateDetector.determineCampActivity(companion(role = CompanionRole.Scout, bondLevel = 10)))
+        assertEquals(
+            CampActivity.KeepingWatch,
+            CampStateDetector.determineCampActivity(companion(role = CompanionRole.Scout, bondLevel = 10)),
+        )
     }
 
     // ── CampState.camping factory ─────────────────────────────────────────────
@@ -79,11 +93,12 @@ class CampStateTest {
 
     @Test
     fun `camping factory assigns role-based activities to companions`() {
-        val companions = listOf(
-            companion(id = 1L, role = CompanionRole.Scout),
-            companion(id = 2L, role = CompanionRole.Healer),
-            companion(id = 3L, role = CompanionRole.Fighter),
-        )
+        val companions =
+            listOf(
+                companion(id = 1L, role = CompanionRole.Scout),
+                companion(id = 2L, role = CompanionRole.Healer),
+                companion(id = 3L, role = CompanionRole.Fighter),
+            )
         val state = CampState.camping(biome = Biome.Forest, companions = companions)
 
         assertEquals(CampActivity.KeepingWatch, state.campActivities[1L])

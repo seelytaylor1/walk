@@ -57,15 +57,16 @@ class OrderDaoTest {
     @Test
     fun insertAndRetrieveActiveOrder() =
         runTest {
-            val order = makeOrder(
-                issuingTownId = 1L,
-                destinationTownId = 2L,
-                goodId = 3L,
-                quantity = 5,
-                type = "Route",
-                reputationReward = 15,
-                deadlineVisitsLeft = 4,
-            )
+            val order =
+                makeOrder(
+                    issuingTownId = 1L,
+                    destinationTownId = 2L,
+                    goodId = 3L,
+                    quantity = 5,
+                    type = "Route",
+                    reputationReward = 15,
+                    deadlineVisitsLeft = 4,
+                )
             val id = database.orderDao().insertOrder(order)
 
             val active = database.orderDao().getActiveOrdersSnapshot()

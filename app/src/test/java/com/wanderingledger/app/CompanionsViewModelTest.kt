@@ -37,7 +37,6 @@ import org.robolectric.RobolectricTestRunner
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
 class CompanionsViewModelTest {
-
     private lateinit var database: WanderingLedgerDatabase
     private lateinit var companionRepository: CompanionRepository
     private lateinit var gameRepository: GameRepository
@@ -56,17 +55,19 @@ class CompanionsViewModelTest {
         companionRepository = CompanionRepository(database)
         gameRepository = GameRepository(database, rumorRepository, companionRepository, OrderRepository(database))
         accessibilityPreferences = AccessibilityPreferences(context)
-        narrator = CompanionNarrator(
-            companionRepository = companionRepository,
-            engine = CompanionCommentaryEngine(cooldownMs = 0L), // no cooldown for most tests
-        )
-        viewModel = CompanionsViewModel(
-            companionRepository = companionRepository,
-            gameRepository = gameRepository,
-            narrator = narrator,
-            accessibilityPreferences = accessibilityPreferences,
-            ioDispatcher = testDispatcher,
-        )
+        narrator =
+            CompanionNarrator(
+                companionRepository = companionRepository,
+                engine = CompanionCommentaryEngine(cooldownMs = 0L), // no cooldown for most tests
+            )
+        viewModel =
+            CompanionsViewModel(
+                companionRepository = companionRepository,
+                gameRepository = gameRepository,
+                narrator = narrator,
+                accessibilityPreferences = accessibilityPreferences,
+                ioDispatcher = testDispatcher,
+            )
         // Seed the world so GameRepository calls (observePlayerState, observeTown) succeed
         runBlocking { gameRepository.initializeNewGame(seed = 1L) }
         viewModel.activate(townId = 1L)
@@ -109,9 +110,10 @@ class CompanionsViewModelTest {
             val companionId = insertActiveCompanion()
 
             val effects = mutableListOf<CompanionsEffect>()
-            val effectJob = launch {
-                viewModel.effects.collect { effects.add(it) }
-            }
+            val effectJob =
+                launch {
+                    viewModel.effects.collect { effects.add(it) }
+                }
 
             viewModel.interact(companionId = companionId, townId = 1L).join()
 
@@ -132,25 +134,28 @@ class CompanionsViewModelTest {
     fun `interact with OnCooldown sets message and emits CooldownActive`() =
         runTest(testDispatcher) {
             // Use a narrator with a long cooldown so the second call hits OnCooldown
-            val cooldownNarrator = CompanionNarrator(
-                companionRepository = companionRepository,
-                engine = CompanionCommentaryEngine(cooldownMs = Long.MAX_VALUE),
-            )
-            val vm = CompanionsViewModel(
-                companionRepository = companionRepository,
-                gameRepository = gameRepository,
-                narrator = cooldownNarrator,
-                accessibilityPreferences = accessibilityPreferences,
-                ioDispatcher = testDispatcher,
-            )
+            val cooldownNarrator =
+                CompanionNarrator(
+                    companionRepository = companionRepository,
+                    engine = CompanionCommentaryEngine(cooldownMs = Long.MAX_VALUE),
+                )
+            val vm =
+                CompanionsViewModel(
+                    companionRepository = companionRepository,
+                    gameRepository = gameRepository,
+                    narrator = cooldownNarrator,
+                    accessibilityPreferences = accessibilityPreferences,
+                    ioDispatcher = testDispatcher,
+                )
             vm.activate(townId = 1L)
 
             val companionId = insertActiveCompanion()
 
             val effects = mutableListOf<CompanionsEffect>()
-            val effectJob = launch {
-                vm.effects.collect { effects.add(it) }
-            }
+            val effectJob =
+                launch {
+                    vm.effects.collect { effects.add(it) }
+                }
 
             // First interact: Spoken (starts the cooldown)
             vm.interact(companionId = companionId, townId = 1L).join()
@@ -178,9 +183,10 @@ class CompanionsViewModelTest {
             val missingCompanionId = 999L
 
             val effects = mutableListOf<CompanionsEffect>()
-            val effectJob = launch {
-                viewModel.effects.collect { effects.add(it) }
-            }
+            val effectJob =
+                launch {
+                    viewModel.effects.collect { effects.add(it) }
+                }
 
             viewModel.interact(companionId = missingCompanionId, townId = 1L).join()
 

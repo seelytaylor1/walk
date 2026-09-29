@@ -17,6 +17,8 @@ object InspectionEngine {
                 .coerceAtLeast(MIN_INSPECTION_CHANCE)
         }
 
-    fun rollInspection(chance: Double, seed: Long): Boolean =
-        Random(seed).nextDouble() < chance
+    fun rollInspection(
+        chance: Double,
+        seed: Long,
+    ): Boolean = Random(seed).nextDouble() < chance
 }

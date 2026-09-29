@@ -7,15 +7,15 @@ import android.hardware.SensorManager
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wanderingledger.core.audio.AudioEvent
 import com.wanderingledger.core.audio.AudioManager
 import com.wanderingledger.core.audio.AudioPreferences
@@ -23,7 +23,6 @@ import com.wanderingledger.core.data.CompanionRepository
 import com.wanderingledger.core.data.GameRepository
 import com.wanderingledger.core.data.InventoryRepository
 import com.wanderingledger.core.data.MarketRepository
-import com.wanderingledger.core.data.RoomStepBankRepository
 import com.wanderingledger.core.data.RumorRepository
 import com.wanderingledger.core.data.TravelResult
 import com.wanderingledger.core.database.RoadSegmentEntity
@@ -47,7 +46,6 @@ import com.wanderingledger.feature.companions.CompanionsScreenView
 import com.wanderingledger.feature.companions.buildCompanionsScreenState
 import com.wanderingledger.feature.journey.JourneyActions
 import com.wanderingledger.feature.journey.JourneyScreen
-import com.wanderingledger.feature.journey.buildJourneyScreenState
 import com.wanderingledger.feature.ledger.ChronicleActions
 import com.wanderingledger.feature.ledger.ChronicleNavigationCallback
 import com.wanderingledger.feature.ledger.ChronicleScreenView
@@ -626,12 +624,14 @@ class MainActivity : ComponentActivity() {
         navigationShell.navigateTo(NavigationShell.ScreenType.COMPANIONS, "Party", null)
 
         // Render initial state from current ViewModel state (may be null on first activate)
-        val initialActive = withContext(Dispatchers.IO) {
-            companionRepository.observeActiveCompanions().first()
-        }
-        val initialRecruitable = withContext(Dispatchers.IO) {
-            companionRepository.observeRecruitableCompanionsAtTown(townId).first()
-        }
+        val initialActive =
+            withContext(Dispatchers.IO) {
+                companionRepository.observeActiveCompanions().first()
+            }
+        val initialRecruitable =
+            withContext(Dispatchers.IO) {
+                companionRepository.observeRecruitableCompanionsAtTown(townId).first()
+            }
         val reduceMotion = accessibilityPreferences.reduceMotion.first()
         companionsView.render(
             buildCompanionsScreenState(
@@ -644,21 +644,22 @@ class MainActivity : ComponentActivity() {
             buildCompanionsActions(townId),
         )
 
-        companionsObserveJob = scope.launch {
-            companionsViewModel.state.collect { state ->
-                state ?: return@collect
-                companionsView.render(
-                    buildCompanionsScreenState(
-                        active = state.active,
-                        recruitable = state.recruitable,
-                        message = state.message,
-                        recentCommentary = state.latestCommentary,
-                        reducedMotion = state.reduceMotion,
-                    ),
-                    buildCompanionsActions(townId),
-                )
+        companionsObserveJob =
+            scope.launch {
+                companionsViewModel.state.collect { state ->
+                    state ?: return@collect
+                    companionsView.render(
+                        buildCompanionsScreenState(
+                            active = state.active,
+                            recruitable = state.recruitable,
+                            message = state.message,
+                            recentCommentary = state.latestCommentary,
+                            reducedMotion = state.reduceMotion,
+                        ),
+                        buildCompanionsActions(townId),
+                    )
+                }
             }
-        }
     }
 
     private fun buildCompanionsActions(townId: Long): CompanionsActions =
@@ -777,24 +778,27 @@ class MainActivity : ComponentActivity() {
         navigationShell.navigateTo(NavigationShell.ScreenType.MARKET, "Market", null)
 
         // Render initial state
-        val initialMarket = withContext(Dispatchers.IO) {
-            marketRepository.observeMarket(townId).first()
-        }
+        val initialMarket =
+            withContext(Dispatchers.IO) {
+                marketRepository.observeMarket(townId).first()
+            }
         marketView.render(
             buildMarketScreenState(initialMarket, message),
             buildMarketActions(townId),
         )
 
-        marketObserveJob = scope.launch {
-            kotlinx.coroutines.flow.combine(
-                marketViewModel.state,
-                marketViewModel.message,
-            ) { state, msg -> Pair(state, msg) }
-                .collect { (state, msg) ->
-                    state ?: return@collect
-                    marketView.render(buildMarketScreenState(state, msg), buildMarketActions(townId))
-                }
-        }
+        marketObserveJob =
+            scope.launch {
+                kotlinx.coroutines.flow
+                    .combine(
+                        marketViewModel.state,
+                        marketViewModel.message,
+                    ) { state, msg -> Pair(state, msg) }
+                    .collect { (state, msg) ->
+                        state ?: return@collect
+                        marketView.render(buildMarketScreenState(state, msg), buildMarketActions(townId))
+                    }
+            }
     }
 
     private suspend fun showInventoryView(townId: Long) {

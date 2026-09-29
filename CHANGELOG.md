@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Simplified Android CI to run on `master` pushes, pull requests, and manual dispatches.
-- Replaced placeholder CI steps with the Gradle checks and debug APK build.
+- Replaced placeholder CI steps with all-module formatting checks, unit tests, Gradle checks, and a debug APK build.
+- Applied ktlint formatting across the existing Kotlin sources.
 - Updated project documentation to describe the current release-readiness state.
 
 ## [0.2.0] - Phase 7: Quality Gates

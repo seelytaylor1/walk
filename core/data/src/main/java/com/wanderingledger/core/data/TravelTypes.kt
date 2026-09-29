@@ -5,13 +5,17 @@ import com.wanderingledger.core.model.PlayerState
 import com.wanderingledger.core.model.RoadSegment
 import com.wanderingledger.core.model.Rumor
 import com.wanderingledger.core.model.Town
+
 private val EVENT_ENTRY = Regex(""""([^"]+)"""")
 
 fun String.parseEventPool(): List<String> =
     try {
         val trimmed = trim()
-        if (!trimmed.startsWith("[") || !trimmed.endsWith("]")) emptyList()
-        else EVENT_ENTRY.findAll(trimmed).map { it.groupValues[1] }.toList()
+        if (!trimmed.startsWith("[") || !trimmed.endsWith("]")) {
+            emptyList()
+        } else {
+            EVENT_ENTRY.findAll(trimmed).map { it.groupValues[1] }.toList()
+        }
     } catch (e: Exception) {
         emptyList()
     }

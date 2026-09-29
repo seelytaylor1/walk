@@ -11,8 +11,9 @@ data class OrderCompletion(
     val goodName: String,
 )
 
-class OrderRepository(private val database: WanderingLedgerDatabase) {
-
+class OrderRepository(
+    private val database: WanderingLedgerDatabase,
+) {
     companion object {
         const val ORDER_CAP_PER_TOWN = 3
         const val DELIVERY_DEADLINE = 3
@@ -23,7 +24,10 @@ class OrderRepository(private val database: WanderingLedgerDatabase) {
         const val ORDER_QTY_MAX = 3
     }
 
-    suspend fun generateOrdersForTown(townId: Long, seed: Long) {
+    suspend fun generateOrdersForTown(
+        townId: Long,
+        seed: Long,
+    ) {
         val currentCount = database.orderDao().countActiveOrdersForTown(townId)
         if (currentCount >= ORDER_CAP_PER_TOWN) return
 
@@ -82,16 +86,20 @@ class OrderRepository(private val database: WanderingLedgerDatabase) {
         }
     }
 
-    suspend fun checkAndCompleteOrders(arrivedTownId: Long, playerId: Long): List<OrderCompletion> {
+    suspend fun checkAndCompleteOrders(
+        arrivedTownId: Long,
+        playerId: Long,
+    ): List<OrderCompletion> {
         val completions = mutableListOf<OrderCompletion>()
         val activeOrders = database.orderDao().getActiveOrdersSnapshot()
 
         for (order in activeOrders) {
-            val completionTownId = when (order.type) {
-                "Delivery" -> order.issuingTownId
-                "Route" -> order.destinationTownId
-                else -> continue
-            }
+            val completionTownId =
+                when (order.type) {
+                    "Delivery" -> order.issuingTownId
+                    "Route" -> order.destinationTownId
+                    else -> continue
+                }
             if (completionTownId != arrivedTownId) continue
 
             val item = database.inventoryDao().getItemSnapshot(playerId, order.goodId)

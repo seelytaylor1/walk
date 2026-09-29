@@ -12,18 +12,19 @@ import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class JourneyScreenStateTest {
-
     // ── buildJourneyScreenState ───────────────────────────────────────────────
 
     @Test
     fun `routes are mapped from routeDestinations with correct names and costs`() {
-        val state = build(
-            bankedSteps = 200,
-            routes = listOf(
-                Triple(1L, "Stoneford", Pair(120, "a half-day's walk")),
-                Triple(2L, "Ashwick", Pair(300, "a full day's journey")),
-            ),
-        )
+        val state =
+            build(
+                bankedSteps = 200,
+                routes =
+                    listOf(
+                        Triple(1L, "Stoneford", Pair(120, "a half-day's walk")),
+                        Triple(2L, "Ashwick", Pair(300, "a full day's journey")),
+                    ),
+            )
 
         assertEquals(2, state.routes.size)
         assertEquals("Stoneford", state.routes[0].destinationName)
@@ -34,13 +35,15 @@ class JourneyScreenStateTest {
 
     @Test
     fun `routes mark affordability based on banked steps`() {
-        val state = build(
-            bankedSteps = 200,
-            routes = listOf(
-                Triple(1L, "Near Town", Pair(100, "close")),
-                Triple(2L, "Far Town", Pair(500, "far")),
-            ),
-        )
+        val state =
+            build(
+                bankedSteps = 200,
+                routes =
+                    listOf(
+                        Triple(1L, "Near Town", Pair(100, "close")),
+                        Triple(2L, "Far Town", Pair(500, "far")),
+                    ),
+            )
 
         assertTrue("Should afford 100-step route with 200 steps", state.routes[0].canAfford)
         assertFalse("Should not afford 500-step route with 200 steps", state.routes[1].canAfford)
@@ -48,13 +51,15 @@ class JourneyScreenStateTest {
 
     @Test
     fun `routePathData is generated with matching segment IDs and affordability`() {
-        val state = build(
-            bankedSteps = 150,
-            routes = listOf(
-                Triple(5L, "High Pass", Pair(100, "a steep climb")),
-                Triple(6L, "Deep Ford", Pair(200, "a muddy crossing")),
-            ),
-        )
+        val state =
+            build(
+                bankedSteps = 150,
+                routes =
+                    listOf(
+                        Triple(5L, "High Pass", Pair(100, "a steep climb")),
+                        Triple(6L, "Deep Ford", Pair(200, "a muddy crossing")),
+                    ),
+            )
 
         assertEquals(2, state.routePathData.size)
         assertEquals(5L, state.routePathData[0].segmentId)
@@ -65,14 +70,15 @@ class JourneyScreenStateTest {
 
     @Test
     fun `town metadata is passed through unchanged`() {
-        val state = build(
-            townName = "Millhaven",
-            townRegion = "Heartlands",
-            biome = Biome.Coast,
-            bankedSteps = 0,
-            lifetimeSteps = 1000,
-            message = "You have arrived.",
-        )
+        val state =
+            build(
+                townName = "Millhaven",
+                townRegion = "Heartlands",
+                biome = Biome.Coast,
+                bankedSteps = 0,
+                lifetimeSteps = 1000,
+                message = "You have arrived.",
+            )
 
         assertEquals("Millhaven", state.currentTownName)
         assertEquals("Heartlands", state.currentTownRegion)

@@ -2,7 +2,7 @@
 
 **Feature Branch**: `001-wandering-ledger`
 **Created**: 2026-05-06
-**Status**: Ready for implementation scaffold
+**Status**: Implemented; release validation in progress
 **Input**: Build an offline walking-and-trading game based on the Wandering Ledger concept.
 
 ## User Scenarios & Testing

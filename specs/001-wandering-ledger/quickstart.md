@@ -6,7 +6,7 @@
 - Android Studio with Android SDK 34
 - Android API 26+ emulator or device
 
-The Gradle wrapper is checked in. Use `gradlew.bat` on Windows or `./gradlew` on macOS/Linux.
+The Gradle wrapper is checked in. Use `gradlew.bat` on Windows. On macOS/Linux, run `chmod +x gradlew` once, then use `./gradlew`.
 
 ## First Sync
 
@@ -18,12 +18,12 @@ The Gradle wrapper is checked in. Use `gradlew.bat` on Windows or `./gradlew` on
 ## Expected Commands
 
 ```powershell
-.\gradlew testDebugUnitTest
-.\gradlew lintDebug
-.\gradlew connectedDebugAndroidTest
+.\gradlew.bat check assembleDebug
+.\gradlew.bat testDebugUnitTest
+.\gradlew.bat connectedDebugAndroidTest
 ```
 
-CI currently treats coverage parsing as a placeholder until Jacoco/Kover report paths are finalized.
+`check assembleDebug` is the CI verification command. `connectedDebugAndroidTest` requires a connected Android device or emulator. Coverage reporting is configured in selected modules, but CI does not currently enforce a coverage threshold.
 
 ## First Playable Slice
 
@@ -37,7 +37,8 @@ The first implementation milestone is User Story 1:
 
 ## Validation Checklist
 
-- Requirements checklist is fully checked.
-- `contracts/`, `data-model.md`, `research.md`, `tasks.md`, and `plan.md` agree on module names and boundaries.
+- Requirements checklist is reviewed.
+- `contracts/`, `data-model.md`, `research.md`, and `plan.md` agree on module names and boundaries.
 - `feature/ledger` is the only Ledger module name.
-- Performance targets are documented but not claimed until benchmark harnesses exist.
+- Performance targets are documented; results are claimed only after running the benchmark harnesses.
+- See [release readiness](../../docs/release-readiness.md) for current build and device-playtest evidence.
